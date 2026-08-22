@@ -53,27 +53,27 @@ public final class SkillTrees {
 		),
 		List.of(
 			// Tier 1
-			SkillNode.of("masons_grip_1", 0, 3, SkillType.PASSIVE),
-			SkillNode.of("miners_magnet", 0, 5, SkillType.PASSIVE),
+			SkillNode.of("masons_grip_1", 0, 3, SkillType.PASSIVE).future(),
+			SkillNode.of("miners_magnet", 0, 5, SkillType.PASSIVE).future(),
 			SkillNode.of("melt_1", 0, 4, SkillType.ENCHANTMENT),
 			// Tier 2
-			SkillNode.chained("masons_grip_2", 1, 5, "masons_grip_1", SkillType.PASSIVE),
+			SkillNode.chained("masons_grip_2", 1, 5, "masons_grip_1", SkillType.PASSIVE).future(),
 			SkillNode.of("dig_range_1", 1, 6, SkillType.ENCHANTMENT),
 			SkillNode.chained("melt_2", 1, 6, "melt_1", SkillType.ENCHANTMENT),
-			SkillNode.of("prospectors_sense", 1, 8, SkillType.ACTIVE),
+			SkillNode.of("prospectors_sense", 1, 8, SkillType.ACTIVE).future(),
 			// Tier 3
-			SkillNode.of("miners_helm", 2, 7, SkillType.ITEM),
+			SkillNode.of("miners_helm", 2, 7, SkillType.ITEM).future(),
 			SkillNode.chained("dig_range_2", 2, 9, "dig_range_1", SkillType.ENCHANTMENT),
 			SkillNode.chained("melt_3", 2, 9, "melt_2", SkillType.ENCHANTMENT),
 			SkillNode.of("rich_vein_1", 2, 10, SkillType.ENCHANTMENT),
 			// Tier 4
-			SkillNode.of("deep_haste", 3, 8, SkillType.PASSIVE),
+			SkillNode.of("deep_haste", 3, 8, SkillType.PASSIVE).future(),
 			SkillNode.chained("dig_range_3", 3, 14, "dig_range_2", SkillType.ENCHANTMENT),
-			SkillNode.of("obsidian_breaker", 3, 6, SkillType.PASSIVE),
+			SkillNode.of("obsidian_breaker", 3, 6, SkillType.PASSIVE).future(),
 			SkillNode.chained("rich_vein_2", 3, 10, "rich_vein_1", SkillType.ENCHANTMENT),
 			// Tier 5 — capstones (mutually exclusive)
 			SkillNode.capstone("magma_touch", 4, 20, "ancient_fortune", SkillType.ENCHANTMENT),
-			SkillNode.capstone("ancient_fortune", 4, 20, "magma_touch", SkillType.PASSIVE)
+			SkillNode.capstone("ancient_fortune", 4, 20, "magma_touch", SkillType.PASSIVE).future()
 		)
 	);
 
@@ -114,26 +114,26 @@ public final class SkillTrees {
 		),
 		List.of(
 			// Tier 1
-			SkillNode.of("lumberjacks_arms_1", 0, 3, SkillType.PASSIVE),
-			SkillNode.of("loggers_magnet", 0, 5, SkillType.PASSIVE),
-			SkillNode.of("fair_harvest", 0, 4, SkillType.PASSIVE),
+			SkillNode.of("lumberjacks_arms_1", 0, 3, SkillType.PASSIVE).future(),
+			SkillNode.of("loggers_magnet", 0, 5, SkillType.PASSIVE).future(),
+			SkillNode.of("fair_harvest", 0, 4, SkillType.PASSIVE).future(),
 			// Tier 2
-			SkillNode.chained("lumberjacks_arms_2", 1, 5, "lumberjacks_arms_1", SkillType.PASSIVE),
+			SkillNode.chained("lumberjacks_arms_2", 1, 5, "lumberjacks_arms_1", SkillType.PASSIVE).future(),
 			SkillNode.of("logic_1", 1, 8, SkillType.ENCHANTMENT),
-			SkillNode.of("rich_bark", 1, 4, SkillType.ITEM),
+			SkillNode.of("rich_bark", 1, 4, SkillType.ITEM).future(),
 			// Tier 3
-			SkillNode.of("pruner", 2, 6, SkillType.PASSIVE),
+			SkillNode.of("pruner", 2, 6, SkillType.PASSIVE).future(),
 			SkillNode.chained("logic_2", 2, 9, "logic_1", SkillType.ENCHANTMENT),
-			SkillNode.of("double_axe_1", 2, 7, SkillType.PASSIVE),
-			SkillNode.of("shield_breaker", 2, 8, SkillType.PASSIVE),
+			SkillNode.of("double_axe_1", 2, 7, SkillType.PASSIVE).future(),
+			SkillNode.of("shield_breaker", 2, 8, SkillType.PASSIVE).future(),
 			// Tier 4
-			SkillNode.of("call_of_the_forest", 3, 10, SkillType.ACTIVE),
+			SkillNode.of("call_of_the_forest", 3, 10, SkillType.ACTIVE).future(),
 			SkillNode.chained("logic_3", 3, 12, "logic_2", SkillType.ENCHANTMENT),
-			SkillNode.chained("double_axe_2", 3, 8, "double_axe_1", SkillType.PASSIVE),
+			SkillNode.chained("double_axe_2", 3, 8, "double_axe_1", SkillType.PASSIVE).future(),
 			SkillNode.chained("environment", 3, 8, "logic_3", SkillType.ENCHANTMENT),
 			// Tier 5 — capstones (mutually exclusive)
-			SkillNode.capstone("lumberjacks_fury", 4, 20, "green_heart", SkillType.ACTIVE),
-			SkillNode.capstone("green_heart", 4, 20, "lumberjacks_fury", SkillType.PASSIVE)
+			SkillNode.capstone("lumberjacks_fury", 4, 20, "green_heart", SkillType.ACTIVE).future(),
+			SkillNode.capstone("green_heart", 4, 20, "lumberjacks_fury", SkillType.PASSIVE).future()
 		)
 	);
 
