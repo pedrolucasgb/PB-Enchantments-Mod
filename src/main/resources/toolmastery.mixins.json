@@ -3,7 +3,10 @@
 	"package": "dev.toolmastery.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"EnchantmentMenuMixin"
+		"AxeItemMixin",
+		"EnchantmentMenuMixin",
+		"FurnaceResultSlotMixin",
+		"ResultSlotMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

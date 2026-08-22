@@ -9,4 +9,18 @@ package dev.toolmastery.skill;
  * @param target count required to complete this line
  */
 public record GateRequirement(String id, int target) {
+	/** Human-readable name derived from the id: "chop_logs_total" → "Chop Logs Total". */
+	public String displayName() {
+		StringBuilder sb = new StringBuilder(id.length());
+		for (String word : id.split("_")) {
+			if (word.isEmpty()) {
+				continue;
+			}
+			if (sb.length() > 0) {
+				sb.append(' ');
+			}
+			sb.append(Character.toUpperCase(word.charAt(0))).append(word, 1, word.length());
+		}
+		return sb.toString();
+	}
 }

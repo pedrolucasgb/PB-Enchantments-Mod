@@ -87,6 +87,13 @@ public final class BlockBreakTracker {
 		}
 	}
 
+	public static void onStrip(Level level, Player player, BlockPos pos) {
+		if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
+			return;
+		}
+		SkillService.progress(serverPlayer, SkillTrees.AXE).addCount("strip_logs", 1);
+	}
+
 	private static void trackAxe(ServerPlayer player, BlockState state) {
 		TreeProgress progress = SkillService.progress(player, SkillTrees.AXE);
 

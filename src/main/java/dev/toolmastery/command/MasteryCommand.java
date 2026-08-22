@@ -141,7 +141,7 @@ public final class MasteryCommand {
 			for (GateRequirement gate : tier.gates()) {
 				int count = Math.min(progress.count(gate.id()), gate.target());
 				boolean done = count >= gate.target();
-				source.sendSystemMessage(Component.literal((done ? "  [done] " : "  [    ] ") + gate.id() + " " + count + "/" + gate.target())
+				source.sendSystemMessage(Component.literal((done ? "  [done] " : "  [    ] ") + gate.displayName() + " " + count + "/" + gate.target())
 					.withStyle(done ? ChatFormatting.GREEN : ChatFormatting.GRAY));
 			}
 		}
