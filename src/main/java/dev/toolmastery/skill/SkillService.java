@@ -57,6 +57,9 @@ public final class SkillService {
 	/** Attempts to purchase a node. */
 	public static Result buyNode(ServerPlayer player, SkillTree tree, SkillNode node) {
 		TreeProgress progress = progress(player, tree);
+		if (!node.implemented()) {
+			return new Result.Fail("'" + node.id() + "' is coming in a future update and can't be purchased yet.");
+		}
 		if (progress.owns(node.id())) {
 			return new Result.Fail("Already owned.");
 		}

@@ -160,7 +160,11 @@ public class SkillTreeScreen extends Screen {
 					})
 					.bounds(x, y, colWidth, 16)
 					.build();
-				if (!tierOpen && !owned) {
+				if (!node.implemented() && !owned) {
+					// ships in a future update — not clickable, not purchasable
+					nodeButton.active = false;
+					nodeButton.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.coming_soon")));
+				} else if (!tierOpen && !owned) {
 					// still clickable so the player can read what it does
 					nodeButton.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.tier_locked")));
 				}
@@ -193,6 +197,9 @@ public class SkillTreeScreen extends Screen {
 				if (state.purchased().contains(node.id())) {
 					return Component.translatable("screen.toolmastery.owned");
 				}
+				if (!node.implemented()) {
+					return Component.translatable("screen.toolmastery.coming_soon");
+				}
 				return Component.translatable("screen.toolmastery.buy", node.cost());
 			}
 		}
@@ -213,7 +220,7 @@ public class SkillTreeScreen extends Screen {
 		if (tree != null && state != null) {
 			if (selectedNode != null) {
 				SkillNode node = tree.node(selectedNode);
-				enabled = node != null && !state.purchased().contains(node.id());
+				enabled = node != null && node.implemented() && !state.purchased().contains(node.id());
 			} else if (selectedTier >= 0) {
 				enabled = selectedTier == state.unlockedTiers();
 			}
