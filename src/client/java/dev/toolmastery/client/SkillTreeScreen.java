@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -249,6 +250,19 @@ public class SkillTreeScreen extends Screen {
 		drawDetails(graphics);
 	}
 
+	/**
+	 * Word-wraps text to the details panel width instead of letting long lines
+	 * escape the panel. Returns the y just below the last drawn line.
+	 */
+	private int wrappedText(GuiGraphicsExtractor graphics, Component text, int x, int y, int color, int lineSpacing) {
+		int wrap = width - 12 - x;
+		for (FormattedCharSequence line : font.split(text, wrap)) {
+			graphics.text(font, line, x, y, color);
+			y += lineSpacing;
+		}
+		return y;
+	}
+
 	private void drawDetails(GuiGraphicsExtractor graphics) {
 		SkillTree tree = SkillTrees.byId(treeId);
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
@@ -266,8 +280,7 @@ public class SkillTreeScreen extends Screen {
 			if (node == null) {
 				return;
 			}
-			graphics.text(font, Component.literal(nodeName(node.id())), x, y, COLOR_TEXT);
-			y += 12;
+			y = wrappedText(graphics, Component.literal(nodeName(node.id())), x, y, COLOR_TEXT, 12);
 			graphics.text(font, Component.literal(node.type().name().toLowerCase()), x, y, COLOR_GOLD);
 			y += 12;
 			boolean owned = state.purchased().contains(node.id());
@@ -279,16 +292,14 @@ public class SkillTreeScreen extends Screen {
 			y += 12;
 			if (node.requires() != null) {
 				boolean has = state.purchased().contains(node.requires());
-				graphics.text(font,
+				y = wrappedText(graphics,
 					Component.translatable("screen.toolmastery.requires", nodeName(node.requires())),
-					x, y, has ? COLOR_XP : COLOR_LOCKED);
-				y += 12;
+					x, y, has ? COLOR_XP : COLOR_LOCKED, 12);
 			}
 			if (node.exclusiveWith() != null) {
-				graphics.text(font,
+				y = wrappedText(graphics,
 					Component.translatable("screen.toolmastery.exclusive", nodeName(node.exclusiveWith())),
-					x, y, COLOR_LOCKED);
-				y += 12;
+					x, y, COLOR_LOCKED, 12);
 			}
 			y += 4;
 			graphics.textWithWordWrap(font,
@@ -299,18 +310,16 @@ public class SkillTreeScreen extends Screen {
 
 		if (selectedTier >= 0) {
 			SkillTier tier = tree.tiers().get(selectedTier);
-			graphics.text(font,
+			y = wrappedText(graphics,
 				Component.translatable("tier.toolmastery." + treeId + "." + (selectedTier + 1)),
-				x, y, COLOR_TEXT);
-			y += 12;
+				x, y, COLOR_TEXT, 12);
 			graphics.text(font, Component.translatable("screen.toolmastery.gate"), x, y, COLOR_GOLD);
 			y += 12;
 			for (GateRequirement gate : tier.gates()) {
 				int count = Math.min(state.counters().getOrDefault(gate.id(), 0), gate.target());
 				boolean done = count >= gate.target();
-				String line = (done ? "✓ " : "□ ") + gate.id().replace('_', ' ') + " " + count + "/" + gate.target();
-				graphics.text(font, Component.literal(line), x, y, done ? COLOR_XP : COLOR_MUTED);
-				y += 11;
+				String line = (done ? "✓ " : "□ ") + gate.displayName() + " " + count + "/" + gate.target();
+				y = wrappedText(graphics, Component.literal(line), x, y, done ? COLOR_XP : COLOR_MUTED, 11);
 			}
 			return;
 		}
