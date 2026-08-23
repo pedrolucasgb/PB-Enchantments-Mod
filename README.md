@@ -15,6 +15,8 @@ Every tool class has its own skill tree. You earn access by **playing the class*
 3. **Pay the access cost** — unlocking a tier consumes XP levels (5 / 10 / 15 / 20 / 30).
 4. **Buy nodes** — each node has its own XP cost. Enchantment nodes are applied to your held tool instantly and become available in your enchanting table.
 
+Every tier you unlock is also a **vanilla advancement**: open the advancements screen (**L**) and the *Tool Mastery* tab shows one branch per class, five tiers each — earned tiers lit up, the rest as goals ahead.
+
 Progress is **per player**, persisted with the world, and survives death.
 
 ## Requirements
@@ -68,6 +70,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ XP-level economy: tier access costs + per-node costs, validated server-side
 - ✅ Capstone exclusivity (choose one of two tier-5 nodes)
 - ✅ Skill tree GUI (key **K**): class tabs, tier columns, gate checklist panel, buy/unlock — future classes shown as *Coming soon*
+- ✅ Every tier mirrored as a vanilla advancement in the **L** screen (*Tool Mastery* tab), with toast + chat announce on unlock
 - ✅ Client–server sync via custom payloads; all actions validated on the server
 - ✅ `/mastery` command suite with tab completion
 
