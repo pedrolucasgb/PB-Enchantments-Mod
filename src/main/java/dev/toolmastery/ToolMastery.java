@@ -45,7 +45,7 @@ public class ToolMastery implements ModInitializer {
 
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			BlockBreakTracker.onBreak(level, player, pos, state);
-			dev.toolmastery.perk.MeltHandler.onBreak(level, player, pos, state);
+			dev.toolmastery.perk.SmeltHandler.onBreak(level, player, pos, state);
 			dev.toolmastery.perk.VeinMiner.onBreak(level, player, pos, state);
 			MinersMagnet.onBreak(level, player, pos, state);
 			AreaBreak.onBreak(level, player, pos, state);
@@ -54,8 +54,8 @@ public class ToolMastery implements ModInitializer {
 		});
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			dev.toolmastery.perk.MeltHandler.tick(server);
-			// After Melt, so the magnet pockets the smelted result rather than the raw ore.
+			dev.toolmastery.perk.SmeltHandler.tick(server);
+			// After Smelt, so the magnet pockets the smelted result rather than the raw ore.
 			MinersMagnet.tick(server);
 			// Last: it collects the drops the break events above have just spawned.
 			AxeHarvest.tick(server);

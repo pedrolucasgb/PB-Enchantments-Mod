@@ -22,17 +22,17 @@ import java.util.List;
  * Miner's Magnet — drops from blocks broken with a pickaxe go straight into the
  * player's inventory.
  *
- * <p>Like Melt, breaks are queued and collected at the END of the same server
+ * <p>Like Smelt, breaks are queued and collected at the END of the same server
  * tick, once every drop entity has actually spawned. Ticking after
- * {@link MeltHandler} is what makes the two compose: the magnet picks up the
- * ingots Melt just produced, not the raw ore it replaced. Dig Range and Rich
+ * {@link SmeltHandler} is what makes the two compose: the magnet picks up the
+ * ingots Smelt just produced, not the raw ore it replaced. Dig Range and Rich
  * Vein compose for free — each extra block they break fires its own break event
  * and gets queued the same way.
  *
  * <p>Anything that does not fit in the inventory is left on the ground.
  */
 public final class MinersMagnet {
-	/** Same reach Melt uses — drops land within a block of the broken position. */
+	/** Same reach Smelt uses — drops land within a block of the broken position. */
 	private static final double RADIUS = 1.5;
 
 	private record Pending(ServerLevel level, BlockPos pos, ServerPlayer player) {
@@ -56,7 +56,7 @@ public final class MinersMagnet {
 		PENDING.add(new Pending(serverLevel, pos, serverPlayer));
 	}
 
-	/** Called at the end of every server tick, after Melt has converted its drops. */
+	/** Called at the end of every server tick, after Smelt has converted its drops. */
 	public static void tick(MinecraftServer server) {
 		if (PENDING.isEmpty()) {
 			return;

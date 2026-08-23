@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Melt — chance to smelt ore drops on the spot:
+ * Smelt — chance to smelt ore drops on the spot:
  *   I: 25% · II: 50% · III: 100% (per item)
  * Magma Touch (capstone) always smelts, and covers everything with a furnace
  * recipe, not just ores.
@@ -30,7 +30,7 @@ import java.util.Map;
  * tick, after every drop entity has actually spawned — scanning during the
  * break event misses drops that spawn late.
  */
-public final class MeltHandler {
+public final class SmeltHandler {
 	private static final Map<Item, Item> ORE_SMELTS = Map.of(
 		Items.RAW_COPPER, Items.COPPER_INGOT,
 		Items.RAW_IRON, Items.IRON_INGOT,
@@ -62,7 +62,7 @@ public final class MeltHandler {
 
 	private static final List<Pending> PENDING = new ArrayList<>();
 
-	private MeltHandler() {
+	private SmeltHandler() {
 	}
 
 	public static void onBreak(Level level, Player player, BlockPos pos, BlockState state) {
@@ -73,15 +73,15 @@ public final class MeltHandler {
 		if (!pickaxe.is(ItemTags.PICKAXES)) {
 			return;
 		}
-		int meltLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.MELT);
+		int smeltLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.SMELT);
 		boolean magma = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.MAGMA_TOUCH) > 0;
-		if (meltLevel <= 0 && !magma) {
+		if (smeltLevel <= 0 && !magma) {
 			return;
 		}
-		int chance = switch (meltLevel) {
+		int chance = switch (smeltLevel) {
 			case 1 -> 25;
 			case 2 -> 50;
-			default -> meltLevel >= 3 ? 100 : 0;
+			default -> smeltLevel >= 3 ? 100 : 0;
 		};
 		PENDING.add(new Pending(serverLevel, pos, chance, magma));
 	}

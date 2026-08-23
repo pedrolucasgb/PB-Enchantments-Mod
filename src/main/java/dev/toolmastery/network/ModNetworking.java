@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.ItemStack;
@@ -65,11 +64,18 @@ public final class ModNetworking {
 						feedback(player, SkillService.unlockNextTier(player, tree));
 					}
 				}
-				case BUY_NODE -> {
+				case UNLOCK_NODE -> {
 					SkillTree tree = SkillTrees.byId(payload.treeId());
 					SkillNode node = tree == null ? null : tree.node(payload.nodeId());
 					if (node != null) {
-						feedback(player, SkillService.buyNode(player, tree, node));
+						feedback(player, SkillService.unlockNode(player, tree, node));
+					}
+				}
+				case ENCHANT_NODE -> {
+					SkillTree tree = SkillTrees.byId(payload.treeId());
+					SkillNode node = tree == null ? null : tree.node(payload.nodeId());
+					if (node != null) {
+						feedback(player, SkillService.enchantHeld(player, tree, node));
 					}
 				}
 			}
@@ -80,9 +86,9 @@ public final class ModNetworking {
 	private static void feedback(ServerPlayer player, SkillService.Result result) {
 		switch (result) {
 			case SkillService.Result.Ok ok ->
-				player.sendSystemMessage(Component.literal(ok.message()).withStyle(ChatFormatting.GREEN));
+				player.sendSystemMessage(ok.message().copy().withStyle(ChatFormatting.GREEN));
 			case SkillService.Result.Fail fail ->
-				player.sendSystemMessage(Component.literal(fail.message()).withStyle(ChatFormatting.RED));
+				player.sendSystemMessage(fail.message().copy().withStyle(ChatFormatting.RED));
 		}
 	}
 

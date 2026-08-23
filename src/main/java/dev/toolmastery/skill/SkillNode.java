@@ -1,41 +1,117 @@
 package dev.toolmastery.skill;
 
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
- * A purchasable node in a skill tree.
+ * A node in a skill tree, and the two things a player can spend on it.
  *
- * @param id            unique within its tree, snake_case (e.g. "melt_2")
+ * <p><b>Unlock</b> is the one-off purchase: {@code unlockCost} XP levels plus
+ * {@code materials}. It opens the node — a passive starts working the moment it
+ * is unlocked, an enchantment joins the player's enchanting-table pool and
+ * becomes imbuable from the skill screen.
+ *
+ * <p><b>Enchant</b> only exists for {@link SkillType#ENCHANTMENT} nodes: it
+ * stamps the enchantment onto the item in the player's hand for
+ * {@code enchantCost} whole XP levels, as many times as they like. It is
+ * deliberately much pricier than the unlock so the enchanting table stays the
+ * cheaper route.
+ *
+ * @param id            unique within its tree, snake_case (e.g. "smelt_2")
  * @param tier          0-based tier index this node belongs to
- * @param cost          XP levels consumed on purchase
- * @param requires      node id that must be owned first, or null
- * @param exclusiveWith node id that locks this one when owned (capstone choice), or null
+ * @param unlockCost    XP levels consumed on unlock
+ * @param materials     items consumed on unlock, alongside the XP
+ * @param enchantCost   XP levels per direct enchant; 0 when the node has none
+ * @param requires      node id that must be unlocked first, or null
+ * @param exclusiveWith node id that locks this one when unlocked (capstone choice), or null
  * @param type          what kind of unlock this grants
- * @param implemented   false while the effect ships in a later update — not purchasable yet
+ * @param implemented   false while the effect ships in a later update — not unlockable yet
  */
 public record SkillNode(
 	String id,
 	int tier,
-	int cost,
+	int unlockCost,
+	List<MaterialCost> materials,
+	int enchantCost,
 	@Nullable String requires,
 	@Nullable String exclusiveWith,
 	SkillType type,
 	boolean implemented
 ) {
-	public static SkillNode of(String id, int tier, int cost, SkillType type) {
-		return new SkillNode(id, tier, cost, null, null, type, true);
+	public SkillNode {
+		materials = List.copyOf(materials);
 	}
 
-	public static SkillNode chained(String id, int tier, int cost, String requires, SkillType type) {
-		return new SkillNode(id, tier, cost, requires, null, type, true);
+	public static SkillNode of(String id, int tier, int unlockCost, SkillType type) {
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, null, type, true);
 	}
 
-	public static SkillNode capstone(String id, int tier, int cost, String exclusiveWith, SkillType type) {
-		return new SkillNode(id, tier, cost, null, exclusiveWith, type, true);
+	public static SkillNode chained(String id, int tier, int unlockCost, String requires, SkillType type) {
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, requires, null, type, true);
+	}
+
+	public static SkillNode capstone(String id, int tier, int unlockCost, String exclusiveWith, SkillType type) {
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, exclusiveWith, type, true);
+	}
+
+	/** The material half of the unlock price. */
+	public SkillNode costing(MaterialCost... materials) {
+		return new SkillNode(id, tier, unlockCost, List.of(materials), enchantCost, requires, exclusiveWith, type, implemented);
+	}
+
+	/** Enables the repeatable Enchant action at the given price in XP levels. */
+	public SkillNode enchantFor(int levels) {
+		return new SkillNode(id, tier, unlockCost, materials, levels, requires, exclusiveWith, type, implemented);
 	}
 
 	/** Marks this node as coming in a future update: visible in the tree but locked. */
 	public SkillNode future() {
-		return new SkillNode(id, tier, cost, requires, exclusiveWith, type, false);
+		return new SkillNode(id, tier, unlockCost, materials, enchantCost, requires, exclusiveWith, type, false);
+	}
+
+	/** True when this node offers the repeatable "enchant what I'm holding" action. */
+	public boolean enchantable() {
+		return type == SkillType.ENCHANTMENT && enchantCost > 0;
+	}
+
+	public Component displayName() {
+		return displayName(id);
+	}
+
+	/**
+	 * "dig_range_2" -> "Dig Range II", "miners_magnet" -> "Miner's Magnet".
+	 * Takes a raw id so it also names the {@link #requires()} /
+	 * {@link #exclusiveWith()} pointers, which are ids and not nodes.
+	 */
+	public static Component displayName(String nodeId) {
+		String base = baseId(nodeId);
+		Component name = Component.translatable("node.toolmastery." + base);
+		if (base.length() == nodeId.length()) {
+			return name;
+		}
+		return Component.empty().append(name).append(" " + roman(nodeId.charAt(nodeId.length() - 1) - '0'));
+	}
+
+	/** Strips the "_2" rank suffix of a chained node id. */
+	public static String baseId(String nodeId) {
+		int lastUnderscore = nodeId.lastIndexOf('_');
+		if (lastUnderscore > 0 && lastUnderscore == nodeId.length() - 2
+			&& Character.isDigit(nodeId.charAt(nodeId.length() - 1))) {
+			return nodeId.substring(0, lastUnderscore);
+		}
+		return nodeId;
+	}
+
+	public static String roman(int rank) {
+		return switch (rank) {
+			case 1 -> "I";
+			case 2 -> "II";
+			case 3 -> "III";
+			case 4 -> "IV";
+			case 5 -> "V";
+			default -> String.valueOf(rank);
+		};
 	}
 }

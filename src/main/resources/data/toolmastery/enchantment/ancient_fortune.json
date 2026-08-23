@@ -1,12 +1,12 @@
 {
   "anvil_cost": 8,
   "description": {
-    "translate": "enchantment.toolmastery.magma_touch"
+    "translate": "enchantment.toolmastery.ancient_fortune"
   },
   "effects": {},
   "exclusive_set": [
     "minecraft:silk_touch",
-    "toolmastery:ancient_fortune"
+    "toolmastery:magma_touch"
   ],
   "max_cost": {
     "base": 55,
