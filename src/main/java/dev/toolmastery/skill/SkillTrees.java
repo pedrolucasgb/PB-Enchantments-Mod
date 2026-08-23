@@ -137,9 +137,69 @@ public final class SkillTrees {
 		)
 	);
 
+	// ---------- Enchanter — Path of the Arcane ----------
+	public static final SkillTree ENCHANTER = new SkillTree(
+		"enchanter",
+		List.of(
+			// Tier 1 — Apprentice Scribe
+			new SkillTier(5, List.of(
+				new GateRequirement("craft_enchanting_table", 1),
+				new GateRequirement("craft_bookshelves", 15),
+				new GateRequirement("enchant_items", 5)
+			)),
+			// Tier 2 — Rune Reader
+			new SkillTier(10, List.of(
+				new GateRequirement("enchant_items", 20),
+				new GateRequirement("spend_levels", 30),
+				new GateRequirement("mine_lapis", 64),
+				new GateRequirement("craft_books", 32)
+			)),
+			// Tier 3 — Arcanist
+			new SkillTier(15, List.of(
+				new GateRequirement("enchant_items", 50),
+				new GateRequirement("max_slot_enchants", 10),
+				new GateRequirement("reach_level_30", 1)
+			)),
+			// Tier 4 — Master Enchanter
+			new SkillTier(20, List.of(
+				new GateRequirement("enchant_items", 100),
+				new GateRequirement("spend_levels", 150),
+				new GateRequirement("collect_xp", 10000)
+			)),
+			// Tier 5 — Archmage
+			new SkillTier(30, List.of(
+				new GateRequirement("enchant_items", 200),
+				new GateRequirement("max_slot_enchants", 50),
+				new GateRequirement("spend_levels", 400)
+			))
+		),
+		List.of(
+			// Tier 1
+			SkillNode.of("arcane_insight_1", 0, 4, SkillType.PASSIVE),
+			SkillNode.of("scholar_1", 0, 3, SkillType.PASSIVE),
+			SkillNode.of("book_binder", 0, 4, SkillType.PASSIVE).future(),
+			// Tier 2
+			SkillNode.chained("arcane_insight_2", 1, 6, "arcane_insight_1", SkillType.PASSIVE),
+			SkillNode.chained("scholar_2", 1, 5, "scholar_1", SkillType.PASSIVE),
+			SkillNode.of("tome_keeper", 1, 5, SkillType.ITEM).future(),
+			// Tier 3
+			SkillNode.chained("arcane_insight_3", 2, 9, "arcane_insight_2", SkillType.PASSIVE),
+			SkillNode.of("inner_focus", 2, 8, SkillType.PASSIVE),
+			SkillNode.of("anvil_adept", 2, 7, SkillType.PASSIVE).future(),
+			// Tier 4
+			SkillNode.chained("scholar_3", 3, 8, "scholar_2", SkillType.PASSIVE),
+			SkillNode.of("arcane_conduit", 3, 10, SkillType.PASSIVE).future(),
+			SkillNode.of("curse_breaker", 3, 12, SkillType.ACTIVE).future(),
+			// Tier 5 — capstones (mutually exclusive)
+			SkillNode.capstone("rewrite_fate", 4, 20, "ancient_knowledge", SkillType.ACTIVE),
+			SkillNode.capstone("ancient_knowledge", 4, 20, "rewrite_fate", SkillType.PASSIVE).future()
+		)
+	);
+
 	public static final Map<String, SkillTree> ALL = Map.of(
 		PICKAXE.id(), PICKAXE,
-		AXE.id(), AXE
+		AXE.id(), AXE,
+		ENCHANTER.id(), ENCHANTER
 	);
 
 	@Nullable

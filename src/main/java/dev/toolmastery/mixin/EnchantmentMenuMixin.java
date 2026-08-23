@@ -1,11 +1,20 @@
 package dev.toolmastery.mixin;
 
+import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.enchant.ModEnchantments;
+import dev.toolmastery.network.EnchantPreviewPayload;
 import dev.toolmastery.skill.SkillService;
+import dev.toolmastery.track.EnchantTracker;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -14,7 +23,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -39,6 +51,20 @@ import java.util.stream.Stream;
 public abstract class EnchantmentMenuMixin {
 	@Unique
 	private Player toolmastery$player;
+
+	@Shadow
+	@Final
+	private Container enchantSlots;
+
+	@Shadow
+	@Final
+	public int[] costs;
+
+	@Shadow
+	private List<EnchantmentInstance> getEnchantmentList(RegistryAccess registryAccess, ItemStack stack,
+	                                                     int slot, int cost) {
+		throw new AssertionError("shadowed");
+	}
 
 	@Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("RETURN"))
 	private void toolmastery$capturePlayer(int containerId, Inventory inventory, ContainerLevelAccess access, CallbackInfo ci) {
@@ -85,5 +111,70 @@ public abstract class EnchantmentMenuMixin {
 			}
 		}
 		return null;
+	}
+
+	// ---------- Enchanter class perks ----------
+
+	/**
+	 * Arcane Insight: after the offers are (re)computed, send the player the
+	 * full enchantment list behind each slot they can read (rank N reads slots
+	 * 1..N). getEnchantmentList is deterministic for a given seed, so calling
+	 * it again yields exactly what clicking the slot would apply. Sending an
+	 * all-empty payload clears the client overlay when the item is removed.
+	 */
+	@Inject(method = "slotsChanged", at = @At("TAIL"))
+	private void toolmastery$sendInsightPreview(Container container, CallbackInfo ci) {
+		if (container != enchantSlots || !(toolmastery$player instanceof ServerPlayer serverPlayer)) {
+			return;
+		}
+		int insight = EnchanterPerks.rankedLevel(serverPlayer, EnchanterPerks.ARCANE_INSIGHT);
+		if (insight <= 0) {
+			return;
+		}
+		ItemStack stack = enchantSlots.getItem(0);
+		List<List<Component>> slots = new ArrayList<>(EnchantPreviewPayload.SLOT_COUNT);
+		for (int slot = 0; slot < EnchantPreviewPayload.SLOT_COUNT; slot++) {
+			List<Component> lines = new ArrayList<>();
+			if (!stack.isEmpty() && slot < insight && costs[slot] > 0) {
+				for (EnchantmentInstance instance : getEnchantmentList(
+						serverPlayer.level().registryAccess(), stack, slot, costs[slot])) {
+					lines.add(Enchantment.getFullname(instance.enchantment(), instance.level()));
+				}
+			}
+			slots.add(lines);
+		}
+		ServerPlayNetworking.send(serverPlayer, new EnchantPreviewPayload(slots));
+	}
+
+	/**
+	 * Inner Focus: the lapis-presence check treats the player as if in
+	 * creative, so enchanting works with an empty lapis slot. This is the
+	 * first hasInfiniteMaterials call only — the second one guards the XP
+	 * level requirement, which stays vanilla. Runs on both sides, matching
+	 * the client's pre-click validation.
+	 */
+	@Redirect(method = "clickMenuButton", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/entity/player/Player;hasInfiniteMaterials()Z", ordinal = 0))
+	private boolean toolmastery$innerFocusLapisCheck(Player player) {
+		return player.hasInfiniteMaterials() || EnchanterPerks.owns(player, EnchanterPerks.INNER_FOCUS);
+	}
+
+	/** Inner Focus: skip the lapis consumption on a successful enchant. */
+	@Redirect(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/item/ItemStack;consume(ILnet/minecraft/world/entity/LivingEntity;)V"))
+	private void toolmastery$innerFocusKeepLapis(ItemStack lapisStack, int amount, LivingEntity entity) {
+		if (entity instanceof Player player && EnchanterPerks.owns(player, EnchanterPerks.INNER_FOCUS)) {
+			return;
+		}
+		lapisStack.consume(amount, entity);
+	}
+
+	/** Enchanter gates: count each successful table enchant, server-side. */
+	@Inject(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/entity/player/Player;onEnchantmentPerformed(Lnet/minecraft/world/item/ItemStack;I)V",
+		shift = At.Shift.AFTER))
+	private void toolmastery$trackTableEnchant(ItemStack itemStack, int id, Player player, int levels,
+	                                           ItemStack lapisStack, Level level, BlockPos pos, CallbackInfo ci) {
+		EnchantTracker.onTableEnchant(player, id, levels);
 	}
 }

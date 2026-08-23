@@ -1,6 +1,8 @@
 package dev.toolmastery.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.toolmastery.enchant.EnchanterPerks;
+import dev.toolmastery.network.EnchantPreviewPayload;
 import dev.toolmastery.network.SkillActionPayload;
 import dev.toolmastery.network.SkillStatePayload;
 import net.fabricmc.api.ClientModInitializer;
@@ -22,6 +24,15 @@ public class ToolMasteryClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		ClientPlayNetworking.registerGlobalReceiver(SkillStatePayload.TYPE, (payload, context) ->
 			ClientSkillState.accept(payload));
+		ClientPlayNetworking.registerGlobalReceiver(EnchantPreviewPayload.TYPE, (payload, context) ->
+			EnchantPreviewState.accept(payload));
+
+		// Lets common code (enchanting menu logic) check enchanter perk
+		// ownership on the client via the synced skill state.
+		EnchanterPerks.clientNodeChecker = nodeId -> {
+			SkillStatePayload.TreeState state = ClientSkillState.tree("enchanter");
+			return state != null && state.purchased().contains(nodeId);
+		};
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (OPEN_TREE_KEY.consumeClick()) {

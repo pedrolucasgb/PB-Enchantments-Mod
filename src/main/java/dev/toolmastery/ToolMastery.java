@@ -50,6 +50,10 @@ public class ToolMastery implements ModInitializer {
 					if (pickaxe.count("reach_y0") < 1 && player.getY() <= 0) {
 						pickaxe.counters.put("reach_y0", 1);
 					}
+					TreeProgress enchanter = SkillService.progress(player, SkillTrees.ENCHANTER);
+					if (enchanter.count("reach_level_30") < 1 && player.experienceLevel >= 30) {
+						enchanter.counters.put("reach_level_30", 1);
+					}
 				}
 			}
 		});
