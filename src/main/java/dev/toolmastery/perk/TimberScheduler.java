@@ -4,7 +4,6 @@ import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -12,15 +11,14 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Logic (timber) — driven by the Logic enchantment on the axe, inspired by
@@ -28,20 +26,19 @@ import java.util.UUID;
  *
  * - Only fells actual trees: the connected logs must touch enough leaves,
  *   so log-built houses stay standing.
- * - Level 1 fells in a visible cascade (a batch of logs per tick).
- *   Level 2 fells instantly. Level 3 also clears the leaves.
+ * - Every level fells all connected logs at once. Level 1 pays for it with a
+ *   slower chop on the initial log (see PlayerMixin); levels 2+ chop at
+ *   normal speed. Level 3 also clears the canopy's natural leaves.
  * - Stops before the axe would break; each log costs durability as usual.
+ *   Leaves cost no durability.
  * - Sneaking disables.
  */
 public final class TimberScheduler {
-	private static final int MAX_LOGS = 128;
-	private static final int MAX_LEAVES = 256;
+	private static final int MAX_LOGS = 256;
+	private static final int MAX_LEAVES = 512;
 	private static final int MIN_LEAVES_FOR_TREE = 4;
-	private static final int SLOW_LOGS_PER_TICK = 2; // level 1: ~40 logs/second
-
-	private record Job(UUID playerId, ServerLevel level, ArrayDeque<BlockPos> logs, ArrayDeque<BlockPos> leaves,
-	                   boolean breakLeaves, BlockPos stump, @org.jetbrains.annotations.Nullable net.minecraft.world.level.block.Block sapling) {
-	}
+	/** How far leaves spread outward from the logs before we stop collecting. */
+	private static final int LEAF_SPREAD = 5;
 
 	/** Which sapling regrows each log type (Environment enchantment). */
 	private static final java.util.Map<net.minecraft.world.level.block.Block, net.minecraft.world.level.block.Block> LOG_TO_SAPLING = java.util.Map.ofEntries(
@@ -58,7 +55,6 @@ public final class TimberScheduler {
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.WARPED_STEM, net.minecraft.world.level.block.Blocks.WARPED_FUNGUS)
 	);
 
-	private static final List<Job> JOBS = new ArrayList<>();
 	private static boolean breakingNow = false;
 
 	private TimberScheduler() {
@@ -93,19 +89,14 @@ public final class TimberScheduler {
 		}
 
 		boolean breakLeaves = logicLevel >= 3;
-		boolean replant = logicLevel >= 3
-			&& ModEnchantments.level(serverPlayer, axe, ModEnchantments.ENVIRONMENT) > 0;
-		net.minecraft.world.level.block.Block sapling = replant ? LOG_TO_SAPLING.get(state.getBlock()) : null;
-		Job job = new Job(serverPlayer.getUUID(), serverLevel, scan.logs(), scan.leaves(), breakLeaves, pos, sapling);
+		fell(serverPlayer, serverLevel, scan, breakLeaves);
 
-		if (logicLevel >= 2) {
-			// Instant fell: drain the whole job right now.
-			while (step(job, Integer.MAX_VALUE)) {
-				// keep going
-			}
-			finish(serverPlayer, job);
-		} else {
-			JOBS.add(job);
+		SkillService.addCount(serverPlayer, SkillTrees.AXE, "fell_with_logic", 1);
+		SkillService.addCount(serverPlayer, SkillTrees.AXE, "fell_trees_total", 1);
+		SkillService.addCount(serverPlayer, SkillTrees.AXE, "fell_trees_grand_total", 1);
+
+		if (logicLevel >= 3 && ModEnchantments.level(serverPlayer, axe, ModEnchantments.ENVIRONMENT) > 0) {
+			replant(serverPlayer, serverLevel, pos, state);
 		}
 	}
 
@@ -113,20 +104,25 @@ public final class TimberScheduler {
 	}
 
 	/**
-	 * Flood-fills connected logs (26-neighborhood) from the broken block and
-	 * gathers the leaves touching them. The leaf count doubles as the
-	 * "is this actually a tree?" test.
+	 * Flood-fills connected logs (26-neighborhood) from the broken block, then
+	 * grows outward from the log-adjacent leaves to cover the whole canopy.
+	 *
+	 * The frontier is always drained completely: even when the log cap cuts
+	 * the fell short (2x2 giants, merged forests), every accepted log still
+	 * gets its neighbors checked for leaves, so the "is this actually a
+	 * tree?" test no longer fails just because the cap landed below the
+	 * canopy.
 	 */
 	private static Scan scanTree(ServerLevel level, BlockPos origin) {
 		ArrayDeque<BlockPos> logs = new ArrayDeque<>();
-		ArrayDeque<BlockPos> leaves = new ArrayDeque<>();
 		Set<BlockPos> visitedLogs = new HashSet<>();
 		Set<BlockPos> visitedLeaves = new HashSet<>();
+		ArrayDeque<BlockPos> leaves = new ArrayDeque<>();
 		ArrayDeque<BlockPos> frontier = new ArrayDeque<>();
 		frontier.add(origin);
 		visitedLogs.add(origin);
 
-		while (!frontier.isEmpty() && logs.size() < MAX_LOGS) {
+		while (!frontier.isEmpty()) {
 			BlockPos current = frontier.poll();
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dy = -1; dy <= 1; dy++) {
@@ -137,11 +133,11 @@ public final class TimberScheduler {
 						BlockPos next = current.offset(dx, dy, dz);
 						BlockState nextState = level.getBlockState(next);
 						if (nextState.is(BlockTags.LOGS)) {
-							if (visitedLogs.add(next)) {
+							if (logs.size() < MAX_LOGS && visitedLogs.add(next)) {
 								logs.add(next);
 								frontier.add(next);
 							}
-						} else if (nextState.is(BlockTags.LEAVES)) {
+						} else if (isNaturalLeaf(nextState)) {
 							if (visitedLeaves.add(next) && leaves.size() < MAX_LEAVES) {
 								leaves.add(next);
 							}
@@ -150,46 +146,66 @@ public final class TimberScheduler {
 				}
 			}
 		}
-		return new Scan(logs, leaves, visitedLeaves.size());
-	}
 
-	/** Breaks up to {@code budget} blocks of the job. Returns true while work remains. */
-	private static boolean step(Job job, int budget) {
-		ServerPlayer player = job.level().getServer().getPlayerList().getPlayer(job.playerId());
-		if (player == null) {
-			job.logs().clear();
-			job.leaves().clear();
-			return false;
-		}
-
-		int broken = 0;
-		breakingNow = true;
-		try {
-			while (broken < budget && !job.logs().isEmpty()) {
-				if (axeAboutToBreak(player)) {
-					job.logs().clear();
-					job.leaves().clear();
-					return false;
-				}
-				BlockPos next = job.logs().poll();
-				if (job.level().getBlockState(next).is(BlockTags.LOGS)) {
-					player.gameMode.destroyBlock(next);
-					broken++;
+		// The log-adjacent leaves are only the canopy's inner shell; walk
+		// outward through connected leaves so level 3 clears the whole crown.
+		List<BlockPos> layer = new ArrayList<>(leaves);
+		for (int depth = 0; depth < LEAF_SPREAD && !layer.isEmpty() && leaves.size() < MAX_LEAVES; depth++) {
+			List<BlockPos> nextLayer = new ArrayList<>();
+			for (BlockPos leaf : layer) {
+				for (int dx = -1; dx <= 1; dx++) {
+					for (int dy = -1; dy <= 1; dy++) {
+						for (int dz = -1; dz <= 1; dz++) {
+							if (dx == 0 && dy == 0 && dz == 0) {
+								continue;
+							}
+							BlockPos next = leaf.offset(dx, dy, dz);
+							if (!visitedLeaves.add(next) || leaves.size() >= MAX_LEAVES) {
+								continue;
+							}
+							if (isNaturalLeaf(level.getBlockState(next))) {
+								leaves.add(next);
+								nextLayer.add(next);
+							}
+						}
+					}
 				}
 			}
-			if (job.breakLeaves()) {
-				while (broken < budget && !job.leaves().isEmpty()) {
-					BlockPos next = job.leaves().poll();
-					if (job.level().getBlockState(next).is(BlockTags.LEAVES)) {
-						player.gameMode.destroyBlock(next);
-						broken++;
+			layer = nextLayer;
+		}
+		return new Scan(logs, leaves, leaves.size());
+	}
+
+	/** Natural (world-generated) leaves only — player-placed hedges are persistent. */
+	private static boolean isNaturalLeaf(BlockState state) {
+		return state.is(BlockTags.LEAVES)
+			&& (!state.hasProperty(LeavesBlock.PERSISTENT) || !state.getValue(LeavesBlock.PERSISTENT));
+	}
+
+	/** Breaks the whole scan at once. Logs cost durability; leaves do not. */
+	private static void fell(ServerPlayer player, ServerLevel level, Scan scan, boolean breakLeaves) {
+		breakingNow = true;
+		try {
+			while (!scan.logs().isEmpty()) {
+				if (axeAboutToBreak(player)) {
+					return;
+				}
+				BlockPos next = scan.logs().poll();
+				if (level.getBlockState(next).is(BlockTags.LOGS)) {
+					player.gameMode.destroyBlock(next);
+				}
+			}
+			if (breakLeaves) {
+				while (!scan.leaves().isEmpty()) {
+					BlockPos next = scan.leaves().poll();
+					if (level.getBlockState(next).is(BlockTags.LEAVES)) {
+						level.destroyBlock(next, true, player, 512);
 					}
 				}
 			}
 		} finally {
 			breakingNow = false;
 		}
-		return !job.logs().isEmpty() || (job.breakLeaves() && !job.leaves().isEmpty());
 	}
 
 	private static boolean axeAboutToBreak(ServerPlayer player) {
@@ -198,51 +214,25 @@ public final class TimberScheduler {
 			|| (axe.isDamageableItem() && axe.getDamageValue() >= axe.getMaxDamage() - 2);
 	}
 
-	private static void finish(ServerPlayer player, Job job) {
-		SkillService.addCount(player, SkillTrees.AXE, "fell_with_logic", 1);
-		SkillService.addCount(player, SkillTrees.AXE, "fell_trees_total", 1);
-		SkillService.addCount(player, SkillTrees.AXE, "fell_trees_grand_total", 1);
-		replant(player, job);
-	}
-
 	/** Environment: puts a sapling back on the stump, consuming one from the player. */
-	private static void replant(ServerPlayer player, Job job) {
-		if (job.sapling() == null) {
+	private static void replant(ServerPlayer player, ServerLevel level, BlockPos stump, BlockState brokenState) {
+		net.minecraft.world.level.block.Block sapling = LOG_TO_SAPLING.get(brokenState.getBlock());
+		if (sapling == null) {
 			return;
 		}
-		BlockState saplingState = job.sapling().defaultBlockState();
-		BlockPos stump = job.stump();
-		if (!job.level().getBlockState(stump).isAir() || !saplingState.canSurvive(job.level(), stump)) {
+		BlockState saplingState = sapling.defaultBlockState();
+		if (!level.getBlockState(stump).isAir() || !saplingState.canSurvive(level, stump)) {
 			return;
 		}
-		ItemStack saplingItem = new ItemStack(job.sapling().asItem());
+		ItemStack saplingItem = new ItemStack(sapling.asItem());
 		var inventory = player.getInventory();
 		for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
 			ItemStack inSlot = inventory.getItem(slot);
 			if (ItemStack.isSameItem(inSlot, saplingItem)) {
 				inSlot.shrink(1);
-				job.level().setBlockAndUpdate(stump, saplingState);
+				level.setBlockAndUpdate(stump, saplingState);
 				SkillService.addCount(player, SkillTrees.AXE, "replant_with_environment", 1);
 				return;
-			}
-		}
-	}
-
-	/** Called once per server tick: advances slow (level 1) jobs. */
-	public static void tick(MinecraftServer server) {
-		if (JOBS.isEmpty()) {
-			return;
-		}
-		Iterator<Job> iterator = JOBS.iterator();
-		while (iterator.hasNext()) {
-			Job job = iterator.next();
-			boolean hasMore = step(job, SLOW_LOGS_PER_TICK);
-			if (!hasMore) {
-				ServerPlayer player = server.getPlayerList().getPlayer(job.playerId());
-				if (player != null) {
-					finish(player, job);
-				}
-				iterator.remove();
 			}
 		}
 	}

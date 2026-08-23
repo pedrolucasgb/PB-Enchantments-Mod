@@ -41,7 +41,6 @@ public class ToolMastery implements ModInitializer {
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			dev.toolmastery.perk.MeltHandler.tick(server);
-			TimberScheduler.tick(server);
 
 			// Slow checks (once a second): position-based gates.
 			if (++slowTickCounter >= 20) {

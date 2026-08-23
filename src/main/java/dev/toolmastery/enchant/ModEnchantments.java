@@ -6,6 +6,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -54,15 +55,15 @@ public final class ModEnchantments {
 	}
 
 	@Nullable
-	public static Holder<Enchantment> holder(ServerPlayer player, ResourceKey<Enchantment> enchantmentKey) {
+	public static Holder<Enchantment> holder(Player player, ResourceKey<Enchantment> enchantmentKey) {
 		return player.level().registryAccess()
 			.lookupOrThrow(Registries.ENCHANTMENT)
 			.get(enchantmentKey)
 			.orElse(null);
 	}
 
-	/** Level of one of our enchantments on a stack (0 when absent). */
-	public static int level(ServerPlayer player, ItemStack stack, ResourceKey<Enchantment> enchantmentKey) {
+	/** Level of one of our enchantments on a stack (0 when absent). Works on both sides. */
+	public static int level(Player player, ItemStack stack, ResourceKey<Enchantment> enchantmentKey) {
 		Holder<Enchantment> holder = holder(player, enchantmentKey);
 		return holder == null ? 0 : EnchantmentHelper.getItemEnchantmentLevel(holder, stack);
 	}
