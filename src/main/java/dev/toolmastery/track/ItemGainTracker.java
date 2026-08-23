@@ -1,5 +1,6 @@
 package dev.toolmastery.track;
 
+import dev.toolmastery.ToolMastery;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,36 +10,37 @@ import net.minecraft.world.item.Items;
 
 /**
  * Feeds gate counters from item acquisition: taking results out of furnace and
- * crafting result slots. Called from the result-slot mixins; onTake fires once
- * per stack moved, so stack counts are per-take amounts.
+ * crafting result slots. Called from the result-slot mixins with the amount
+ * actually removed (vanilla's removeCount), which is correct for every take
+ * path — normal click, shift-click, number-key swap and drop.
  */
 public final class ItemGainTracker {
 	private ItemGainTracker() {
 	}
 
 	/** Result taken from any furnace-type menu (furnace, blast furnace, smoker). */
-	public static void onSmeltTake(Player player, ItemStack stack) {
+	public static void onSmeltTake(Player player, ItemStack stack, int amount) {
 		if (!(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
 		if (stack.is(Items.CHARCOAL)) {
-			SkillService.progress(serverPlayer, SkillTrees.AXE).addCount("make_charcoal", stack.getCount());
+			SkillService.addCount(serverPlayer, SkillTrees.AXE, "make_charcoal", amount);
 		}
 		if (stack.is(Items.IRON_INGOT) || stack.is(Items.COPPER_INGOT)
 				|| stack.is(Items.GOLD_INGOT) || stack.is(Items.NETHERITE_SCRAP)) {
-			SkillService.progress(serverPlayer, SkillTrees.PICKAXE).addCount("smelt_ores", stack.getCount());
+			SkillService.addCount(serverPlayer, SkillTrees.PICKAXE, "smelt_ores", amount);
 		}
 	}
 
 	/** Result taken from a crafting grid (table or inventory). */
-	public static void onCraftTake(Player player, ItemStack stack) {
+	public static void onCraftTake(Player player, ItemStack stack, int amount) {
 		if (!(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
 		if (stack.is(Items.IRON_PICKAXE)) {
-			SkillService.progress(serverPlayer, SkillTrees.PICKAXE).addCount("craft_iron_pickaxe", 1);
+			SkillService.addCount(serverPlayer, SkillTrees.PICKAXE, "craft_iron_pickaxe", amount);
 		} else if (stack.is(Items.IRON_AXE)) {
-			SkillService.progress(serverPlayer, SkillTrees.AXE).addCount("craft_iron_axe", 1);
+			SkillService.addCount(serverPlayer, SkillTrees.AXE, "craft_iron_axe", amount);
 		}
 	}
 }
