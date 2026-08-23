@@ -3,6 +3,7 @@ package dev.toolmastery.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.toolmastery.network.SkillActionPayload;
 import dev.toolmastery.network.SkillStatePayload;
+import dev.toolmastery.perk.PerkAccess;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -22,6 +23,13 @@ public class ToolMasteryClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		ClientPlayNetworking.registerGlobalReceiver(SkillStatePayload.TYPE, (payload, context) ->
 			ClientSkillState.accept(payload));
+
+		// Lets common-side passives (Lumberjack's Arms) read ownership on the
+		// client, where the cracking animation is computed.
+		PerkAccess.setClientLookup((treeId, nodeId) -> {
+			SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
+			return state != null && state.purchased().contains(nodeId);
+		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (OPEN_TREE_KEY.consumeClick()) {

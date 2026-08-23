@@ -6,6 +6,8 @@
 		"AxeItemMixin",
 		"EnchantmentMenuMixin",
 		"FurnaceResultSlotMixin",
+		"LivingEntityMixin",
+		"PlayerMixin",
 		"ResultSlotMixin"
 	],
 	"injectors": {

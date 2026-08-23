@@ -2,6 +2,7 @@ package dev.toolmastery;
 
 import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AreaBreak;
+import dev.toolmastery.perk.AxeHarvest;
 import dev.toolmastery.perk.TimberScheduler;
 import dev.toolmastery.progress.ModAttachments;
 import dev.toolmastery.progress.TreeProgress;
@@ -12,6 +13,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,17 +33,26 @@ public class ToolMastery implements ModInitializer {
 
 		dev.toolmastery.network.ModNetworking.init();
 
+		// Passives that change block-breaking speed are computed on both sides,
+		// so the client needs the snapshot before it swings at anything — not
+		// only once the player has opened the tree.
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
+			dev.toolmastery.network.ModNetworking.sendState(handler.getPlayer()));
+
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			BlockBreakTracker.onBreak(level, player, pos, state);
 			dev.toolmastery.perk.MeltHandler.onBreak(level, player, pos, state);
 			dev.toolmastery.perk.VeinMiner.onBreak(level, player, pos, state);
 			AreaBreak.onBreak(level, player, pos, state);
 			TimberScheduler.onBreak(level, player, pos, state);
+			AxeHarvest.onBreak(level, player, pos, state);
 		});
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			dev.toolmastery.perk.MeltHandler.tick(server);
 			TimberScheduler.tick(server);
+			// Last: it collects the drops the fell above has just spawned.
+			AxeHarvest.tick(server);
 
 			// Slow checks (once a second): position-based gates.
 			if (++slowTickCounter >= 20) {

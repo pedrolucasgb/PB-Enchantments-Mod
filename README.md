@@ -81,6 +81,16 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
 | **Magma Touch** | Pickaxe | capstone | Everything with a furnace recipe drops pre-smelted (tree-only, never in the table) |
 
+### Axe passives (Path of the Grove)
+| Node | Tier | Effect |
+|---|---|---|
+| **Lumberjack's Arms** I–III | 1 / 2 / 3 | Axes chop wood +15% / +30% / +45% faster |
+| **Logger's Magnet** | 1 | Blocks chopped with an axe go straight into your inventory, Logic fells included |
+| **Fair Harvest** | 1 | +25% sapling chance from every leaf block you break, on top of the vanilla roll |
+| **Pruner** | 3 | Leaves broken with an axe drop double loot (apples, saplings, sticks) |
+| **Double Axe** I–II | 3 / 4 | 10% / 20% chance for a log to drop twice — every log of a Logic fell rolls on its own |
+| **Shield Breaker** | 3 | Axes disable a blocking shield 2s longer and push 2 more damage through it |
+
 ### Enchanting table integration
 - ✅ Unlockable enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
 - ✅ Rolls above your unlocked level are clamped down, never hidden
