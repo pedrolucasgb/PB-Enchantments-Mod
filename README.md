@@ -96,7 +96,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 ### Real enchantments (data-driven, era 26.x)
 | Enchantment | Tool | Levels | Effect |
 |---|---|---|---|
-| **Dig Range** | Pickaxe | I–III | Breaks extra blocks: below → cross → 3×3 on the facing plane |
+| **Dig Range** | Pickaxe | I–III | Breaks extra **pickaxe-mineable** blocks: below → cross → 3×3 on the facing plane. Dirt, gravel, sand and wood are skipped |
 | **Smelt** | Pickaxe | I–III | Chance to smelt ore drops on the spot: 25% / 50% / 100% |
 | **Rich Vein** | Pickaxe | I–II | Vein miner: up to 8 / 16 connected ores |
 | **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a slower chop, III clears the canopy too (requires real trees — log houses are safe) |

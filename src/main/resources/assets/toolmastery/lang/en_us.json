@@ -136,7 +136,7 @@
 	"node.toolmastery.smelt": "Smelt",
 	"node.toolmastery.smelt.desc": "Enchantment: chance to smelt ore drops on the spot. I: 25%. II: 50%. III: 100%. Unlock it to meet it at the enchanting table, or pay the enchant price to stamp it on the pickaxe in your hand.",
 	"node.toolmastery.dig_range": "Dig Range",
-	"node.toolmastery.dig_range.desc": "Enchantment: break extra blocks. I: the block below. II: a cross on the facing plane. III: full 3x3. Sneak to disable. Unlock it to meet it at the enchanting table, or pay the enchant price to stamp it on the pickaxe in your hand.",
+	"node.toolmastery.dig_range.desc": "Enchantment: break extra blocks a pickaxe mines - stone, deepslate and ores. Dirt, gravel, sand and wood are never touched. I: the block below. II: a cross on the facing plane. III: full 3x3. Sneak to disable. Unlock it to meet it at the enchanting table, or pay the enchant price to stamp it on the pickaxe in your hand.",
 	"node.toolmastery.prospectors_sense": "Prospector's Sense",
 	"node.toolmastery.prospectors_sense.desc": "Active: nearby ores glow through stone for a few seconds.",
 	"node.toolmastery.miners_helm": "Miner's Helm",

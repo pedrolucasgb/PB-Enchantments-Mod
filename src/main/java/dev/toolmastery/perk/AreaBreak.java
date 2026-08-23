@@ -4,6 +4,7 @@ import dev.toolmastery.enchant.ModEnchantments;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +17,12 @@ import net.minecraft.world.level.block.state.BlockState;
  *   II  breaks in a cross on the plane the player is facing
  *   III breaks a full 3x3 on that plane
  * Sneaking disables. Extra blocks respect tool tier and cost durability.
+ *
+ * <p>Strictly a pickaxe effect: both the block you broke and every extra block
+ * must be in {@code #minecraft:mineable/pickaxe}. Without that tag check,
+ * {@link ServerPlayer#hasCorrectToolForDrops} alone lets dirt, gravel and sand
+ * through — nothing that drops without a required tool ever fails it — and the
+ * enchantment turns into a shovel.
  */
 public final class AreaBreak {
 	private static final ThreadLocal<Boolean> BREAKING = ThreadLocal.withInitial(() -> false);
@@ -41,6 +48,9 @@ public final class AreaBreak {
 		if (!pickaxe.is(ItemTags.PICKAXES)) {
 			return;
 		}
+		if (!minesWithPickaxe(serverLevel, pos, state, serverPlayer)) {
+			return;
+		}
 		int rangeLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.DIG_RANGE);
 		if (rangeLevel <= 0) {
 			return;
@@ -53,9 +63,7 @@ public final class AreaBreak {
 					return;
 				}
 				BlockState targetState = serverLevel.getBlockState(target);
-				if (targetState.isAir()
-					|| targetState.getDestroySpeed(serverLevel, target) < 0
-					|| !serverPlayer.hasCorrectToolForDrops(targetState)) {
+				if (!minesWithPickaxe(serverLevel, target, targetState, serverPlayer)) {
 					continue;
 				}
 				serverPlayer.gameMode.destroyBlock(target);
@@ -97,6 +105,17 @@ public final class AreaBreak {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * A block this pickaxe should be digging: pickaxe-mineable, breakable, and
+	 * within the tool's tier (a stone pickaxe still stops at obsidian).
+	 */
+	private static boolean minesWithPickaxe(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player) {
+		return !state.isAir()
+			&& state.is(BlockTags.MINEABLE_WITH_PICKAXE)
+			&& state.getDestroySpeed(level, pos) >= 0
+			&& player.hasCorrectToolForDrops(state);
 	}
 
 	private static boolean pickaxeAboutToBreak(ServerPlayer player) {
