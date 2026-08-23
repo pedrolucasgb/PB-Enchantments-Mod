@@ -4,7 +4,7 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Internal mod id: `toolmastery` · package `dev.toolmastery`
+> Version **0.2.0** · internal mod id: `toolmastery` · package `dev.toolmastery`
 
 ---
 
@@ -136,7 +136,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Double Axe** I–II | 3 / 4 | 10% / 20% chance for a log to drop twice — every log of a Logic fell rolls on its own |
 | **Shield Breaker** | 3 | Axes disable a blocking shield 2s longer and push 2 more damage through it |
 
-### Enchanter passives (Path of the Arcane)
+### Enchanter nodes (Path of the Arcane)
 | Node | Tier | Effect |
 |---|---|---|
 | **Arcane Insight** I–III | 1 / 2 / 3 | A panel beside the enchanting table reveals the *true* enchantments behind offer 1 / offers 1–2 / all three |
@@ -145,8 +145,9 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Indestructible** | 3 | Enchantment: the item never breaks (see the enchantment table above) |
 
 ### Enchanting table integration
-- ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers). Capstones are excluded by design: the tree is their only source
+- ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
 - ✅ Rolls above your unlocked level are clamped down, never hidden
+- ✅ Vanilla **Fortune** is raised to a max of IV in the data pack, then clamped back to III at the table for anyone who has not bought Ancient Fortune — a data pack cannot be per-player, this is what makes the capstone a reward
 - ✅ Natural combinations with vanilla enchantments via the vanilla bonus mechanic
 
 ### Safety & feel
@@ -159,7 +160,9 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ## Roadmap
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive/active nodes, custom items, gate counters for crafting/smelting, and the four future classes (Sword, Bow, Rod, Armor).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, custom items (Miner's Helm, Rich Bark, Arcane Tome), gate counters for crafting and smelting, and the four future classes (Sword, Bow, Rod, Armor).
+
+Known gap: the Fortune IV ceiling is gated at the enchanting table but not at the anvil, so combining two Fortune III books can still reach IV without the capstone.
 
 ## License
 
