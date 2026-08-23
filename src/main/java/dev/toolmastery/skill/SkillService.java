@@ -1,5 +1,6 @@
 package dev.toolmastery.skill;
 
+import dev.toolmastery.advancement.ModAdvancements;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.progress.ModAttachments;
 import dev.toolmastery.progress.TreeProgress;
@@ -51,6 +52,7 @@ public final class SkillService {
 		}
 		player.giveExperienceLevels(-tier.accessCost());
 		progress.unlockedTiers = next + 1;
+		ModAdvancements.grantTier(player, tree.id(), next);
 		return new Result.Ok("Tier " + (next + 1) + " unlocked for " + tier.accessCost() + " levels!");
 	}
 
@@ -107,6 +109,7 @@ public final class SkillService {
 			}
 			progress.unlockedTiers = tree.tiers().size();
 		}
+		ModAdvancements.syncAll(player);
 	}
 
 	/** Debug: grants every node of every tree, free, applying enchant grants to the held tool. */
@@ -119,6 +122,7 @@ public final class SkillService {
 				applyGrant(player, node.id());
 			}
 		}
+		ModAdvancements.syncAll(player);
 	}
 
 	/** Convenience for tracking hooks: bump a gate counter on the tree. */

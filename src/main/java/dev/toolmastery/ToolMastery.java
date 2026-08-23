@@ -1,5 +1,6 @@
 package dev.toolmastery;
 
+import dev.toolmastery.advancement.ModAdvancements;
 import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AreaBreak;
 import dev.toolmastery.perk.TimberScheduler;
@@ -12,6 +13,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,11 @@ public class ToolMastery implements ModInitializer {
 			MasteryCommand.register(dispatcher));
 
 		dev.toolmastery.network.ModNetworking.init();
+
+		// Tier advancements are the visible face of progress: catch up saves made
+		// before they shipped, and anything cleared with /advancement revoke.
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
+			ModAdvancements.syncAll(handler.getPlayer()));
 
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			BlockBreakTracker.onBreak(level, player, pos, state);
