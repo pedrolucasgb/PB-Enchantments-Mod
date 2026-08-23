@@ -225,6 +225,68 @@ public final class SkillService {
 	}
 
 	/**
+	 * Debug: hands over one whole tier of a tree — its gates completed, the tier
+	 * (and everything below it) open, and every node in it unlocked, free.
+	 *
+	 * <p>The gap this fills sits between {@code debug tier}, which only moves the
+	 * ceiling, and {@code debug unlockall}, which hands over all five tiers of
+	 * all three trees: this is "let me look at exactly tier 3 of the pickaxe".
+	 *
+	 * <p>Nodes that chain off a lower tier drag their prerequisites in with them,
+	 * so the tree never ends up showing Smelt II owned without Smelt I. Nodes
+	 * that are not implemented yet, and the losing half of a capstone pair, are
+	 * skipped and counted.
+	 */
+	public static Result unlockTierNodes(ServerPlayer player, SkillTree tree, int tierNumber) {
+		if (tierNumber < 1 || tierNumber > tree.tiers().size()) {
+			return fail("mastery.toolmastery.tier.fail.range_1", tree.tiers().size());
+		}
+		TreeProgress progress = progress(player, tree);
+		int index = tierNumber - 1;
+
+		// Complete the gates up to here too, so /mastery status and the tier
+		// headers agree with the tiers this just opened.
+		for (int t = 0; t <= index; t++) {
+			for (GateRequirement gate : tree.tiers().get(t).gates()) {
+				if (progress.count(gate.id()) < gate.target()) {
+					progress.counters.put(gate.id(), gate.target());
+				}
+			}
+		}
+		progress.unlockedTiers = Math.max(progress.unlockedTiers, tierNumber);
+
+		int granted = 0;
+		int skipped = 0;
+		for (SkillNode node : tree.nodes().values()) {
+			if (node.tier() != index) {
+				continue;
+			}
+			if (!node.implemented()
+				|| (node.exclusiveWith() != null && progress.owns(node.exclusiveWith()))) {
+				skipped++;
+				continue;
+			}
+			granted += grantWithPrerequisites(tree, progress, node);
+		}
+		ModAdvancements.syncAll(player);
+		return ok("mastery.toolmastery.tier.unlocked", granted, tierNumber, tree.id(), skipped);
+	}
+
+	/** Adds a node and everything its {@code requires} chain depends on. Returns how many were new. */
+	private static int grantWithPrerequisites(SkillTree tree, TreeProgress progress, SkillNode node) {
+		int added = 0;
+		for (SkillNode current = node; current != null; current = tree.node(current.requires())) {
+			if (progress.purchased.add(current.id())) {
+				added++;
+			}
+			if (current.requires() == null) {
+				break;
+			}
+		}
+		return added;
+	}
+
+	/**
 	 * Debug: re-locks one node, leaving tiers and gate counters alone — for
 	 * testing a single unlock over and over without redoing the whole tree.
 	 */

@@ -70,6 +70,8 @@
 	"mastery.toolmastery.unlock.ok.capstone": "%1$s unlocked! Capstones never roll at a table — stamp it on the item in your hand from the skill screen for %2$s levels.",
 	"mastery.toolmastery.enchant.fail.not_enchantable": "%s has nothing to stamp on a tool.",
 	"mastery.toolmastery.enchant.fail.locked": "Unlock %s before you can enchant with it.",
+	"mastery.toolmastery.tier.fail.range_1": "Tier must be between 1 and %s.",
+	"mastery.toolmastery.tier.unlocked": "Unlocked %1$s node(s) for tier %2$s of '%3$s' (%4$s skipped: coming soon, or the other half of a capstone pair).",
 	"mastery.toolmastery.tier.fail.range": "Tier count must be between 0 and %s.",
 	"mastery.toolmastery.tier.set": "Tree '%1$s' now has %2$s tier(s) unlocked; nodes above that were re-locked.",
 	"mastery.toolmastery.lock.fail.not_owned": "%s is not unlocked, so there is nothing to lock.",

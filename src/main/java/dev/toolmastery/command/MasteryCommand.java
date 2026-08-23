@@ -33,8 +33,18 @@ import org.jetbrains.annotations.Nullable;
  * so one feature can be tested from a clean slate without a new world.
  */
 public final class MasteryCommand {
+	/** Stands in for a tree id when a debug command should hit every tree. */
+	private static final String ALL_TREES = "all";
+
 	private static final SuggestionProvider<CommandSourceStack> TREE_IDS =
 		(context, builder) -> SharedSuggestionProvider.suggest(SkillTrees.ALL.keySet(), builder);
+
+	/** Tree ids plus the "all" sentinel, for the debug commands that accept both. */
+	private static final SuggestionProvider<CommandSourceStack> TREE_IDS_OR_ALL = (context, builder) -> {
+		java.util.List<String> options = new java.util.ArrayList<>(SkillTrees.ALL.keySet());
+		options.add(ALL_TREES);
+		return SharedSuggestionProvider.suggest(options, builder);
+	};
 
 	private static final SuggestionProvider<CommandSourceStack> NODE_IDS = (context, builder) -> {
 		SkillTree tree = SkillTrees.byId(StringArgumentType.getString(context, "tree"));
@@ -122,6 +132,14 @@ public final class MasteryCommand {
 						context.getSource().sendSystemMessage(Component.literal("Every node unlocked. Enchantments are unlocked only - stamp them on a tool with /mastery enchant, the skill screen, or /mastery debug kit.").withStyle(ChatFormatting.YELLOW));
 						return 1;
 					}))
+				.then(Commands.literal("unlocktier")
+					.then(Commands.argument("tree", StringArgumentType.word())
+						.suggests(TREE_IDS_OR_ALL)
+						.then(Commands.argument("tier", IntegerArgumentType.integer(1, 5))
+							.executes(context -> unlockTier(
+								context.getSource(),
+								StringArgumentType.getString(context, "tree"),
+								IntegerArgumentType.getInteger(context, "tier"))))))
 				.then(Commands.literal("reset")
 					// bare: every tree back to a brand-new player - with a tree: just that one
 					.executes(context -> reset(context.getSource(), null))
@@ -162,7 +180,8 @@ public final class MasteryCommand {
 	private static SkillTree treeOrFail(CommandSourceStack source, String treeId) {
 		SkillTree tree = SkillTrees.byId(treeId);
 		if (tree == null) {
-			source.sendFailure(Component.literal("Unknown tree '" + treeId + "'. Available: " + String.join(", ", SkillTrees.ALL.keySet())));
+			source.sendFailure(Component.literal("Unknown tree '" + treeId + "'. Available: "
+				+ String.join(", ", SkillTrees.ALL.keySet())));
 		}
 		return tree;
 	}
@@ -241,6 +260,28 @@ public final class MasteryCommand {
 			source.sendFailure(Component.literal("Unknown node '" + nodeId + "' in tree '" + treeId + "'."));
 		}
 		return node;
+	}
+
+	/** /mastery debug unlocktier <tree|all> <n> - hand over one whole tier, gates and nodes included. */
+	private static int unlockTier(CommandSourceStack source, String treeId, int tier) {
+		ServerPlayer player = source.getPlayer();
+		if (player == null) {
+			return 0;
+		}
+		if (ALL_TREES.equals(treeId)) {
+			for (SkillTree tree : SkillTrees.ALL.values()) {
+				report(source, SkillService.unlockTierNodes(player, tree, tier));
+			}
+			dev.toolmastery.network.ModNetworking.sendState(player);
+			return 1;
+		}
+		SkillTree tree = treeOrFail(source, treeId);
+		if (tree == null) {
+			return 0;
+		}
+		int result = report(source, SkillService.unlockTierNodes(player, tree, tier));
+		dev.toolmastery.network.ModNetworking.sendState(player);
+		return result;
 	}
 
 	/** /mastery debug reset [tree] - wipe progress back to a brand-new player. */
