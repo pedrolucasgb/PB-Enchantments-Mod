@@ -31,12 +31,12 @@ public final class SkillTrees {
 				new GateRequirement("smelt_ores", 64)
 			)),
 			// Tier 3 — Mine Master
+			// (a Prospector's Sense usage gate returns here once the skill ships)
 			new SkillTier(15, List.of(
 				new GateRequirement("mine_gold", 32),
 				new GateRequirement("mine_diamond", 16),
 				new GateRequirement("mine_redstone", 64),
-				new GateRequirement("mine_lapis", 64),
-				new GateRequirement("use_prospectors_sense", 25)
+				new GateRequirement("mine_lapis", 64)
 			)),
 			// Tier 4 — Lord of the Depths
 			new SkillTier(20, List.of(
@@ -45,10 +45,10 @@ public final class SkillTrees {
 				new GateRequirement("mine_mountain_emerald", 1)
 			)),
 			// Tier 5 — Heart of the Mountain
+			// (a Prospector's Sense diamond-reveal gate returns here once the skill ships)
 			new SkillTier(30, List.of(
 				new GateRequirement("ore_checklist", 11),
-				new GateRequirement("break_total", 10000),
-				new GateRequirement("sense_reveal_diamond", 1)
+				new GateRequirement("break_total", 10000)
 			))
 		),
 		List.of(
