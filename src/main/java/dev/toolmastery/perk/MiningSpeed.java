@@ -1,6 +1,5 @@
 package dev.toolmastery.perk;
 
-import dev.toolmastery.skill.NodeOwnership;
 import dev.toolmastery.skill.SkillTrees;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -31,7 +30,7 @@ public final class MiningSpeed {
 			return 1.0F;
 		}
 		if (state.is(Blocks.OBSIDIAN) || state.is(Blocks.CRYING_OBSIDIAN)) {
-			return NodeOwnership.owns(player, SkillTrees.PICKAXE, "obsidian_breaker")
+			return PerkAccess.owns(player, SkillTrees.PICKAXE, "obsidian_breaker")
 				? 1.0F + OBSIDIAN_BREAKER_BONUS
 				: 1.0F;
 		}
@@ -47,13 +46,13 @@ public final class MiningSpeed {
 	}
 
 	private static int masonsGripLevel(Player player) {
-		if (NodeOwnership.owns(player, SkillTrees.PICKAXE, "masons_grip_3")) {
+		if (PerkAccess.owns(player, SkillTrees.PICKAXE, "masons_grip_3")) {
 			return 3;
 		}
-		if (NodeOwnership.owns(player, SkillTrees.PICKAXE, "masons_grip_2")) {
+		if (PerkAccess.owns(player, SkillTrees.PICKAXE, "masons_grip_2")) {
 			return 2;
 		}
-		if (NodeOwnership.owns(player, SkillTrees.PICKAXE, "masons_grip_1")) {
+		if (PerkAccess.owns(player, SkillTrees.PICKAXE, "masons_grip_1")) {
 			return 1;
 		}
 		return 0;

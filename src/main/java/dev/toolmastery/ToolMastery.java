@@ -3,6 +3,7 @@ package dev.toolmastery;
 import dev.toolmastery.advancement.ModAdvancements;
 import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AreaBreak;
+import dev.toolmastery.perk.AxeHarvest;
 import dev.toolmastery.perk.DeepHaste;
 import dev.toolmastery.perk.MinersMagnet;
 import dev.toolmastery.perk.TimberScheduler;
@@ -37,6 +38,8 @@ public class ToolMastery implements ModInitializer {
 
 		// Tier advancements are the visible face of progress: catch up saves made
 		// before they shipped, and anything cleared with /advancement revoke.
+		// (the skill snapshot the speed passives need on join is pushed by
+		// ModNetworking.init above.)
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
 			ModAdvancements.syncAll(handler.getPlayer()));
 
@@ -47,6 +50,7 @@ public class ToolMastery implements ModInitializer {
 			MinersMagnet.onBreak(level, player, pos, state);
 			AreaBreak.onBreak(level, player, pos, state);
 			TimberScheduler.onBreak(level, player, pos, state);
+			AxeHarvest.onBreak(level, player, pos, state);
 		});
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -54,6 +58,8 @@ public class ToolMastery implements ModInitializer {
 			// After Melt, so the magnet pockets the smelted result rather than the raw ore.
 			MinersMagnet.tick(server);
 			TimberScheduler.tick(server);
+			// Last: it collects the drops the fell above has just spawned.
+			AxeHarvest.tick(server);
 
 			// Slow checks (once a second): position-based gates.
 			if (++slowTickCounter >= 20) {

@@ -3,7 +3,7 @@ package dev.toolmastery.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.toolmastery.network.SkillActionPayload;
 import dev.toolmastery.network.SkillStatePayload;
-import dev.toolmastery.skill.NodeOwnership;
+import dev.toolmastery.perk.PerkAccess;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -30,7 +30,7 @@ public class ToolMasteryClient implements ClientModInitializer {
 
 		// Speed passives are computed on both sides; on this one the answer comes
 		// from the synced snapshot, and only ever for the local player.
-		NodeOwnership.setClientView((player, treeId, nodeId) ->
+		PerkAccess.setClientLookup((player, treeId, nodeId) ->
 			player == Minecraft.getInstance().player && ClientSkillState.owns(treeId, nodeId));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
