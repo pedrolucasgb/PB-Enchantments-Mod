@@ -43,7 +43,13 @@ Progress is **per player**, persisted with the world, and survives death.
 
 ## Download & install
 
-There is no published release yet — build from source:
+### Quick download (no toolchain)
+
+Grab [`Quick-Download/ToolMastery-Installer.zip`](Quick-Download/ToolMastery-Installer.zip), unzip it anywhere and double-click **Install Tool Mastery.bat**. It installs Fabric Loader and Fabric API if they are missing, removes any older Tool Mastery jar (two copies of one mod id crash the game) and drops the current one into `.minecraft/mods`. The same files sit loose in [`Quick-Download/`](Quick-Download) if you would rather read them first.
+
+### From source
+
+Build it yourself:
 
 ```bash
 git clone https://github.com/pedrolucasgb/PB-Enchantments-Mod.git
