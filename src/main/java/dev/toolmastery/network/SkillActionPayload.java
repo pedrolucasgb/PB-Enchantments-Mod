@@ -14,7 +14,10 @@ public record SkillActionPayload(Action action, String treeId, String nodeId) im
 	public enum Action {
 		REQUEST_STATE,
 		UNLOCK_TIER,
-		BUY_NODE
+		/** One-off purchase: XP levels + materials, opens the node. */
+		UNLOCK_NODE,
+		/** Repeatable: whole XP levels, stamps the enchantment on the held item. */
+		ENCHANT_NODE
 	}
 
 	public static final Type<SkillActionPayload> TYPE =
@@ -28,7 +31,10 @@ public record SkillActionPayload(Action action, String treeId, String nodeId) im
 	}
 
 	private static SkillActionPayload read(FriendlyByteBuf buf) {
-		Action action = Action.values()[buf.readVarInt()];
+		int ordinal = buf.readVarInt();
+		Action action = ordinal >= 0 && ordinal < Action.values().length
+			? Action.values()[ordinal]
+			: Action.REQUEST_STATE;
 		return new SkillActionPayload(action, buf.readUtf(), buf.readUtf());
 	}
 

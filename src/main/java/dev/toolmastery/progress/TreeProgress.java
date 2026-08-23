@@ -17,6 +17,16 @@ public final class TreeProgress {
 		Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("counters").forGetter(t -> Map.copyOf(t.counters))
 	).apply(instance, TreeProgress::new));
 
+	/**
+	 * Node ids that were renamed after saves already existed, remapped on load
+	 * so nobody loses a node to a rename. Melt became Smelt in 0.2.0.
+	 */
+	private static final Map<String, String> RENAMED = Map.of(
+		"melt_1", "smelt_1",
+		"melt_2", "smelt_2",
+		"melt_3", "smelt_3"
+	);
+
 	/** How many tiers are unlocked (0 = none; 1 = tier 1 open, ...). */
 	public int unlockedTiers;
 	public final Set<String> purchased = new HashSet<>();
@@ -27,7 +37,9 @@ public final class TreeProgress {
 
 	private TreeProgress(int unlockedTiers, List<String> purchased, Map<String, Integer> counters) {
 		this.unlockedTiers = unlockedTiers;
-		this.purchased.addAll(purchased);
+		for (String nodeId : purchased) {
+			this.purchased.add(RENAMED.getOrDefault(nodeId, nodeId));
+		}
 		this.counters.putAll(counters);
 	}
 

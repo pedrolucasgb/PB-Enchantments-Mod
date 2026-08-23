@@ -1,7 +1,7 @@
 {
   "anvil_cost": 4,
   "description": {
-    "translate": "enchantment.toolmastery.melt"
+    "translate": "enchantment.toolmastery.smelt"
   },
   "effects": {},
   "exclusive_set": "minecraft:silk_touch",

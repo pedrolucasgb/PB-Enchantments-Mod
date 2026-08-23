@@ -4,6 +4,7 @@ import dev.toolmastery.enchant.ModEnchantments;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,9 +17,32 @@ import net.minecraft.world.level.block.state.BlockState;
  *   II  breaks in a cross on the plane the player is facing
  *   III breaks a full 3x3 on that plane
  * Sneaking disables. Extra blocks respect tool tier and cost durability.
+ *
+ * <p>Strictly a pickaxe effect: both the block you broke and every extra block
+ * must be in {@code #minecraft:mineable/pickaxe}. Without that tag check,
+ * {@link ServerPlayer#hasCorrectToolForDrops} alone lets dirt, gravel and sand
+ * through — nothing that drops without a required tool ever fails it — and the
+ * enchantment turns into a shovel.
+ *
+ * <p>Extras also have to be about as hard as what you actually swung at, so
+ * clipping a stone block next to obsidian does not hand you the obsidian. The
+ * comparison is in break <em>time for this player</em>, not raw hardness: a
+ * block joins the swing when it takes no longer than the block you broke plus
+ * {@link #GRACE_TICKS}. That makes the rule loosen exactly the way it should —
+ * with enough Efficiency every block is near-instant, the difference between
+ * stone and obsidian collapses below the grace, and they do come out together.
  */
 public final class AreaBreak {
 	private static final ThreadLocal<Boolean> BREAKING = ThreadLocal.withInitial(() -> false);
+
+	/**
+	 * How much longer than the broken block an extra block may take, in ticks.
+	 * 15 (0.75s) is wide enough for the pairs that belong together — stone next
+	 * to any ore, netherrack next to quartz, the deepslate boundary — and far
+	 * too narrow for obsidian (50 hardness) or ancient debris (30) next to
+	 * stone (1.5).
+	 */
+	private static final float GRACE_TICKS = 15.0F;
 
 	private AreaBreak() {
 	}
@@ -41,6 +65,10 @@ public final class AreaBreak {
 		if (!pickaxe.is(ItemTags.PICKAXES)) {
 			return;
 		}
+		if (!minesWithPickaxe(serverLevel, pos, state, serverPlayer)) {
+			return;
+		}
+		float budgetTicks = ticksToBreak(serverLevel, pos, state, serverPlayer) + GRACE_TICKS;
 		int rangeLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.DIG_RANGE);
 		if (rangeLevel <= 0) {
 			return;
@@ -53,9 +81,8 @@ public final class AreaBreak {
 					return;
 				}
 				BlockState targetState = serverLevel.getBlockState(target);
-				if (targetState.isAir()
-					|| targetState.getDestroySpeed(serverLevel, target) < 0
-					|| !serverPlayer.hasCorrectToolForDrops(targetState)) {
+				if (!minesWithPickaxe(serverLevel, target, targetState, serverPlayer)
+					|| ticksToBreak(serverLevel, target, targetState, serverPlayer) > budgetTicks) {
 					continue;
 				}
 				serverPlayer.gameMode.destroyBlock(target);
@@ -97,6 +124,31 @@ public final class AreaBreak {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * A block this pickaxe should be digging: pickaxe-mineable, breakable, and
+	 * within the tool's tier (a stone pickaxe still stops at obsidian).
+	 */
+	private static boolean minesWithPickaxe(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player) {
+		return !state.isAir()
+			&& state.is(BlockTags.MINEABLE_WITH_PICKAXE)
+			&& state.getDestroySpeed(level, pos) >= 0
+			&& player.hasCorrectToolForDrops(state);
+	}
+
+	/**
+	 * How many ticks this player needs to break this block, from the very same
+	 * progress-per-tick vanilla uses for the cracking animation — so the mod's
+	 * own speed passives, Efficiency and Haste all count towards "how hard does
+	 * this feel right now".
+	 */
+	private static float ticksToBreak(ServerLevel level, BlockPos pos, BlockState state, ServerPlayer player) {
+		float progress = state.getDestroyProgress(player, level, pos);
+		if (!(progress > 0.0F)) {
+			return Float.MAX_VALUE; // unbreakable for this player (also catches NaN)
+		}
+		return 1.0F / progress;
 	}
 
 	private static boolean pickaxeAboutToBreak(ServerPlayer player) {

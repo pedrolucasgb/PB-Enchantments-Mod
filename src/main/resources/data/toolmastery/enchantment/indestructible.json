@@ -1,22 +1,21 @@
 {
   "anvil_cost": 8,
   "description": {
-    "translate": "enchantment.toolmastery.magma_touch"
+    "translate": "enchantment.toolmastery.indestructible"
   },
   "effects": {},
-  "exclusive_set": "minecraft:silk_touch",
   "max_cost": {
     "base": 55,
     "per_level_above_first": 15
   },
   "max_level": 1,
   "min_cost": {
-    "base": 15,
+    "base": 25,
     "per_level_above_first": 15
   },
   "slots": [
-    "mainhand"
+    "any"
   ],
-  "supported_items": "#minecraft:pickaxes",
-  "weight": 1
+  "supported_items": "#minecraft:enchantable/durability",
+  "weight": 2
 }

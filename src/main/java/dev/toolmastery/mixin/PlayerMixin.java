@@ -1,19 +1,14 @@
 package dev.toolmastery.mixin;
 
 import dev.toolmastery.enchant.EnchanterPerks;
-import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.perk.MiningSpeed;
 import dev.toolmastery.perk.PerkAccess;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -36,56 +31,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(Player.class)
 public class PlayerMixin {
-	@Unique
-	private static final String[] TOOLMASTERY$LUMBERJACKS_ARMS = {
-		"lumberjacks_arms_1", "lumberjacks_arms_2", "lumberjacks_arms_3"
-	};
-
-	@Unique
-	private static final float TOOLMASTERY$AXE_SPEED_PER_RANK = 0.15F;
-
-	/** What a Logic I axe pays for felling the whole tree in one swing. */
-	@Unique
-	private static final float TOOLMASTERY$LOGIC_1_SLOWDOWN = 0.3F;
-
 	@Inject(method = "getDestroySpeed", at = @At("RETURN"), cancellable = true)
 	private void toolmastery$applySpeedPassives(BlockState state, CallbackInfoReturnable<Float> cir) {
 		float speed = cir.getReturnValueF();
 		if (speed <= 0.0F) {
 			return; // unbreakable, or the wrong tool — nothing to change
 		}
-		Player player = (Player) (Object) this;
-		ItemStack held = player.getMainHandItem();
-		float multiplier = MiningSpeed.multiplier(player, state)
-			* toolmastery$lumberjacksArms(player, held, state)
-			* toolmastery$logicSlowdown(player, held, state);
+		float multiplier = MiningSpeed.multiplier((Player) (Object) this, state);
 		if (multiplier != 1.0F) {
 			cir.setReturnValue(speed * multiplier);
 		}
-	}
-
-	@Unique
-	private float toolmastery$lumberjacksArms(Player player, ItemStack held, BlockState state) {
-		if (!state.is(BlockTags.MINEABLE_WITH_AXE) || !held.is(ItemTags.AXES)) {
-			return 1.0F;
-		}
-		int rank = PerkAccess.rank(player, SkillTrees.AXE, TOOLMASTERY$LUMBERJACKS_ARMS);
-		return rank > 0 ? 1.0F + TOOLMASTERY$AXE_SPEED_PER_RANK * rank : 1.0F;
-	}
-
-	/**
-	 * Logic level 1 trades chop speed for the instant fell: breaking a log with
-	 * a Logic I axe is noticeably slower. Levels 2+ chop at normal speed.
-	 * Sneaking (which disables timber) also disables the slowdown.
-	 */
-	@Unique
-	private float toolmastery$logicSlowdown(Player player, ItemStack held, BlockState state) {
-		if (!state.is(BlockTags.LOGS) || player.isShiftKeyDown() || !held.is(ItemTags.AXES)) {
-			return 1.0F;
-		}
-		return ModEnchantments.level(player, held, ModEnchantments.LOGIC) == 1
-			? TOOLMASTERY$LOGIC_1_SLOWDOWN
-			: 1.0F;
 	}
 
 	/**

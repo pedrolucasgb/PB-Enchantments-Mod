@@ -1,14 +1,30 @@
 package dev.toolmastery.skill;
 
 import dev.toolmastery.advancement.ModAdvancements;
+import dev.toolmastery.enchant.EnchantCompat;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.progress.ModAttachments;
 import dev.toolmastery.progress.TreeProgress;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * All progression rules in one place: gate checks, tier unlocking, node purchase.
- * Every method that mutates state also handles the XP payment.
+ * All progression rules in one place: gate checks, tier unlocking, and the two
+ * ways a player spends on a node.
+ *
+ * <p><b>Unlock</b> is the one-off purchase — XP levels plus materials. It marks
+ * the node owned: a passive starts working immediately, an enchantment joins
+ * the player's enchanting-table pool.
+ *
+ * <p><b>Enchant</b> is the repeatable one — whole XP levels, no materials — and
+ * stamps an unlocked enchantment onto whatever the player is holding, after
+ * checking that the item and its existing enchantments accept it.
  */
 public final class SkillService {
 	private SkillService() {
@@ -29,11 +45,19 @@ public final class SkillService {
 	}
 
 	public sealed interface Result {
-		record Ok(String message) implements Result {
+		record Ok(Component message) implements Result {
 		}
 
-		record Fail(String message) implements Result {
+		record Fail(Component message) implements Result {
 		}
+	}
+
+	private static Result.Fail fail(String key, Object... args) {
+		return new Result.Fail(Component.translatable(key, args));
+	}
+
+	private static Result.Ok ok(String key, Object... args) {
+		return new Result.Ok(Component.translatable(key, args));
 	}
 
 	/** Attempts to unlock the next tier of a tree. */
@@ -41,59 +65,103 @@ public final class SkillService {
 		TreeProgress progress = progress(player, tree);
 		int next = progress.unlockedTiers;
 		if (next >= tree.tiers().size()) {
-			return new Result.Fail("Every tier of this tree is already unlocked.");
+			return fail("mastery.toolmastery.tier.fail.complete");
 		}
 		SkillTier tier = tree.tiers().get(next);
 		if (!gateComplete(progress, tier)) {
-			return new Result.Fail("Gate incomplete — check /mastery status " + tree.id());
+			return fail("mastery.toolmastery.tier.fail.gate", tree.id());
 		}
 		if (player.experienceLevel < tier.accessCost()) {
-			return new Result.Fail("Not enough XP: needs " + tier.accessCost() + " levels, you have " + player.experienceLevel + ".");
+			return fail("mastery.toolmastery.fail.levels", tier.accessCost(), player.experienceLevel);
 		}
 		player.giveExperienceLevels(-tier.accessCost());
 		progress.unlockedTiers = next + 1;
 		ModAdvancements.grantTier(player, tree.id(), next);
-		return new Result.Ok("Tier " + (next + 1) + " unlocked for " + tier.accessCost() + " levels!");
+		return ok("mastery.toolmastery.tier.ok", next + 1, tier.accessCost());
 	}
 
-	/** Attempts to purchase a node. */
-	public static Result buyNode(ServerPlayer player, SkillTree tree, SkillNode node) {
+	/** Attempts to unlock a node: XP levels plus the node's materials. */
+	public static Result unlockNode(ServerPlayer player, SkillTree tree, SkillNode node) {
 		TreeProgress progress = progress(player, tree);
 		if (!node.implemented()) {
-			return new Result.Fail("'" + node.id() + "' is coming in a future update and can't be purchased yet.");
+			return fail("mastery.toolmastery.unlock.fail.future", node.displayName());
 		}
 		if (progress.owns(node.id())) {
-			return new Result.Fail("Already owned.");
+			return fail("mastery.toolmastery.unlock.fail.owned", node.displayName());
 		}
 		if (node.tier() >= progress.unlockedTiers) {
-			return new Result.Fail("Tier " + (node.tier() + 1) + " is still locked.");
+			return fail("mastery.toolmastery.unlock.fail.tier", node.tier() + 1);
 		}
 		if (node.requires() != null && !progress.owns(node.requires())) {
-			return new Result.Fail("Requires '" + node.requires() + "' first.");
+			return fail("mastery.toolmastery.unlock.fail.requires", SkillNode.displayName(node.requires()));
 		}
 		if (node.exclusiveWith() != null && progress.owns(node.exclusiveWith())) {
-			return new Result.Fail("Locked by capstone choice '" + node.exclusiveWith() + "'.");
+			return fail("mastery.toolmastery.unlock.fail.exclusive", SkillNode.displayName(node.exclusiveWith()));
 		}
-		if (player.experienceLevel < node.cost()) {
-			return new Result.Fail("Not enough XP: needs " + node.cost() + " levels, you have " + player.experienceLevel + ".");
+		MaterialCost missing = MaterialCost.missing(player, node.materials());
+		if (missing != null) {
+			return fail("mastery.toolmastery.unlock.fail.materials", missing.label(), missing.held(player));
 		}
-		player.giveExperienceLevels(-node.cost());
-		progress.purchased.add(node.id());
+		if (player.experienceLevel < node.unlockCost()) {
+			return fail("mastery.toolmastery.fail.levels", node.unlockCost(), player.experienceLevel);
+		}
 
-		String enchantNote = applyGrant(player, node.id());
-		return new Result.Ok("'" + node.id() + "' purchased for " + node.cost() + " levels!" + enchantNote);
+		MaterialCost.consume(player, node.materials());
+		player.giveExperienceLevels(-node.unlockCost());
+		progress.purchased.add(node.id());
+		return new Result.Ok(unlockMessage(node));
 	}
 
-	/** Applies the node's enchantment grant to the held tool, if any. */
-	private static String applyGrant(ServerPlayer player, String nodeId) {
-		ModEnchantments.Grant grant = ModEnchantments.NODE_GRANTS.get(nodeId);
-		if (grant == null) {
-			return "";
+	/**
+	 * What an unlock just bought, spelled out — this is the only place the
+	 * player is told that the enchantment now shows up at enchanting tables,
+	 * and that passives need no second step.
+	 */
+	private static Component unlockMessage(SkillNode node) {
+		if (!node.enchantable()) {
+			return Component.translatable(node.type() == SkillType.PASSIVE
+				? "mastery.toolmastery.unlock.ok.passive"
+				: "mastery.toolmastery.unlock.ok.other", node.displayName());
 		}
-		if (ModEnchantments.applyToMainHand(player, grant)) {
-			return " Enchantment applied to your held tool.";
+		ModEnchantments.Grant grant = ModEnchantments.NODE_GRANTS.get(node.id());
+		boolean inTable = grant != null && ModEnchantments.TABLE_POOL.contains(grant.enchantment());
+		return Component.translatable(inTable
+				? "mastery.toolmastery.unlock.ok.enchantment"
+				: "mastery.toolmastery.unlock.ok.capstone",
+			node.displayName(), node.enchantCost());
+	}
+
+	/**
+	 * Attempts to stamp an unlocked enchantment onto the player's main-hand
+	 * item for the node's enchant price. Repeatable: nothing about the node
+	 * changes, only the item.
+	 */
+	public static Result enchantHeld(ServerPlayer player, SkillTree tree, SkillNode node) {
+		if (!node.enchantable()) {
+			return fail("mastery.toolmastery.enchant.fail.not_enchantable", node.displayName());
 		}
-		return " Unlocked — apply it with /enchant while holding a compatible tool.";
+		if (!progress(player, tree).owns(node.id())) {
+			return fail("mastery.toolmastery.enchant.fail.locked", node.displayName());
+		}
+		ModEnchantments.Grant grant = ModEnchantments.NODE_GRANTS.get(node.id());
+		Holder<Enchantment> holder = grant == null ? null : ModEnchantments.holder(player, grant.enchantment());
+		if (holder == null) {
+			return fail("mastery.toolmastery.enchant.fail.not_enchantable", node.displayName());
+		}
+
+		ItemStack stack = player.getMainHandItem();
+		Component problem = EnchantCompat.problem(stack, holder, grant.level());
+		if (problem != null) {
+			return new Result.Fail(problem);
+		}
+		if (player.experienceLevel < node.enchantCost()) {
+			return fail("mastery.toolmastery.fail.levels", node.enchantCost(), player.experienceLevel);
+		}
+
+		player.giveExperienceLevels(-node.enchantCost());
+		EnchantmentHelper.updateEnchantments(stack, mutable -> mutable.set(holder, grant.level()));
+		return ok("mastery.toolmastery.enchant.ok",
+			Enchantment.getFullname(holder, grant.level()), stack.getHoverName(), node.enchantCost());
 	}
 
 	/** Debug: completes every gate counter and unlocks every tier, free. */
@@ -112,20 +180,162 @@ public final class SkillService {
 		ModAdvancements.syncAll(player);
 	}
 
-	/** Debug: grants every node of every tree, free, applying enchant grants to the held tool. */
-	public static void buyAll(ServerPlayer player) {
+	/**
+	 * Debug: unlocks every node of every tree, free. Enchantments are only
+	 * unlocked, not applied — use {@code /mastery debug kit} for tools that
+	 * already carry them, or the skill screen's Enchant button.
+	 */
+	public static void unlockAll(ServerPlayer player) {
 		for (SkillTree tree : SkillTrees.ALL.values()) {
 			TreeProgress progress = progress(player, tree);
 			progress.unlockedTiers = tree.tiers().size();
 			for (SkillNode node : tree.nodes().values()) {
 				if (!node.implemented()) {
-					continue; // same rule as buyNode: nothing to grant yet
+					continue; // same rule as unlockNode: nothing to grant yet
+				}
+				if (node.exclusiveWith() != null && progress.owns(node.exclusiveWith())) {
+					continue; // a capstone choice stays a choice, even in debug
 				}
 				progress.purchased.add(node.id());
-				applyGrant(player, node.id());
 			}
 		}
 		ModAdvancements.syncAll(player);
+	}
+
+	/**
+	 * Debug: wipes a tree back to a brand-new player — no tiers, no nodes, no
+	 * gate counters. Pass null to wipe every tree. The exact inverse of
+	 * {@link #maxAll} + {@link #unlockAll}, so a feature can be re-tested from
+	 * the very first gate.
+	 *
+	 * <p>Enchantments already stamped on tools are on the items, not in the
+	 * progress, so they survive this — {@link #stripHeld} clears those.
+	 */
+	public static void reset(ServerPlayer player, @Nullable SkillTree only) {
+		for (SkillTree tree : SkillTrees.ALL.values()) {
+			if (only != null && only != tree) {
+				continue;
+			}
+			TreeProgress progress = progress(player, tree);
+			progress.unlockedTiers = 0;
+			progress.purchased.clear();
+			progress.counters.clear();
+		}
+		ModAdvancements.syncAll(player);
+	}
+
+	/**
+	 * Debug: hands over one whole tier of a tree — its gates completed, the tier
+	 * (and everything below it) open, and every node in it unlocked, free.
+	 *
+	 * <p>The gap this fills sits between {@code debug tier}, which only moves the
+	 * ceiling, and {@code debug unlockall}, which hands over all five tiers of
+	 * all three trees: this is "let me look at exactly tier 3 of the pickaxe".
+	 *
+	 * <p>Nodes that chain off a lower tier drag their prerequisites in with them,
+	 * so the tree never ends up showing Smelt II owned without Smelt I. Nodes
+	 * that are not implemented yet, and the losing half of a capstone pair, are
+	 * skipped and counted.
+	 */
+	public static Result unlockTierNodes(ServerPlayer player, SkillTree tree, int tierNumber) {
+		if (tierNumber < 1 || tierNumber > tree.tiers().size()) {
+			return fail("mastery.toolmastery.tier.fail.range_1", tree.tiers().size());
+		}
+		TreeProgress progress = progress(player, tree);
+		int index = tierNumber - 1;
+
+		// Complete the gates up to here too, so /mastery status and the tier
+		// headers agree with the tiers this just opened.
+		for (int t = 0; t <= index; t++) {
+			for (GateRequirement gate : tree.tiers().get(t).gates()) {
+				if (progress.count(gate.id()) < gate.target()) {
+					progress.counters.put(gate.id(), gate.target());
+				}
+			}
+		}
+		progress.unlockedTiers = Math.max(progress.unlockedTiers, tierNumber);
+
+		int granted = 0;
+		int skipped = 0;
+		for (SkillNode node : tree.nodes().values()) {
+			if (node.tier() != index) {
+				continue;
+			}
+			if (!node.implemented()
+				|| (node.exclusiveWith() != null && progress.owns(node.exclusiveWith()))) {
+				skipped++;
+				continue;
+			}
+			granted += grantWithPrerequisites(tree, progress, node);
+		}
+		ModAdvancements.syncAll(player);
+		return ok("mastery.toolmastery.tier.unlocked", granted, tierNumber, tree.id(), skipped);
+	}
+
+	/** Adds a node and everything its {@code requires} chain depends on. Returns how many were new. */
+	private static int grantWithPrerequisites(SkillTree tree, TreeProgress progress, SkillNode node) {
+		int added = 0;
+		for (SkillNode current = node; current != null; current = tree.node(current.requires())) {
+			if (progress.purchased.add(current.id())) {
+				added++;
+			}
+			if (current.requires() == null) {
+				break;
+			}
+		}
+		return added;
+	}
+
+	/**
+	 * Debug: re-locks one node, leaving tiers and gate counters alone — for
+	 * testing a single unlock over and over without redoing the whole tree.
+	 */
+	public static Result lockNode(ServerPlayer player, SkillTree tree, SkillNode node) {
+		if (!progress(player, tree).purchased.remove(node.id())) {
+			return fail("mastery.toolmastery.lock.fail.not_owned", node.displayName());
+		}
+		return ok("mastery.toolmastery.lock.ok", node.displayName());
+	}
+
+	/**
+	 * Debug: sets how many tiers of a tree are open, up or down. Nodes above the
+	 * new ceiling are re-locked, so lowering the tier is a real rollback rather
+	 * than a half-state where a locked tier still has bought nodes.
+	 */
+	public static Result setTier(ServerPlayer player, SkillTree tree, int tiers) {
+		if (tiers < 0 || tiers > tree.tiers().size()) {
+			return fail("mastery.toolmastery.tier.fail.range", tree.tiers().size());
+		}
+		TreeProgress progress = progress(player, tree);
+		progress.unlockedTiers = tiers;
+		for (SkillNode node : tree.nodes().values()) {
+			if (node.tier() >= tiers) {
+				progress.purchased.remove(node.id());
+			}
+		}
+		ModAdvancements.syncAll(player);
+		return ok("mastery.toolmastery.tier.set", tree.id(), tiers);
+	}
+
+	/**
+	 * Debug: strips every Tool Mastery enchantment off the held item, so the
+	 * same tool can be fed back through the Enchant button.
+	 */
+	public static Result stripHeld(ServerPlayer player) {
+		ItemStack stack = player.getMainHandItem();
+		if (stack.isEmpty()) {
+			return fail("mastery.toolmastery.strip.fail.empty");
+		}
+		int removed = 0;
+		for (ModEnchantments.Grant grant : ModEnchantments.NODE_GRANTS.values()) {
+			Holder<Enchantment> holder = ModEnchantments.holder(player, grant.enchantment());
+			if (holder == null || EnchantmentHelper.getItemEnchantmentLevel(holder, stack) <= 0) {
+				continue;
+			}
+			EnchantmentHelper.updateEnchantments(stack, mutable -> mutable.set(holder, 0));
+			removed++;
+		}
+		return ok("mastery.toolmastery.strip.ok", removed, stack.getHoverName());
 	}
 
 	/** Convenience for tracking hooks: bump a gate counter on the tree. */
@@ -142,8 +352,7 @@ public final class SkillService {
 	 * Highest level of one of our enchantments this player has unlocked in any
 	 * tree — the enchanting table offers levels up to this.
 	 */
-	public static int maxEnchantLevelOwned(ServerPlayer player,
-	                                       net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> enchantmentKey) {
+	public static int maxEnchantLevelOwned(ServerPlayer player, ResourceKey<Enchantment> enchantmentKey) {
 		int max = 0;
 		for (SkillTree tree : SkillTrees.ALL.values()) {
 			TreeProgress progress = progress(player, tree);

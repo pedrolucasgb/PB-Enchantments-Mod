@@ -38,7 +38,7 @@ import java.util.UUID;
  *
  * Drops are collected at the END of the tick, once every drop entity has
  * actually spawned — scanning inside the break event misses late spawns. Same
- * trick MeltHandler uses, and it is what makes Double Axe compose with a Logic
+ * trick SmeltHandler uses, and it is what makes Double Axe compose with a Logic
  * fell: every felled log fires its own break event, so every log rolls on its
  * own. TimberScheduler fells synchronously inside the break event, so by
  * the time {@link #tick} runs at the end of the tick every drop is already on

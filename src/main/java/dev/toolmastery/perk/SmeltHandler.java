@@ -21,48 +21,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Melt — chance to smelt ore drops on the spot:
+ * Smelt — chance to smelt ore drops on the spot:
  *   I: 25% · II: 50% · III: 100% (per item)
- * Magma Touch (capstone) always smelts, and covers everything with a furnace
- * recipe, not just ores.
  *
  * Breaks are queued and the drops are converted at the END of the same server
  * tick, after every drop entity has actually spawned — scanning during the
  * break event misses drops that spawn late.
  */
-public final class MeltHandler {
+public final class SmeltHandler {
 	private static final Map<Item, Item> ORE_SMELTS = Map.of(
 		Items.RAW_COPPER, Items.COPPER_INGOT,
 		Items.RAW_IRON, Items.IRON_INGOT,
 		Items.RAW_GOLD, Items.GOLD_INGOT
 	);
 
-	/** Magma Touch: everything with a furnace recipe drops pre-smelted. */
-	private static final Map<Item, Item> MAGMA_SMELTS = Map.ofEntries(
-		Map.entry(Items.RAW_COPPER, Items.COPPER_INGOT),
-		Map.entry(Items.RAW_IRON, Items.IRON_INGOT),
-		Map.entry(Items.RAW_GOLD, Items.GOLD_INGOT),
-		Map.entry(Items.COBBLESTONE, Items.STONE),
-		Map.entry(Items.COBBLED_DEEPSLATE, Items.DEEPSLATE),
-		Map.entry(Items.STONE, Items.SMOOTH_STONE),
-		Map.entry(Items.SAND, Items.GLASS),
-		Map.entry(Items.RED_SAND, Items.GLASS),
-		Map.entry(Items.NETHERRACK, Items.NETHER_BRICK),
-		Map.entry(Items.CLAY_BALL, Items.BRICK),
-		Map.entry(Items.CLAY, Items.TERRACOTTA),
-		Map.entry(Items.BASALT, Items.SMOOTH_BASALT),
-		Map.entry(Items.SANDSTONE, Items.SMOOTH_SANDSTONE),
-		Map.entry(Items.RED_SANDSTONE, Items.SMOOTH_RED_SANDSTONE),
-		Map.entry(Items.QUARTZ_BLOCK, Items.SMOOTH_QUARTZ),
-		Map.entry(Items.ANCIENT_DEBRIS, Items.NETHERITE_SCRAP)
-	);
-
-	private record Pending(ServerLevel level, BlockPos pos, int chancePercent, boolean magma) {
+	private record Pending(ServerLevel level, BlockPos pos, int chancePercent) {
 	}
 
 	private static final List<Pending> PENDING = new ArrayList<>();
 
-	private MeltHandler() {
+	private SmeltHandler() {
 	}
 
 	public static void onBreak(Level level, Player player, BlockPos pos, BlockState state) {
@@ -73,17 +51,16 @@ public final class MeltHandler {
 		if (!pickaxe.is(ItemTags.PICKAXES)) {
 			return;
 		}
-		int meltLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.MELT);
-		boolean magma = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.MAGMA_TOUCH) > 0;
-		if (meltLevel <= 0 && !magma) {
+		int smeltLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.SMELT);
+		if (smeltLevel <= 0) {
 			return;
 		}
-		int chance = switch (meltLevel) {
+		int chance = switch (smeltLevel) {
 			case 1 -> 25;
 			case 2 -> 50;
-			default -> meltLevel >= 3 ? 100 : 0;
+			default -> smeltLevel >= 3 ? 100 : 0;
 		};
-		PENDING.add(new Pending(serverLevel, pos, chance, magma));
+		PENDING.add(new Pending(serverLevel, pos, chance));
 	}
 
 	/** Called at the end of every server tick: converts the queued drops. */
@@ -97,12 +74,8 @@ public final class MeltHandler {
 				ItemEntity.class, new AABB(pending.pos()).inflate(1.5), entity -> entity.tickCount <= 1)) {
 
 				ItemStack stack = drop.getItem();
-				Item result = pending.magma() ? MAGMA_SMELTS.get(stack.getItem()) : null;
-				int chance = 100; // Magma Touch always smelts
-				if (result == null) {
-					result = ORE_SMELTS.get(stack.getItem());
-					chance = pending.chancePercent();
-				}
+				Item result = ORE_SMELTS.get(stack.getItem());
+				int chance = pending.chancePercent();
 				if (result == null || chance <= 0) {
 					continue;
 				}

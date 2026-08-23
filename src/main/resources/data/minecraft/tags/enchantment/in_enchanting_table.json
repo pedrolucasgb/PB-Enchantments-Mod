@@ -1,9 +1,10 @@
 {
 	"values": [
 		"toolmastery:dig_range",
-		"toolmastery:melt",
+		"toolmastery:smelt",
 		"toolmastery:logic",
 		"toolmastery:rich_vein",
-		"toolmastery:environment"
+		"toolmastery:environment",
+		"toolmastery:indestructible"
 	]
 }

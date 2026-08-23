@@ -1,0 +1,93 @@
+TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
+Version 0.2.0
+================================================
+
+HOW TO INSTALL
+--------------
+1. Have Minecraft Java Edition installed (official launcher) and run it at
+   least once.
+2. Double-click "Install Tool Mastery.bat".
+   The installer will automatically:
+     - install Fabric Loader (if you do not have it yet);
+     - download Fabric API (if you do not have it yet);
+     - remove an older Tool Mastery version, if there is one;
+     - copy the Tool Mastery mod into your mods folder.
+3. Open the Minecraft launcher, pick the "fabric-loader-26.2" profile and
+   hit Play.
+4. In game, press K to open the skill trees.
+
+HOW IT WORKS
+------------
+Every skill in the tree has up to TWO buttons:
+
+  UNLOCK  - a one-off purchase: a few XP levels plus materials you gather
+            by playing the class. A passive switches on immediately. An
+            enchantment starts showing up at your enchanting table.
+
+  ENCHANT - repeatable: costs whole XP levels and applies the enchantment
+            to the item in your hand. Use it as often as you like, on as
+            many tools as you like.
+
+Enchant is deliberately pricier than the enchanting table (20 levels for
+rank I, 35 for II, 50 for III): the table stays the cheap route, Enchant is
+the guaranteed one.
+
+Both buttons explain themselves before charging you. Clicking either turns
+the panel into a confirmation card with the exact cost, the materials you
+are carrying and what changes. Nothing is spent until you press Confirm.
+
+Enchant also checks whether it can work BEFORE spending a single level: the
+wrong tool (Smelt on an axe) or a conflicting enchantment greys the button
+out, with the reason in the tooltip.
+
+Each rank of a skill describes only what that rank does - Dig Range II
+describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.2.0
+--------------------
+- INDESTRUCTIBLE (new, Enchanter tier 3, unlocked with phantom membrane):
+  the item never breaks. Damage stops one point short of the end, like an
+  Elytra. While it sits there spent it works like an empty hand - bare-hand
+  speed, and blocks that need a tool drop nothing - until you repair it.
+
+- ANCIENT FORTUNE (pickaxe capstone) is a PASSIVE now: it lifts the Fortune
+  ceiling from III to IV. From then on YOUR enchanting table can offer
+  Fortune IV.
+
+- MASON'S GRIP and LUMBERJACK'S ARMS hit harder:
+  +20/40/60% mining, +25/50/75% chopping.
+  (The old values worked, they were just too small to feel.)
+
+- DIG RANGE only breaks pickaxe-mineable blocks of roughly the same
+  hardness as the one you hit. Never dirt, gravel or wood. Stone next to
+  obsidian leaves the obsidian standing - unless your mining speed makes
+  both of them near-instant.
+
+- MELT is now SMELT. Skills you already bought stay bought, but tools that
+  were already enchanted with Melt lose the enchantment when the world
+  loads - just re-apply it with the Enchant button.
+
+- REMOVED: the Magma Touch enchantment and every ACTIVE skill, including
+  the Reroll button on the enchanting table.
+
+IMPORTANT
+---------
+- The mod only works on Minecraft 26.2.
+- "install.ps1" and "toolmastery-0.2.0.jar" have to stay in the same folder
+  as the .bat.
+- You need an internet connection the first time (to download Fabric Loader
+  and Fabric API).
+- If you already had an older version installed, the installer deletes the
+  old jar for you. Never leave two versions of the mod in the mods folder.
+
+COMMON PROBLEMS
+---------------
+- "Java not found": launch Minecraft 26.2 once from the official launcher
+  (it downloads Java by itself) and run the installer again.
+- The game crashes on launch: check for old mods from other versions in the
+  mods folder (%appdata%\.minecraft\mods).
+- The mod does not show up in game: make sure the profile selected in the
+  launcher is "fabric-loader-26.2" and not the normal one.
+- "I broke a block and nothing dropped": that is most likely Miner's
+  Magnet, which sends drops straight to your inventory instead of letting
+  them fall. Check your bag.

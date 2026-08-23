@@ -43,16 +43,34 @@ public final class ModAdvancements {
 		player.getAdvancements().award(advancement, CRITERION);
 	}
 
+	/** Takes the advancement for one tier back. Silent no-op when it is not held. */
+	public static void revokeTier(ServerPlayer player, String treeId, int tierIndex) {
+		MinecraftServer server = player.level().getServer();
+		if (server == null) {
+			return;
+		}
+		AdvancementHolder advancement = server.getAdvancements().get(tierId(treeId, tierIndex));
+		if (advancement != null) {
+			player.getAdvancements().revoke(advancement, CRITERION);
+		}
+	}
+
 	/**
-	 * Awards every tier this player has already unlocked. Runs on join so saves
+	 * Makes the advancements screen match the skill trees exactly: every
+	 * unlocked tier awarded, every locked one taken back. Runs on join so saves
 	 * made before this feature — and anything cleared with /advancement revoke —
-	 * catch up, and after debug grants that move several tiers at once.
+	 * catch up, after debug grants that move several tiers at once, and after a
+	 * debug reset, which is the reason this also revokes.
 	 */
 	public static void syncAll(ServerPlayer player) {
 		for (SkillTree tree : SkillTrees.ALL.values()) {
 			TreeProgress progress = SkillService.progress(player, tree);
-			for (int tierIndex = 0; tierIndex < progress.unlockedTiers; tierIndex++) {
-				grantTier(player, tree.id(), tierIndex);
+			for (int tierIndex = 0; tierIndex < tree.tiers().size(); tierIndex++) {
+				if (tierIndex < progress.unlockedTiers) {
+					grantTier(player, tree.id(), tierIndex);
+				} else {
+					revokeTier(player, tree.id(), tierIndex);
+				}
 			}
 		}
 	}

@@ -1,5 +1,9 @@
 package dev.toolmastery.skill;
 
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -7,10 +11,27 @@ import java.util.Map;
 
 /**
  * Static definitions of every skill tree — the design document in code.
- * Sprint 1 ships Pickaxe and Axe; the other five classes are coming soon.
+ * Sprint 1 ships Pickaxe, Axe and Enchanter; the other four classes are coming soon.
+ *
+ * <p>Every node carries two prices. {@code of/chained/capstone} sets the XP half
+ * of the <b>unlock</b>, {@code .costing(...)} its materials, and
+ * {@code .enchantFor(n)} the repeatable <b>enchant</b> price. Enchant prices sit
+ * far above unlock prices on purpose: 20 levels for a rank I, 35 for a rank II
+ * and 50 for a rank III, so a table at 30 levels — which also throws in vanilla
+ * enchantments — stays the better deal for anyone willing to grind for it.
+ * Single-level enchantments are priced by what they are worth rather than by
+ * rank, which is why Indestructible costs 40.
  */
 public final class SkillTrees {
 	private SkillTrees() {
+	}
+
+	private static MaterialCost mat(Item item, int count) {
+		return MaterialCost.of(item, count);
+	}
+
+	private static MaterialCost mat(TagKey<Item> tag, int count) {
+		return MaterialCost.of(tag, count);
 	}
 
 	// ---------- Pickaxe — Path of the Deep ----------
@@ -31,7 +52,6 @@ public final class SkillTrees {
 				new GateRequirement("smelt_ores", 64)
 			)),
 			// Tier 3 — Mine Master
-			// (a Prospector's Sense usage gate returns here once the skill ships)
 			new SkillTier(15, List.of(
 				new GateRequirement("mine_gold", 32),
 				new GateRequirement("mine_diamond", 16),
@@ -45,7 +65,6 @@ public final class SkillTrees {
 				new GateRequirement("mine_mountain_emerald", 1)
 			)),
 			// Tier 5 — Heart of the Mountain
-			// (a Prospector's Sense diamond-reveal gate returns here once the skill ships)
 			new SkillTier(30, List.of(
 				new GateRequirement("ore_checklist", 11),
 				new GateRequirement("break_total", 10000)
@@ -53,28 +72,50 @@ public final class SkillTrees {
 		),
 		List.of(
 			// Tier 1
-			SkillNode.of("masons_grip_1", 0, 3, SkillType.PASSIVE),
-			SkillNode.of("miners_magnet", 0, 5, SkillType.PASSIVE),
-			SkillNode.of("melt_1", 0, 4, SkillType.ENCHANTMENT),
+			SkillNode.of("masons_grip_1", 0, 3, SkillType.PASSIVE)
+				.costing(mat(Items.COBBLESTONE, 64), mat(Items.COAL, 8)),
+			SkillNode.of("miners_magnet", 0, 5, SkillType.PASSIVE)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.HOPPER, 1)),
+			SkillNode.of("smelt_1", 0, 4, SkillType.ENCHANTMENT)
+				.costing(mat(Items.COAL, 16), mat(Items.IRON_INGOT, 8))
+				.enchantFor(20),
 			// Tier 2
-			SkillNode.chained("masons_grip_2", 1, 5, "masons_grip_1", SkillType.PASSIVE),
-			SkillNode.of("dig_range_1", 1, 6, SkillType.ENCHANTMENT),
-			SkillNode.chained("melt_2", 1, 6, "melt_1", SkillType.ENCHANTMENT),
-			SkillNode.of("prospectors_sense", 1, 8, SkillType.ACTIVE).future(),
+			SkillNode.chained("masons_grip_2", 1, 5, "masons_grip_1", SkillType.PASSIVE)
+				.costing(mat(Items.COBBLESTONE, 128), mat(Items.IRON_INGOT, 16)),
+			SkillNode.of("dig_range_1", 1, 6, SkillType.ENCHANTMENT)
+				.costing(mat(Items.IRON_INGOT, 12), mat(Items.FLINT, 8))
+				.enchantFor(20),
+			SkillNode.chained("smelt_2", 1, 6, "smelt_1", SkillType.ENCHANTMENT)
+				.costing(mat(Items.COAL, 32), mat(Items.BLAST_FURNACE, 1))
+				.enchantFor(35),
 			// Tier 3
-			SkillNode.of("miners_helm", 2, 7, SkillType.ITEM).future(),
-			SkillNode.chained("masons_grip_3", 2, 8, "masons_grip_2", SkillType.PASSIVE),
-			SkillNode.chained("dig_range_2", 2, 9, "dig_range_1", SkillType.ENCHANTMENT),
-			SkillNode.chained("melt_3", 2, 9, "melt_2", SkillType.ENCHANTMENT),
-			SkillNode.of("rich_vein_1", 2, 10, SkillType.ENCHANTMENT),
+			SkillNode.of("miners_helm", 2, 7, SkillType.ITEM)
+				.costing(mat(Items.IRON_INGOT, 16), mat(Items.GLOWSTONE_DUST, 8)).future(),
+			SkillNode.chained("masons_grip_3", 2, 8, "masons_grip_2", SkillType.PASSIVE)
+				.costing(mat(Items.COBBLED_DEEPSLATE, 128), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.chained("dig_range_2", 2, 9, "dig_range_1", SkillType.ENCHANTMENT)
+				.costing(mat(Items.DIAMOND, 6), mat(Items.REDSTONE, 32))
+				.enchantFor(35),
+			SkillNode.chained("smelt_3", 2, 9, "smelt_2", SkillType.ENCHANTMENT)
+				.costing(mat(Items.BLAZE_POWDER, 8), mat(Items.COAL, 32))
+				.enchantFor(50),
+			SkillNode.of("rich_vein_1", 2, 10, SkillType.ENCHANTMENT)
+				.costing(mat(Items.DIAMOND, 4), mat(Items.LAPIS_LAZULI, 32))
+				.enchantFor(20),
 			// Tier 4
-			SkillNode.of("deep_haste", 3, 8, SkillType.PASSIVE),
-			SkillNode.chained("dig_range_3", 3, 14, "dig_range_2", SkillType.ENCHANTMENT),
-			SkillNode.of("obsidian_breaker", 3, 6, SkillType.PASSIVE),
-			SkillNode.chained("rich_vein_2", 3, 10, "rich_vein_1", SkillType.ENCHANTMENT),
-			// Tier 5 — capstones (mutually exclusive)
-			SkillNode.capstone("magma_touch", 4, 20, "ancient_fortune", SkillType.ENCHANTMENT),
-			SkillNode.capstone("ancient_fortune", 4, 20, "magma_touch", SkillType.PASSIVE).future()
+			SkillNode.of("deep_haste", 3, 8, SkillType.PASSIVE)
+				.costing(mat(Items.DIAMOND_BLOCK, 1), mat(Items.GLOWSTONE_DUST, 16)),
+			SkillNode.chained("dig_range_3", 3, 14, "dig_range_2", SkillType.ENCHANTMENT)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.DIAMOND, 8))
+				.enchantFor(50),
+			SkillNode.of("obsidian_breaker", 3, 6, SkillType.PASSIVE)
+				.costing(mat(Items.OBSIDIAN, 16), mat(Items.DIAMOND, 4)),
+			SkillNode.chained("rich_vein_2", 3, 10, "rich_vein_1", SkillType.ENCHANTMENT)
+				.costing(mat(Items.DIAMOND, 8), mat(Items.EMERALD_BLOCK, 1))
+				.enchantFor(35),
+			// Tier 5 — capstone
+			SkillNode.of("ancient_fortune", 4, 20, SkillType.PASSIVE)
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.EMERALD, 32), mat(Items.AMETHYST_SHARD, 16))
 		)
 	);
 
@@ -115,27 +156,44 @@ public final class SkillTrees {
 		),
 		List.of(
 			// Tier 1
-			SkillNode.of("lumberjacks_arms_1", 0, 3, SkillType.PASSIVE),
-			SkillNode.of("loggers_magnet", 0, 5, SkillType.PASSIVE),
-			SkillNode.of("fair_harvest", 0, 4, SkillType.PASSIVE),
+			SkillNode.of("lumberjacks_arms_1", 0, 3, SkillType.PASSIVE)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.IRON_INGOT, 4)),
+			SkillNode.of("loggers_magnet", 0, 5, SkillType.PASSIVE)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.HOPPER, 1)),
+			SkillNode.of("fair_harvest", 0, 4, SkillType.PASSIVE)
+				.costing(mat(ItemTags.SAPLINGS, 16), mat(Items.BONE_MEAL, 16)),
 			// Tier 2
-			SkillNode.chained("lumberjacks_arms_2", 1, 5, "lumberjacks_arms_1", SkillType.PASSIVE),
-			SkillNode.of("logic_1", 1, 8, SkillType.ENCHANTMENT),
-			SkillNode.of("rich_bark", 1, 4, SkillType.ITEM).future(),
+			SkillNode.chained("lumberjacks_arms_2", 1, 5, "lumberjacks_arms_1", SkillType.PASSIVE)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.IRON_INGOT, 16)),
+			SkillNode.of("logic_1", 1, 8, SkillType.ENCHANTMENT)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.IRON_INGOT, 8))
+				.enchantFor(20),
+			SkillNode.of("rich_bark", 1, 4, SkillType.ITEM)
+				.costing(mat(ItemTags.LOGS, 32), mat(Items.SHEARS, 1)).future(),
 			// Tier 3
-			SkillNode.chained("lumberjacks_arms_3", 2, 8, "lumberjacks_arms_2", SkillType.PASSIVE),
-			SkillNode.of("pruner", 2, 6, SkillType.PASSIVE),
-			SkillNode.chained("logic_2", 2, 9, "logic_1", SkillType.ENCHANTMENT),
-			SkillNode.of("double_axe_1", 2, 7, SkillType.PASSIVE),
-			SkillNode.of("shield_breaker", 2, 8, SkillType.PASSIVE),
+			SkillNode.chained("lumberjacks_arms_3", 2, 8, "lumberjacks_arms_2", SkillType.PASSIVE)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.of("pruner", 2, 6, SkillType.PASSIVE)
+				.costing(mat(ItemTags.LEAVES, 64), mat(Items.SHEARS, 2)),
+			SkillNode.chained("logic_2", 2, 9, "logic_1", SkillType.ENCHANTMENT)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.DIAMOND, 4))
+				.enchantFor(35),
+			SkillNode.of("double_axe_1", 2, 7, SkillType.PASSIVE)
+				.costing(mat(ItemTags.LOGS, 32), mat(Items.DIAMOND, 4)),
+			SkillNode.of("shield_breaker", 2, 8, SkillType.PASSIVE)
+				.costing(mat(Items.SHIELD, 2), mat(Items.IRON_INGOT, 16)),
 			// Tier 4
-			SkillNode.of("call_of_the_forest", 3, 10, SkillType.ACTIVE).future(),
-			SkillNode.chained("logic_3", 3, 12, "logic_2", SkillType.ENCHANTMENT),
-			SkillNode.chained("double_axe_2", 3, 8, "double_axe_1", SkillType.PASSIVE),
-			SkillNode.chained("environment", 3, 8, "logic_3", SkillType.ENCHANTMENT),
-			// Tier 5 — capstones (mutually exclusive)
-			SkillNode.capstone("lumberjacks_fury", 4, 20, "green_heart", SkillType.ACTIVE).future(),
-			SkillNode.capstone("green_heart", 4, 20, "lumberjacks_fury", SkillType.PASSIVE).future()
+			SkillNode.chained("logic_3", 3, 12, "logic_2", SkillType.ENCHANTMENT)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.DIAMOND, 8))
+				.enchantFor(50),
+			SkillNode.chained("double_axe_2", 3, 8, "double_axe_1", SkillType.PASSIVE)
+				.costing(mat(Items.DIAMOND, 8), mat(Items.EMERALD_BLOCK, 1)),
+			SkillNode.chained("environment", 3, 8, "logic_3", SkillType.ENCHANTMENT)
+				.costing(mat(ItemTags.SAPLINGS, 64), mat(Items.BONE_MEAL, 32))
+				.enchantFor(25),
+			// Tier 5 — capstone
+			SkillNode.of("green_heart", 4, 20, SkillType.PASSIVE)
+				.costing(mat(Items.EMERALD_BLOCK, 4), mat(ItemTags.SAPLINGS, 64)).future()
 		)
 	);
 
@@ -177,24 +235,37 @@ public final class SkillTrees {
 		),
 		List.of(
 			// Tier 1
-			SkillNode.of("arcane_insight_1", 0, 4, SkillType.PASSIVE),
-			SkillNode.of("scholar_1", 0, 3, SkillType.PASSIVE),
-			SkillNode.of("book_binder", 0, 4, SkillType.PASSIVE).future(),
+			SkillNode.of("arcane_insight_1", 0, 4, SkillType.PASSIVE)
+				.costing(mat(Items.LAPIS_LAZULI, 16), mat(Items.BOOK, 4)),
+			SkillNode.of("scholar_1", 0, 3, SkillType.PASSIVE)
+				.costing(mat(Items.BOOK, 8), mat(Items.BOOKSHELF, 4)),
+			SkillNode.of("book_binder", 0, 4, SkillType.PASSIVE)
+				.costing(mat(Items.BOOK, 16), mat(Items.PAPER, 32)).future(),
 			// Tier 2
-			SkillNode.chained("arcane_insight_2", 1, 6, "arcane_insight_1", SkillType.PASSIVE),
-			SkillNode.chained("scholar_2", 1, 5, "scholar_1", SkillType.PASSIVE),
-			SkillNode.of("tome_keeper", 1, 5, SkillType.ITEM).future(),
+			SkillNode.chained("arcane_insight_2", 1, 6, "arcane_insight_1", SkillType.PASSIVE)
+				.costing(mat(Items.LAPIS_LAZULI, 32), mat(Items.BOOKSHELF, 8)),
+			SkillNode.chained("scholar_2", 1, 5, "scholar_1", SkillType.PASSIVE)
+				.costing(mat(Items.BOOK, 16), mat(Items.BOOKSHELF, 8)),
+			SkillNode.of("tome_keeper", 1, 5, SkillType.ITEM)
+				.costing(mat(Items.BOOK, 32), mat(Items.LAPIS_LAZULI, 32)).future(),
 			// Tier 3
-			SkillNode.chained("arcane_insight_3", 2, 9, "arcane_insight_2", SkillType.PASSIVE),
-			SkillNode.of("inner_focus", 2, 8, SkillType.PASSIVE),
-			SkillNode.of("anvil_adept", 2, 7, SkillType.PASSIVE).future(),
+			SkillNode.chained("arcane_insight_3", 2, 9, "arcane_insight_2", SkillType.PASSIVE)
+				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16)),
+			SkillNode.of("inner_focus", 2, 8, SkillType.PASSIVE)
+				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.ENCHANTING_TABLE, 1)),
+			SkillNode.of("indestructible", 2, 10, SkillType.ENCHANTMENT)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.LAPIS_LAZULI, 32))
+				.enchantFor(40),
+			SkillNode.of("anvil_adept", 2, 7, SkillType.PASSIVE)
+				.costing(mat(Items.IRON_BLOCK, 4), mat(Items.EMERALD, 8)).future(),
 			// Tier 4
-			SkillNode.chained("scholar_3", 3, 8, "scholar_2", SkillType.PASSIVE),
-			SkillNode.of("arcane_conduit", 3, 10, SkillType.PASSIVE).future(),
-			SkillNode.of("curse_breaker", 3, 12, SkillType.ACTIVE).future(),
-			// Tier 5 — capstones (mutually exclusive)
-			SkillNode.capstone("rewrite_fate", 4, 20, "ancient_knowledge", SkillType.ACTIVE),
-			SkillNode.capstone("ancient_knowledge", 4, 20, "rewrite_fate", SkillType.PASSIVE).future()
+			SkillNode.chained("scholar_3", 3, 8, "scholar_2", SkillType.PASSIVE)
+				.costing(mat(Items.BOOK, 32), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD, 8)),
+			SkillNode.of("arcane_conduit", 3, 10, SkillType.PASSIVE)
+				.costing(mat(Items.BOOKSHELF, 32), mat(Items.DIAMOND, 8)).future(),
+			// Tier 5 — capstone
+			SkillNode.of("ancient_knowledge", 4, 20, SkillType.PASSIVE)
+				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD_BLOCK, 4)).future()
 		)
 	);
 

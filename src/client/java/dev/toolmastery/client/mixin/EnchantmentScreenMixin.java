@@ -2,11 +2,7 @@ package dev.toolmastery.client.mixin;
 
 import dev.toolmastery.client.EnchantPreviewState;
 import dev.toolmastery.enchant.EnchanterPerks;
-import dev.toolmastery.network.RerollPayload;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.network.chat.Component;
@@ -25,7 +21,6 @@ import java.util.List;
  *
  * - Arcane Insight: a side panel listing the true enchantments behind each
  *   offer the player can read (data arrives via EnchantPreviewPayload).
- * - Rewrite Fate: a free Reroll button for the capstone owners.
  * - Inner Focus: the lapis count is treated as full so the offers render (and
  *   click) enabled without lapis — the server validates the real perk.
  */
@@ -42,17 +37,8 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
 	}
 
 	@Inject(method = "init", at = @At("TAIL"))
-	private void toolmastery$initEnchanterPerks(CallbackInfo ci) {
+	private void toolmastery$resetInsightPanel(CallbackInfo ci) {
 		EnchantPreviewState.clear();
-		if (minecraft != null && minecraft.player != null
-				&& EnchanterPerks.owns(minecraft.player, EnchanterPerks.REWRITE_FATE)) {
-			Button reroll = Button.builder(Component.translatable("screen.toolmastery.reroll"),
-					button -> ClientPlayNetworking.send(new RerollPayload()))
-				.bounds(leftPos + imageWidth + 4, topPos, 64, 16)
-				.build();
-			reroll.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.reroll.tooltip")));
-			addRenderableWidget(reroll);
-		}
 	}
 
 	@Inject(method = "extractRenderState", at = @At("TAIL"))
