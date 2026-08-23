@@ -165,6 +165,8 @@ public final class MasteryCommand {
 								IntegerArgumentType.getInteger(context, "tiers"))))))
 				.then(Commands.literal("strip")
 					.executes(context -> strip(context.getSource())))
+				.then(Commands.literal("speed")
+					.executes(context -> speed(context.getSource())))
 				.then(Commands.literal("add")
 					.then(Commands.argument("tree", StringArgumentType.word())
 						.suggests(TREE_IDS)
@@ -328,6 +330,63 @@ public final class MasteryCommand {
 		int result = report(source, SkillService.setTier(player, tree, tiers));
 		dev.toolmastery.network.ModNetworking.sendState(player);
 		return result;
+	}
+
+	/**
+	 * The blocks {@code /mastery debug speed} measures: one per speed passive it
+	 * can prove, plus dirt as the control that nothing should ever touch.
+	 */
+	private static final java.util.List<net.minecraft.world.level.block.Block> SPEED_SAMPLES = java.util.List.of(
+		net.minecraft.world.level.block.Blocks.STONE,
+		net.minecraft.world.level.block.Blocks.DEEPSLATE,
+		net.minecraft.world.level.block.Blocks.IRON_ORE,
+		net.minecraft.world.level.block.Blocks.DIAMOND_ORE,
+		net.minecraft.world.level.block.Blocks.OBSIDIAN,
+		net.minecraft.world.level.block.Blocks.OAK_LOG,
+		net.minecraft.world.level.block.Blocks.DIRT
+	);
+
+	/**
+	 * /mastery debug speed - what the speed passives are actually doing to the
+	 * tool in your hand, in ticks. "Feels the same" is hard to argue with; a
+	 * before/after break time is not. Server-side numbers: the skill screen's
+	 * check mark is what tells you the client agrees, and it has to, or blocks
+	 * would heal mid-swing.
+	 */
+	private static int speed(CommandSourceStack source) {
+		ServerPlayer player = source.getPlayer();
+		if (player == null) {
+			return 0;
+		}
+		net.minecraft.world.item.ItemStack held = player.getMainHandItem();
+		source.sendSystemMessage(Component.literal("Holding: " + held.getHoverName().getString()
+			+ "  |  Mason's Grip " + roman0(dev.toolmastery.perk.MiningSpeed.masonsGripRank(player))
+			+ "  |  Lumberjack's Arms " + roman0(dev.toolmastery.perk.MiningSpeed.lumberjacksArmsRank(player))
+			+ "  |  Obsidian Breaker " + (SkillService.owns(player, SkillTrees.PICKAXE, "obsidian_breaker") ? "yes" : "no"))
+			.withStyle(ChatFormatting.AQUA));
+
+		for (net.minecraft.world.level.block.Block block : SPEED_SAMPLES) {
+			net.minecraft.world.level.block.state.BlockState state = block.defaultBlockState();
+			float hardness = state.getDestroySpeed(player.level(), player.blockPosition());
+			float withPerks = player.getDestroySpeed(state);
+			float factor = dev.toolmastery.perk.MiningSpeed.multiplier(player, state);
+			if (hardness < 0.0F || withPerks <= 0.0F) {
+				continue;
+			}
+			int divisor = player.hasCorrectToolForDrops(state) ? 30 : 100;
+			float ticksNow = hardness * divisor / withPerks;
+			// getDestroySpeed already has the factor in it, so undoing it gives vanilla.
+			float ticksVanilla = ticksNow * factor;
+			source.sendSystemMessage(Component.literal(String.format(
+					"  %-14s %5.1f -> %5.1f ticks  (x%.2f)",
+					block.getName().getString(), ticksVanilla, ticksNow, factor))
+				.withStyle(factor == 1.0F ? ChatFormatting.GRAY : ChatFormatting.GREEN));
+		}
+		return 1;
+	}
+
+	private static String roman0(int rank) {
+		return rank == 0 ? "-" : roman(rank);
 	}
 
 	/** /mastery debug strip - take every Tool Mastery enchantment off the held item. */

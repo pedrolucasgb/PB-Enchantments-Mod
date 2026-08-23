@@ -83,6 +83,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 /mastery debug tier pickaxe 2       # open exactly 2 tiers (re-locks nodes above)
 /mastery debug lock pickaxe smelt_1 # re-lock one node, leaving tiers and counters alone
 /mastery debug strip                # take every Tool Mastery enchantment off the held item
+/mastery debug speed                # measure the speed passives on the held tool, in ticks
 ```
 
 ---
