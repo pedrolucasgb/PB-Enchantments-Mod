@@ -138,7 +138,7 @@
 	"tier.toolmastery.enchanter.5": "Archmage",
 
 	"node.toolmastery.masons_grip": "Mason's Grip",
-	"node.toolmastery.masons_grip.desc": "Passive: mine stone, deepslate and ores faster with a pickaxe. I: +10%. II: +20%. III: +30%.",
+	"node.toolmastery.masons_grip.desc": "Passive: mine stone, deepslate and ores faster with a pickaxe. I: +20%. II: +40%. III: +60%.",
 	"node.toolmastery.miners_magnet": "Miner's Magnet",
 	"node.toolmastery.miners_magnet.desc": "Passive: drops from blocks broken with a pickaxe go straight into your inventory — including the extras from Dig Range and Rich Vein, and what Smelt already smelted. Whatever does not fit is left on the ground.",
 	"node.toolmastery.smelt": "Smelt",
@@ -161,7 +161,7 @@
 	"node.toolmastery.ancient_fortune.desc": "Capstone enchantment: every block is rolled as if your Fortune were one level higher — a bare pickaxe mines at Fortune I, a Fortune III pickaxe at Fortune IV. Cannot share a pickaxe with Silk Touch. Never rolls at a table; the tree is the only source. Exclusive with Magma Touch.",
 
 	"node.toolmastery.lumberjacks_arms": "Lumberjack's Arms",
-	"node.toolmastery.lumberjacks_arms.desc": "Passive: chop wood faster with an axe. I: +15%. II: +30%. III: +45%.",
+	"node.toolmastery.lumberjacks_arms.desc": "Passive: chop wood faster with an axe. I: +25%. II: +50%. III: +75%.",
 	"node.toolmastery.loggers_magnet": "Logger's Magnet",
 	"node.toolmastery.loggers_magnet.desc": "Passive: blocks chopped with an axe drop straight into your inventory, Logic fells included. Anything that does not fit stays on the ground.",
 	"node.toolmastery.fair_harvest": "Fair Harvest",

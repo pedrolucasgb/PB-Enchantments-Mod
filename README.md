@@ -115,7 +115,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 ### Passive skills (pickaxe)
 | Node | Levels | Effect |
 |---|---|---|
-| **Mason's Grip** | I–III | +10% / +20% / +30% mining speed on stone, deepslate and every ore |
+| **Mason's Grip** | I–III | +20% / +40% / +60% mining speed on stone, deepslate and every ore |
 | **Miner's Magnet** | — | Pickaxe drops go straight to the inventory (composes with Dig Range, Rich Vein and Smelt) |
 | **Deep Haste** | — | Permanent Haste I below Y = 0 |
 | **Obsidian Breaker** | — | Obsidian and crying obsidian break 50% faster |
@@ -125,7 +125,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 ### Axe passives (Path of the Grove)
 | Node | Tier | Effect |
 |---|---|---|
-| **Lumberjack's Arms** I–III | 1 / 2 / 3 | Axes chop wood +15% / +30% / +45% faster |
+| **Lumberjack's Arms** I–III | 1 / 2 / 3 | Axes chop wood +25% / +50% / +75% faster |
 | **Logger's Magnet** | 1 | Blocks chopped with an axe go straight into your inventory, Logic fells included |
 | **Fair Harvest** | 1 | +25% sapling chance from every leaf block you break, on top of the vanilla roll |
 | **Pruner** | 3 | Leaves broken with an axe drop double loot (apples, saplings, sticks) |

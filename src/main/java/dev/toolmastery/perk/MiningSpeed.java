@@ -11,9 +11,9 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Every skill that changes how fast a block breaks, folded into one factor:
- *   Mason's Grip I-III      +10% / +20% / +30% on stone, deepslate and ores
+ *   Mason's Grip I-III      +20% / +40% / +60% on stone, deepslate and ores
  *   Obsidian Breaker        +50% on obsidian and crying obsidian
- *   Lumberjack's Arms I-III +15% / +30% / +45% on axe-mineable blocks
+ *   Lumberjack's Arms I-III +25% / +50% / +75% on axe-mineable blocks
  *   Logic I                 -70% on logs, what level 1 pays for the instant fell
  *
  * <p>None of these can be a vanilla {@code block_break_speed} attribute: the
@@ -28,9 +28,15 @@ import net.minecraft.world.level.block.state.BlockState;
  * told and what the game does cannot drift apart.
  */
 public final class MiningSpeed {
-	private static final float MASONS_GRIP_STEP = 0.10F;
+	/**
+	 * Raised from +10%/+15% per rank on 2026-08-23. At the old values a rank III
+	 * shaved ~0.07s off a 0.28s stone break — real in the arithmetic, invisible
+	 * in the hand, and gone entirely under an Efficiency tool where the whole
+	 * break already fits in a tick or two.
+	 */
+	private static final float MASONS_GRIP_STEP = 0.20F;
 	private static final float OBSIDIAN_BREAKER_BONUS = 0.50F;
-	private static final float AXE_SPEED_PER_RANK = 0.15F;
+	private static final float AXE_SPEED_PER_RANK = 0.25F;
 
 	/** What a Logic I axe pays for felling the whole tree in one swing. */
 	private static final float LOGIC_1_SLOWDOWN = 0.3F;
