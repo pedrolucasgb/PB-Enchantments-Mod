@@ -4,6 +4,7 @@
 		"toolmastery:smelt",
 		"toolmastery:logic",
 		"toolmastery:rich_vein",
-		"toolmastery:environment"
+		"toolmastery:environment",
+		"toolmastery:indestructible"
 	]
 }

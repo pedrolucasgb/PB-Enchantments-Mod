@@ -4,6 +4,5 @@ package dev.toolmastery.skill;
 public enum SkillType {
 	ENCHANTMENT,
 	PASSIVE,
-	ACTIVE,
 	ITEM
 }

@@ -24,13 +24,12 @@ Every node is bought once with **Unlock** — cheap in XP, paid partly in materi
 |---|---|---|
 | Passive | The effect, live immediately | None — the unlock *is* the skill |
 | Enchantment | The enchantment starts appearing in **your** enchanting table offers (per player), capped at the level you unlocked | Optional **Enchant** |
-| Capstone enchantment | Never rolls at a table — the tree is the only source | **Enchant** is the only way onto a tool |
 
-**Enchant** is the repeatable, guaranteed route: 20 levels for a rank I, 35 for a rank II, 50 for a rank III, 60 for a capstone — all in whole XP levels, applied to whatever is in your main hand. It is priced well above a 30-level table roll on purpose: the enchanting table (which also throws in vanilla enchantments) stays the better deal for anyone willing to grind for it, and Enchant is what you pay when you want *this* enchantment on *this* tool right now.
+**Enchant** is the repeatable, guaranteed route: 20 levels for a rank I, 35 for a rank II, 50 for a rank III (40 for the single-level Indestructible) — all in whole XP levels, applied to whatever is in your main hand. It is priced well above a 30-level table roll on purpose: the enchanting table (which also throws in vanilla enchantments) stays the better deal for anyone willing to grind for it, and Enchant is what you pay when you want *this* enchantment on *this* tool right now.
 
 Both buttons explain themselves before they charge you: clicking either swaps the details panel for a confirmation card listing the exact cost, the materials you are carrying, and what changes — then Confirm or Cancel.
 
-Enchant refuses impossible combinations before spending anything, and says why: Smelt on an axe (wrong tool class), or Ancient Fortune on a Silk Touch pickaxe (conflicting enchantments). The same check runs on the client, so the button is greyed out with the reason in its tooltip.
+Enchant refuses impossible combinations before spending anything, and says why: Smelt on an axe (wrong tool class), or an enchantment that conflicts with something already on the item (Silk Touch, say). The same check runs on the client, so the button is greyed out with the reason in its tooltip.
 
 Every tier you unlock is also a **vanilla advancement**: open the advancements screen (**L**) and the *Tool Mastery* tab shows one branch per class, five tiers each — earned tiers lit up, the rest as goals ahead.
 
@@ -65,7 +64,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | Unlock the next tier | GUI button, or `/mastery unlock <tree>` |
 | Unlock a node | Click the node → **Unlock** → Confirm, or `/mastery unlock <tree> <node>` |
 | Enchant the held item | Click the node → **Enchant** → Confirm, or `/mastery enchant <tree> <node>` |
-| Other ways in | Enchanting table (unlocked, non-capstone enchantments) · `/enchant @s toolmastery:<id> <level>` |
+| Other ways in | Enchanting table (any unlocked enchantment) · `/enchant @s toolmastery:<id> <level>` |
 
 ### Debug commands (operators)
 
@@ -75,6 +74,8 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 /mastery debug kit                  # full kit: one enchanted tool per tier of every tree
 /mastery debug kit pickaxe          # tier kit for one tree
 /mastery debug kit pickaxe smelt    # one tool per level of a single enchantment
+/mastery debug unlocktier pickaxe 3 # gates + tier + every node of exactly that tier
+/mastery debug unlocktier all 1     # ...for all three trees at once
 /mastery debug add <tree> <counter> <amount>   # bump a gate counter
 
 # ...and the same thing backwards, to re-test a feature from a clean slate
@@ -95,7 +96,6 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ Achievement gates fed by live block-break tracking (ores, stone, logs, leaves, checklists as bitmasks)
 - ✅ Two-price economy: tier access costs, per-node unlock (XP levels + materials) and a repeatable per-node enchant price — all validated server-side
 - ✅ Enchant-time compatibility checks (supported item + exclusive sets), mirrored on the client so the button explains itself before you spend
-- ✅ Capstone exclusivity (choose one of two tier-5 nodes)
 - ✅ Skill tree GUI (key **K**): class tabs, tier columns, gate checklist panel, material checklist, unlock/enchant with a confirmation card — future classes shown as *Coming soon*
 - ✅ Every tier mirrored as a vanilla advancement in the **L** screen (*Tool Mastery* tab), with toast + chat announce on unlock
 - ✅ Client–server sync via custom payloads; all actions validated on the server
@@ -109,8 +109,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Rich Vein** | Pickaxe | I–II | Vein miner: up to 8 / 16 connected ores |
 | **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a slower chop, III clears the canopy too (requires real trees — log houses are safe) |
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
-| **Magma Touch** | Pickaxe | capstone | Everything with a furnace recipe drops pre-smelted (tree-only, never in the table) |
-| **Ancient Fortune** | Pickaxe | capstone | Every block rolls as if your Fortune were one level higher — bare pickaxe = Fortune I, Fortune III pickaxe = Fortune IV. Conflicts with Silk Touch (tree-only, never in the table) |
+| **Indestructible** | Enchanter, any damageable item | I | The item never breaks — damage stops one point short, like an Elytra. Spent, it works like an empty hand until repaired |
 
 ### Passive skills (pickaxe)
 | Node | Levels | Effect |
@@ -119,8 +118,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Miner's Magnet** | — | Pickaxe drops go straight to the inventory (composes with Dig Range, Rich Vein and Smelt) |
 | **Deep Haste** | — | Permanent Haste I below Y = 0 |
 | **Obsidian Breaker** | — | Obsidian and crying obsidian break 50% faster |
-
-> Ancient Fortune graduated from a planned passive to a real capstone enchantment in this release — see the enchantment table above.
+| **Ancient Fortune** | capstone | Lifts your ceiling on vanilla Fortune from III to IV — your enchanting table can offer Fortune IV, nobody else's can |
 
 ### Axe passives (Path of the Grove)
 | Node | Tier | Effect |
@@ -138,7 +136,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Arcane Insight** I–III | 1 / 2 / 3 | A panel beside the enchanting table reveals the *true* enchantments behind offer 1 / offers 1–2 / all three |
 | **Scholar** I–III | 1 / 2 / 4 | +20% / +40% / +60% XP from every source (orbs, bottles, smelting, breeding) |
 | **Inner Focus** | 3 | Enchanting no longer requires nor consumes lapis lazuli |
-| **Rewrite Fate** | capstone | A **Reroll** button on the enchanting table rerolls the offers — free and unlimited (exclusive with Ancient Knowledge) |
+| **Indestructible** | 3 | Enchantment: the item never breaks (see the enchantment table above) |
 
 ### Enchanting table integration
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers). Capstones are excluded by design: the tree is their only source

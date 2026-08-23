@@ -435,8 +435,10 @@ public class SkillTreeScreen extends Screen {
 				x, y, COLOR_LOCKED, 12);
 		}
 		y += 4;
+		// Keyed on the full node id, not the family: every rank describes only
+		// what that rank does, so Dig Range II does not recite I and III too.
 		graphics.textWithWordWrap(font,
-			Component.translatable("node.toolmastery." + SkillNode.baseId(node.id()) + ".desc"),
+			Component.translatable("node.toolmastery." + node.id() + ".desc"),
 			x, y, wrap, COLOR_MUTED);
 	}
 

@@ -525,9 +525,9 @@ public final class MasteryCommand {
 				dev.toolmastery.enchant.ModEnchantments.apply(player, stack, enchantmentKey, level));
 
 			// Vanilla progression ladder so every tier tool feels the growth:
-			// Efficiency I-V, Unbreaking I-III, and Fortune I-III on the pickaxe.
-			// Tier 5 stops at Fortune III because Ancient Fortune, stamped on
-			// above, is what pushes the effective level to IV.
+			// Efficiency I-V, Unbreaking I-III, and Fortune on the pickaxe -
+			// tier 5 reaching IV, the ceiling the Ancient Fortune capstone
+			// lifts.
 			dev.toolmastery.enchant.ModEnchantments.apply(player, stack,
 				net.minecraft.world.item.enchantment.Enchantments.EFFICIENCY, tierIndex + 1);
 			dev.toolmastery.enchant.ModEnchantments.apply(player, stack,
@@ -536,7 +536,7 @@ public final class MasteryCommand {
 				int fortune = switch (tierIndex) {
 					case 2 -> 1;
 					case 3 -> 2;
-					case 4 -> 3;
+					case 4 -> 4;
 					default -> 0;
 				};
 				if (fortune > 0) {

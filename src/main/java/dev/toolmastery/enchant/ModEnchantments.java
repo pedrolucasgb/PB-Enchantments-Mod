@@ -27,8 +27,7 @@ public final class ModEnchantments {
 	public static final ResourceKey<Enchantment> LOGIC = key("logic");
 	public static final ResourceKey<Enchantment> RICH_VEIN = key("rich_vein");
 	public static final ResourceKey<Enchantment> ENVIRONMENT = key("environment");
-	public static final ResourceKey<Enchantment> MAGMA_TOUCH = key("magma_touch");
-	public static final ResourceKey<Enchantment> ANCIENT_FORTUNE = key("ancient_fortune");
+	public static final ResourceKey<Enchantment> INDESTRUCTIBLE = key("indestructible");
 
 	/** Which skill node grants which enchantment level. */
 	public record Grant(ResourceKey<Enchantment> enchantment, int level) {
@@ -47,19 +46,17 @@ public final class ModEnchantments {
 		Map.entry("rich_vein_1", new Grant(RICH_VEIN, 1)),
 		Map.entry("rich_vein_2", new Grant(RICH_VEIN, 2)),
 		Map.entry("environment", new Grant(ENVIRONMENT, 1)),
-		Map.entry("magma_touch", new Grant(MAGMA_TOUCH, 1)),
-		Map.entry("ancient_fortune", new Grant(ANCIENT_FORTUNE, 1))
+		Map.entry("indestructible", new Grant(INDESTRUCTIBLE, 1))
 	);
 
 	/**
 	 * The enchantments an unlock also adds to the player's enchanting-table
 	 * offers. Mirrors data/minecraft/tags/enchantment/in_enchanting_table.json —
 	 * the tag is what the table actually reads; this set is what the skill
-	 * screen promises. Capstones are deliberately absent from both: they are
-	 * earned in the tree, never rolled.
+	 * screen promises.
 	 */
 	public static final Set<ResourceKey<Enchantment>> TABLE_POOL =
-		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT);
+		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE);
 
 	private ModEnchantments() {
 	}

@@ -4,6 +4,7 @@ import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.network.EnchantPreviewPayload;
 import dev.toolmastery.skill.SkillService;
+import dev.toolmastery.skill.SkillTrees;
 import dev.toolmastery.track.EnchantTracker;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
@@ -22,6 +23,7 @@ import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Final;
@@ -49,6 +51,10 @@ import java.util.stream.Stream;
  */
 @Mixin(EnchantmentMenu.class)
 public abstract class EnchantmentMenuMixin {
+	/** The pickaxe passive that lifts vanilla Fortune from III to IV. */
+	@Unique
+	private static final String ANCIENT_FORTUNE = "ancient_fortune";
+
 	@Unique
 	private Player toolmastery$player;
 
@@ -87,9 +93,17 @@ public abstract class EnchantmentMenuMixin {
 
 		List<EnchantmentInstance> rolled = EnchantmentHelper.selectEnchantment(random, stack, cost, unlocked);
 
-		// 2. Clamp our levels to what the skill tree has unlocked.
+		// 2. Clamp our levels to what the skill tree has unlocked, and vanilla
+		//    Fortune to III unless Ancient Fortune has lifted the ceiling. The
+		//    Fortune data file raises max_level to 4 for everybody, because a
+		//    data pack cannot be per-player; this is what makes it a reward.
 		List<EnchantmentInstance> result = new ArrayList<>(rolled.size());
 		for (EnchantmentInstance instance : rolled) {
+			if (instance.enchantment().is(Enchantments.FORTUNE) && instance.level() > 3
+					&& !SkillService.owns(serverPlayer, SkillTrees.PICKAXE, ANCIENT_FORTUNE)) {
+				result.add(new EnchantmentInstance(instance.enchantment(), 3));
+				continue;
+			}
 			ResourceKey<Enchantment> ours = toolmastery$matchOurs(instance.enchantment());
 			if (ours != null) {
 				int owned = SkillService.maxEnchantLevelOwned(serverPlayer, ours);

@@ -1,7 +1,5 @@
 package dev.toolmastery.network;
 
-import dev.toolmastery.enchant.EnchanterPerks;
-import dev.toolmastery.mixin.EnchantmentMenuAccessor;
 import dev.toolmastery.progress.ModAttachments;
 import dev.toolmastery.progress.PlayerProgress;
 import dev.toolmastery.progress.TreeProgress;
@@ -14,8 +12,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.EnchantmentMenu;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,23 +24,8 @@ public final class ModNetworking {
 
 	public static void init() {
 		PayloadTypeRegistry.serverboundPlay().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(RerollPayload.TYPE, RerollPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
-
-		ServerPlayNetworking.registerGlobalReceiver(RerollPayload.TYPE, (payload, context) -> {
-			ServerPlayer player = context.player();
-			if (!(player.containerMenu instanceof EnchantmentMenu menu)
-					|| !SkillService.owns(player, SkillTrees.ENCHANTER, EnchanterPerks.REWRITE_FATE)) {
-				return;
-			}
-			// Same bookkeeping as a real enchant, minus every cost: reroll the
-			// player's seed, mirror it into the menu, recompute the offers.
-			player.onEnchantmentPerformed(ItemStack.EMPTY, 0);
-			EnchantmentMenuAccessor accessor = (EnchantmentMenuAccessor) menu;
-			accessor.toolmastery$enchantmentSeedSlot().set(player.getEnchantmentSeed());
-			menu.slotsChanged(accessor.toolmastery$enchantSlots());
-		});
 
 		// The client needs the snapshot from login on, not from the first time the
 		// tree screen is opened: the speed passives are computed client-side while

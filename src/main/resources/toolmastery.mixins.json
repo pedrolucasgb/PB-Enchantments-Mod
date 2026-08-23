@@ -4,9 +4,8 @@
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
 		"AxeItemMixin",
-		"BlockDropsMixin",
+		"ItemStackMixin",
 		"BlockItemMixin",
-		"EnchantmentMenuAccessor",
 		"EnchantmentMenuMixin",
 		"FurnaceResultSlotMixin",
 		"ItemEntityMixin",

@@ -16,10 +16,11 @@ import java.util.Map;
  * <p>Every node carries two prices. {@code of/chained/capstone} sets the XP half
  * of the <b>unlock</b>, {@code .costing(...)} its materials, and
  * {@code .enchantFor(n)} the repeatable <b>enchant</b> price. Enchant prices sit
- * far above unlock prices on purpose: 20 levels for a rank I, 35 for a rank II,
- * 50 for a rank III and 60 for a capstone, so a table at 30 levels — which also
- * throws in vanilla enchantments — stays the better deal for anyone willing to
- * grind for it.
+ * far above unlock prices on purpose: 20 levels for a rank I, 35 for a rank II
+ * and 50 for a rank III, so a table at 30 levels — which also throws in vanilla
+ * enchantments — stays the better deal for anyone willing to grind for it.
+ * Single-level enchantments are priced by what they are worth rather than by
+ * rank, which is why Indestructible costs 40.
  */
 public final class SkillTrees {
 	private SkillTrees() {
@@ -51,7 +52,6 @@ public final class SkillTrees {
 				new GateRequirement("smelt_ores", 64)
 			)),
 			// Tier 3 — Mine Master
-			// (a Prospector's Sense usage gate returns here once the skill ships)
 			new SkillTier(15, List.of(
 				new GateRequirement("mine_gold", 32),
 				new GateRequirement("mine_diamond", 16),
@@ -65,7 +65,6 @@ public final class SkillTrees {
 				new GateRequirement("mine_mountain_emerald", 1)
 			)),
 			// Tier 5 — Heart of the Mountain
-			// (a Prospector's Sense diamond-reveal gate returns here once the skill ships)
 			new SkillTier(30, List.of(
 				new GateRequirement("ore_checklist", 11),
 				new GateRequirement("break_total", 10000)
@@ -89,8 +88,6 @@ public final class SkillTrees {
 			SkillNode.chained("smelt_2", 1, 6, "smelt_1", SkillType.ENCHANTMENT)
 				.costing(mat(Items.COAL, 32), mat(Items.BLAST_FURNACE, 1))
 				.enchantFor(35),
-			SkillNode.of("prospectors_sense", 1, 8, SkillType.ACTIVE)
-				.costing(mat(Items.GOLD_INGOT, 8), mat(Items.LAPIS_LAZULI, 16)).future(),
 			// Tier 3
 			SkillNode.of("miners_helm", 2, 7, SkillType.ITEM)
 				.costing(mat(Items.IRON_INGOT, 16), mat(Items.GLOWSTONE_DUST, 8)).future(),
@@ -116,13 +113,9 @@ public final class SkillTrees {
 			SkillNode.chained("rich_vein_2", 3, 10, "rich_vein_1", SkillType.ENCHANTMENT)
 				.costing(mat(Items.DIAMOND, 8), mat(Items.EMERALD_BLOCK, 1))
 				.enchantFor(35),
-			// Tier 5 — capstones (mutually exclusive)
-			SkillNode.capstone("magma_touch", 4, 20, "ancient_fortune", SkillType.ENCHANTMENT)
-				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.MAGMA_BLOCK, 16), mat(Items.BLAZE_POWDER, 16))
-				.enchantFor(60),
-			SkillNode.capstone("ancient_fortune", 4, 20, "magma_touch", SkillType.ENCHANTMENT)
+			// Tier 5 — capstone
+			SkillNode.of("ancient_fortune", 4, 20, SkillType.PASSIVE)
 				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.EMERALD, 32), mat(Items.AMETHYST_SHARD, 16))
-				.enchantFor(60)
 		)
 	);
 
@@ -190,8 +183,6 @@ public final class SkillTrees {
 			SkillNode.of("shield_breaker", 2, 8, SkillType.PASSIVE)
 				.costing(mat(Items.SHIELD, 2), mat(Items.IRON_INGOT, 16)),
 			// Tier 4
-			SkillNode.of("call_of_the_forest", 3, 10, SkillType.ACTIVE)
-				.costing(mat(Items.BONE_MEAL, 64), mat(Items.EMERALD, 8)).future(),
 			SkillNode.chained("logic_3", 3, 12, "logic_2", SkillType.ENCHANTMENT)
 				.costing(mat(ItemTags.LOGS, 64), mat(Items.DIAMOND, 8))
 				.enchantFor(50),
@@ -200,10 +191,8 @@ public final class SkillTrees {
 			SkillNode.chained("environment", 3, 8, "logic_3", SkillType.ENCHANTMENT)
 				.costing(mat(ItemTags.SAPLINGS, 64), mat(Items.BONE_MEAL, 32))
 				.enchantFor(25),
-			// Tier 5 — capstones (mutually exclusive)
-			SkillNode.capstone("lumberjacks_fury", 4, 20, "green_heart", SkillType.ACTIVE)
-				.costing(mat(Items.NETHERITE_INGOT, 1), mat(ItemTags.LOGS, 64)).future(),
-			SkillNode.capstone("green_heart", 4, 20, "lumberjacks_fury", SkillType.PASSIVE)
+			// Tier 5 — capstone
+			SkillNode.of("green_heart", 4, 20, SkillType.PASSIVE)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(ItemTags.SAPLINGS, 64)).future()
 		)
 	);
@@ -264,6 +253,9 @@ public final class SkillTrees {
 				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16)),
 			SkillNode.of("inner_focus", 2, 8, SkillType.PASSIVE)
 				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.ENCHANTING_TABLE, 1)),
+			SkillNode.of("indestructible", 2, 10, SkillType.ENCHANTMENT)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.LAPIS_LAZULI, 32))
+				.enchantFor(40),
 			SkillNode.of("anvil_adept", 2, 7, SkillType.PASSIVE)
 				.costing(mat(Items.IRON_BLOCK, 4), mat(Items.EMERALD, 8)).future(),
 			// Tier 4
@@ -271,12 +263,8 @@ public final class SkillTrees {
 				.costing(mat(Items.BOOK, 32), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD, 8)),
 			SkillNode.of("arcane_conduit", 3, 10, SkillType.PASSIVE)
 				.costing(mat(Items.BOOKSHELF, 32), mat(Items.DIAMOND, 8)).future(),
-			SkillNode.of("curse_breaker", 3, 12, SkillType.ACTIVE)
-				.costing(mat(Items.EMERALD_BLOCK, 2), mat(Items.LAPIS_LAZULI, 64)).future(),
-			// Tier 5 — capstones (mutually exclusive)
-			SkillNode.capstone("rewrite_fate", 4, 20, "ancient_knowledge", SkillType.ACTIVE)
-				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16), mat(Items.DIAMOND_BLOCK, 4)),
-			SkillNode.capstone("ancient_knowledge", 4, 20, "rewrite_fate", SkillType.PASSIVE)
+			// Tier 5 — capstone
+			SkillNode.of("ancient_knowledge", 4, 20, SkillType.PASSIVE)
 				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD_BLOCK, 4)).future()
 		)
 	);

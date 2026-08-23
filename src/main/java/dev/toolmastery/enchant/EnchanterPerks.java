@@ -18,7 +18,6 @@ import java.util.function.Predicate;
 public final class EnchanterPerks {
 	/** Node ids — keep in sync with the enchanter tree in SkillTrees. */
 	public static final String INNER_FOCUS = "inner_focus";
-	public static final String REWRITE_FATE = "rewrite_fate";
 	public static final String ARCANE_INSIGHT = "arcane_insight";
 	public static final String SCHOLAR = "scholar";
 
