@@ -23,9 +23,6 @@ public final class ItemGainTracker {
 		if (!(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
-		// TODO(debug): remove once counters are confirmed working in production.
-		ToolMastery.LOGGER.info("[gate-debug] smelt take: {} x{} by {}",
-			stack.getItem(), amount, serverPlayer.getName().getString());
 		if (stack.is(Items.CHARCOAL)) {
 			SkillService.addCount(serverPlayer, SkillTrees.AXE, "make_charcoal", amount);
 		}
@@ -40,9 +37,6 @@ public final class ItemGainTracker {
 		if (!(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
-		// TODO(debug): remove once counters are confirmed working in production.
-		ToolMastery.LOGGER.info("[gate-debug] craft take: {} x{} by {}",
-			stack.getItem(), amount, serverPlayer.getName().getString());
 		if (stack.is(Items.IRON_PICKAXE)) {
 			SkillService.addCount(serverPlayer, SkillTrees.PICKAXE, "craft_iron_pickaxe", amount);
 		} else if (stack.is(Items.IRON_AXE)) {

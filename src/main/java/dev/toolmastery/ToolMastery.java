@@ -51,6 +51,7 @@ public class ToolMastery implements ModInitializer {
 					if (pickaxe.count("reach_y0") < 1 && player.getY() <= 0) {
 						pickaxe.counters.put("reach_y0", 1);
 					}
+					dev.toolmastery.track.FarmingTracker.scanSaplingChecklist(player);
 				}
 			}
 		});
