@@ -23,3 +23,6 @@ bin/
 # fabric
 run/
 remappedSrc/
+
+# Claude Code scratch: session worktrees live here, never part of the repo
+.claude/
