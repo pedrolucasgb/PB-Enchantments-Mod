@@ -21,6 +21,16 @@ public final class ClientSkillState {
 		}
 	}
 
+	/** Drops the cache on disconnect so a stale snapshot never leaks into the next world. */
+	public static void clear() {
+		trees = Map.of();
+	}
+
+	public static boolean owns(String treeId, String nodeId) {
+		SkillStatePayload.TreeState state = trees.get(treeId);
+		return state != null && state.purchased().contains(nodeId);
+	}
+
 	@Nullable
 	public static SkillStatePayload.TreeState tree(String treeId) {
 		return trees.get(treeId);

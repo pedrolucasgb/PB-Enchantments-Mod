@@ -8,6 +8,7 @@
 		"EnchantmentMenuMixin",
 		"FurnaceResultSlotMixin",
 		"ItemEntityMixin",
+		"PlayerMixin",
 		"ResultSlotMixin"
 	],
 	"injectors": {
