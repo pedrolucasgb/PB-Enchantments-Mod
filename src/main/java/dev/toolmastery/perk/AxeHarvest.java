@@ -139,6 +139,11 @@ public final class AxeHarvest {
 				bonus.add(spawn(pending.level(), pending.pos(),
 					new ItemStack(pending.fairHarvestSapling().asItem())));
 			}
+			// A bonus drop is fresh (tickCount 0), so the next pending break in
+			// this same pass would otherwise find it and double it again.
+			for (ItemEntity extraDrop : bonus) {
+				claimed.add(extraDrop.getId());
+			}
 			drops.addAll(bonus);
 
 			if (pending.magnet()) {

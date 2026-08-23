@@ -62,7 +62,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ---
 
-## Implemented so far (Sprint 1 — Pickaxe & Axe)
+## Implemented so far (Sprint 1 — Pickaxe, Axe & Enchanter)
 
 ### Core systems
 - ✅ Per-player skill progress (tiers, nodes, counters) persisted via data attachments
@@ -80,7 +80,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Dig Range** | Pickaxe | I–III | Breaks extra blocks: below → cross → 3×3 on the facing plane |
 | **Melt** | Pickaxe | I–III | Chance to smelt ore drops on the spot: 25% / 50% / 100% |
 | **Rich Vein** | Pickaxe | I–II | Vein miner: up to 8 / 16 connected ores |
-| **Logic** | Axe | I–III | Timber: slow cascade → instant → leaves too (requires real trees — log houses are safe) |
+| **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a slower chop, III clears the canopy too (requires real trees — log houses are safe) |
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
 | **Magma Touch** | Pickaxe | capstone | Everything with a furnace recipe drops pre-smelted (tree-only, never in the table) |
 
@@ -102,6 +102,14 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Double Axe** I–II | 3 / 4 | 10% / 20% chance for a log to drop twice — every log of a Logic fell rolls on its own |
 | **Shield Breaker** | 3 | Axes disable a blocking shield 2s longer and push 2 more damage through it |
 
+### Enchanter passives (Path of the Arcane)
+| Node | Tier | Effect |
+|---|---|---|
+| **Arcane Insight** I–III | 1 / 2 / 3 | A panel beside the enchanting table reveals the *true* enchantments behind offer 1 / offers 1–2 / all three |
+| **Scholar** I–III | 1 / 2 / 4 | +20% / +40% / +60% XP from every source (orbs, bottles, smelting, breeding) |
+| **Inner Focus** | 3 | Enchanting no longer requires nor consumes lapis lazuli |
+| **Rewrite Fate** | capstone | A **Reroll** button on the enchanting table rerolls the offers — free and unlimited (exclusive with Ancient Knowledge) |
+
 ### Enchanting table integration
 - ✅ Unlockable enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
 - ✅ Rolls above your unlocked level are clamped down, never hidden
@@ -112,11 +120,11 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ Speed passives are computed on both sides (client animation + server validation), so blocks never "heal" mid-swing
 - ✅ Deep Haste never overrides a stronger Haste from a beacon or potion
 - ✅ Tools never break themselves: area perks stop at 2 durability
-- ✅ Tree detection requires leaves, with a 128-log flood-fill cap
+- ✅ Tree detection requires leaves, with a 256-log flood-fill cap
 
 ## Roadmap
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive/active nodes, custom items, gate counters for crafting/smelting, and the five future classes (Sword, Bow, Rod, Armor, Enchanter).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive/active nodes, custom items, gate counters for crafting/smelting, and the four future classes (Sword, Bow, Rod, Armor).
 
 ## License
 

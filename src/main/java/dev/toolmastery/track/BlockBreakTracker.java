@@ -93,9 +93,6 @@ public final class BlockBreakTracker {
 		if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
-		// TODO(debug): remove once counters are confirmed working in production.
-		dev.toolmastery.ToolMastery.LOGGER.info("[gate-debug] strip log at {} by {}",
-			pos, serverPlayer.getName().getString());
 		SkillService.progress(serverPlayer, SkillTrees.AXE).addCount("strip_logs", 1);
 	}
 

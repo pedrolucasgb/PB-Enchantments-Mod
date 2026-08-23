@@ -33,10 +33,6 @@ public final class ModNetworking {
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
 
-		// Keep the client cache warm from login on — gameplay perks (lapis-free
-		// enchanting, the reroll button) consult it outside the skill screen.
-		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.player));
-
 		ServerPlayNetworking.registerGlobalReceiver(RerollPayload.TYPE, (payload, context) -> {
 			ServerPlayer player = context.player();
 			if (!(player.containerMenu instanceof EnchantmentMenu menu)
@@ -51,9 +47,10 @@ public final class ModNetworking {
 			menu.slotsChanged(accessor.toolmastery$enchantSlots());
 		});
 
-		// The client needs the snapshot from the first tick, not from the first
-		// time the tree screen is opened: the speed passives are computed
-		// client-side while you mine.
+		// The client needs the snapshot from login on, not from the first time the
+		// tree screen is opened: the speed passives are computed client-side while
+		// you mine, and the enchanting perks (lapis-free offers, the reroll
+		// button) consult it outside the skill screen too.
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.getPlayer()));
 
 		ServerPlayNetworking.registerGlobalReceiver(SkillActionPayload.TYPE, (payload, context) -> {

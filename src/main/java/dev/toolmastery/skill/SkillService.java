@@ -118,6 +118,9 @@ public final class SkillService {
 			TreeProgress progress = progress(player, tree);
 			progress.unlockedTiers = tree.tiers().size();
 			for (SkillNode node : tree.nodes().values()) {
+				if (!node.implemented()) {
+					continue; // same rule as buyNode: nothing to grant yet
+				}
 				progress.purchased.add(node.id());
 				applyGrant(player, node.id());
 			}
