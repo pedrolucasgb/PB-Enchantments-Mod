@@ -2,6 +2,8 @@ package dev.toolmastery;
 
 import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AreaBreak;
+import dev.toolmastery.perk.DeepHaste;
+import dev.toolmastery.perk.MinersMagnet;
 import dev.toolmastery.perk.TimberScheduler;
 import dev.toolmastery.progress.ModAttachments;
 import dev.toolmastery.progress.TreeProgress;
@@ -35,12 +37,15 @@ public class ToolMastery implements ModInitializer {
 			BlockBreakTracker.onBreak(level, player, pos, state);
 			dev.toolmastery.perk.MeltHandler.onBreak(level, player, pos, state);
 			dev.toolmastery.perk.VeinMiner.onBreak(level, player, pos, state);
+			MinersMagnet.onBreak(level, player, pos, state);
 			AreaBreak.onBreak(level, player, pos, state);
 			TimberScheduler.onBreak(level, player, pos, state);
 		});
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
 			dev.toolmastery.perk.MeltHandler.tick(server);
+			// After Melt, so the magnet pockets the smelted result rather than the raw ore.
+			MinersMagnet.tick(server);
 			TimberScheduler.tick(server);
 
 			// Slow checks (once a second): position-based gates.
@@ -51,6 +56,7 @@ public class ToolMastery implements ModInitializer {
 					if (pickaxe.count("reach_y0") < 1 && player.getY() <= 0) {
 						pickaxe.counters.put("reach_y0", 1);
 					}
+					DeepHaste.tick(player);
 				}
 			}
 		});

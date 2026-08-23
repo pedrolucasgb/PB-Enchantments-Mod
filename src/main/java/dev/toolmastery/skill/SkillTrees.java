@@ -53,23 +53,24 @@ public final class SkillTrees {
 		),
 		List.of(
 			// Tier 1
-			SkillNode.of("masons_grip_1", 0, 3, SkillType.PASSIVE).future(),
-			SkillNode.of("miners_magnet", 0, 5, SkillType.PASSIVE).future(),
+			SkillNode.of("masons_grip_1", 0, 3, SkillType.PASSIVE),
+			SkillNode.of("miners_magnet", 0, 5, SkillType.PASSIVE),
 			SkillNode.of("melt_1", 0, 4, SkillType.ENCHANTMENT),
 			// Tier 2
-			SkillNode.chained("masons_grip_2", 1, 5, "masons_grip_1", SkillType.PASSIVE).future(),
+			SkillNode.chained("masons_grip_2", 1, 5, "masons_grip_1", SkillType.PASSIVE),
 			SkillNode.of("dig_range_1", 1, 6, SkillType.ENCHANTMENT),
 			SkillNode.chained("melt_2", 1, 6, "melt_1", SkillType.ENCHANTMENT),
 			SkillNode.of("prospectors_sense", 1, 8, SkillType.ACTIVE).future(),
 			// Tier 3
 			SkillNode.of("miners_helm", 2, 7, SkillType.ITEM).future(),
+			SkillNode.chained("masons_grip_3", 2, 8, "masons_grip_2", SkillType.PASSIVE),
 			SkillNode.chained("dig_range_2", 2, 9, "dig_range_1", SkillType.ENCHANTMENT),
 			SkillNode.chained("melt_3", 2, 9, "melt_2", SkillType.ENCHANTMENT),
 			SkillNode.of("rich_vein_1", 2, 10, SkillType.ENCHANTMENT),
 			// Tier 4
-			SkillNode.of("deep_haste", 3, 8, SkillType.PASSIVE).future(),
+			SkillNode.of("deep_haste", 3, 8, SkillType.PASSIVE),
 			SkillNode.chained("dig_range_3", 3, 14, "dig_range_2", SkillType.ENCHANTMENT),
-			SkillNode.of("obsidian_breaker", 3, 6, SkillType.PASSIVE).future(),
+			SkillNode.of("obsidian_breaker", 3, 6, SkillType.PASSIVE),
 			SkillNode.chained("rich_vein_2", 3, 10, "rich_vein_1", SkillType.ENCHANTMENT),
 			// Tier 5 — capstones (mutually exclusive)
 			SkillNode.capstone("magma_touch", 4, 20, "ancient_fortune", SkillType.ENCHANTMENT),

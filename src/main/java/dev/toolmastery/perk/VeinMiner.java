@@ -8,13 +8,10 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,21 +20,6 @@ import java.util.Set;
  * Stone and deepslate variants count as the same vein. Sneaking disables.
  */
 public final class VeinMiner {
-	/** Ore family ids: variants that share a family mine together. */
-	private static final Map<Block, Integer> ORE_FAMILY = Map.ofEntries(
-		Map.entry(Blocks.COAL_ORE, 0), Map.entry(Blocks.DEEPSLATE_COAL_ORE, 0),
-		Map.entry(Blocks.COPPER_ORE, 1), Map.entry(Blocks.DEEPSLATE_COPPER_ORE, 1),
-		Map.entry(Blocks.IRON_ORE, 2), Map.entry(Blocks.DEEPSLATE_IRON_ORE, 2),
-		Map.entry(Blocks.GOLD_ORE, 3), Map.entry(Blocks.DEEPSLATE_GOLD_ORE, 3),
-		Map.entry(Blocks.REDSTONE_ORE, 4), Map.entry(Blocks.DEEPSLATE_REDSTONE_ORE, 4),
-		Map.entry(Blocks.LAPIS_ORE, 5), Map.entry(Blocks.DEEPSLATE_LAPIS_ORE, 5),
-		Map.entry(Blocks.DIAMOND_ORE, 6), Map.entry(Blocks.DEEPSLATE_DIAMOND_ORE, 6),
-		Map.entry(Blocks.EMERALD_ORE, 7), Map.entry(Blocks.DEEPSLATE_EMERALD_ORE, 7),
-		Map.entry(Blocks.NETHER_QUARTZ_ORE, 8),
-		Map.entry(Blocks.NETHER_GOLD_ORE, 9),
-		Map.entry(Blocks.ANCIENT_DEBRIS, 10)
-	);
-
 	private static boolean breakingNow = false;
 
 	private VeinMiner() {
@@ -57,7 +39,7 @@ public final class VeinMiner {
 		if (serverPlayer.isShiftKeyDown()) {
 			return;
 		}
-		Integer family = ORE_FAMILY.get(state.getBlock());
+		Integer family = OreBlocks.family(state.getBlock());
 		if (family == null) {
 			return;
 		}
@@ -89,7 +71,7 @@ public final class VeinMiner {
 						if (!visited.add(next)) {
 							continue;
 						}
-						if (family.equals(ORE_FAMILY.get(serverLevel.getBlockState(next).getBlock()))) {
+						if (family.equals(OreBlocks.family(serverLevel.getBlockState(next).getBlock()))) {
 							vein.add(next);
 							frontier.add(next);
 						}

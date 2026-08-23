@@ -81,6 +81,14 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
 | **Magma Touch** | Pickaxe | capstone | Everything with a furnace recipe drops pre-smelted (tree-only, never in the table) |
 
+### Passive skills (pickaxe)
+| Node | Levels | Effect |
+|---|---|---|
+| **Mason's Grip** | I–III | +10% / +20% / +30% mining speed on stone, deepslate and every ore |
+| **Miner's Magnet** | — | Pickaxe drops go straight to the inventory (composes with Dig Range, Rich Vein and Melt) |
+| **Deep Haste** | — | Permanent Haste I below Y = 0 |
+| **Obsidian Breaker** | — | Obsidian and crying obsidian break 50% faster |
+
 ### Enchanting table integration
 - ✅ Unlockable enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
 - ✅ Rolls above your unlocked level are clamped down, never hidden
@@ -88,6 +96,8 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ### Safety & feel
 - ✅ Sneak disables all area effects (Dig Range, Rich Vein, Logic)
+- ✅ Speed passives are computed on both sides (client animation + server validation), so blocks never "heal" mid-swing
+- ✅ Deep Haste never overrides a stronger Haste from a beacon or potion
 - ✅ Tools never break themselves: area perks stop at 2 durability
 - ✅ Tree detection requires leaves, with a 128-log flood-fill cap
 

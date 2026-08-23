@@ -8,6 +8,7 @@ import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTree;
 import dev.toolmastery.skill.SkillTrees;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,11 @@ public final class ModNetworking {
 	public static void init() {
 		PayloadTypeRegistry.serverboundPlay().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
+
+		// The client needs the snapshot from the first tick, not from the first
+		// time the tree screen is opened: the speed passives are computed
+		// client-side while you mine.
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.getPlayer()));
 
 		ServerPlayNetworking.registerGlobalReceiver(SkillActionPayload.TYPE, (payload, context) -> {
 			ServerPlayer player = context.player();
