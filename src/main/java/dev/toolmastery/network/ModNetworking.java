@@ -1,5 +1,7 @@
 package dev.toolmastery.network;
 
+import dev.toolmastery.enchant.EnchanterPerks;
+import dev.toolmastery.mixin.EnchantmentMenuAccessor;
 import dev.toolmastery.progress.ModAttachments;
 import dev.toolmastery.progress.PlayerProgress;
 import dev.toolmastery.progress.TreeProgress;
@@ -13,6 +15,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.EnchantmentMenu;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,7 +29,27 @@ public final class ModNetworking {
 
 	public static void init() {
 		PayloadTypeRegistry.serverboundPlay().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(RerollPayload.TYPE, RerollPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
+
+		// Keep the client cache warm from login on — gameplay perks (lapis-free
+		// enchanting, the reroll button) consult it outside the skill screen.
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.player));
+
+		ServerPlayNetworking.registerGlobalReceiver(RerollPayload.TYPE, (payload, context) -> {
+			ServerPlayer player = context.player();
+			if (!(player.containerMenu instanceof EnchantmentMenu menu)
+					|| !SkillService.owns(player, SkillTrees.ENCHANTER, EnchanterPerks.REWRITE_FATE)) {
+				return;
+			}
+			// Same bookkeeping as a real enchant, minus every cost: reroll the
+			// player's seed, mirror it into the menu, recompute the offers.
+			player.onEnchantmentPerformed(ItemStack.EMPTY, 0);
+			EnchantmentMenuAccessor accessor = (EnchantmentMenuAccessor) menu;
+			accessor.toolmastery$enchantmentSeedSlot().set(player.getEnchantmentSeed());
+			menu.slotsChanged(accessor.toolmastery$enchantSlots());
+		});
 
 		// The client needs the snapshot from the first tick, not from the first
 		// time the tree screen is opened: the speed passives are computed

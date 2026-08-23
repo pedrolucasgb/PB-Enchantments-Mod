@@ -65,6 +65,8 @@ public final class BlockBreakTracker {
 			oreBit = 4;
 		} else if (state.is(Blocks.LAPIS_ORE) || state.is(Blocks.DEEPSLATE_LAPIS_ORE)) {
 			progress.addCount("mine_lapis", 1);
+			// lapis feeds the enchanter's tier-2 gate too
+			SkillService.progress(player, SkillTrees.ENCHANTER).addCount("mine_lapis", 1);
 			oreBit = 5;
 		} else if (state.is(Blocks.DIAMOND_ORE) || state.is(Blocks.DEEPSLATE_DIAMOND_ORE)) {
 			progress.addCount("mine_diamond", 1);
@@ -91,6 +93,9 @@ public final class BlockBreakTracker {
 		if (level.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
+		// TODO(debug): remove once counters are confirmed working in production.
+		dev.toolmastery.ToolMastery.LOGGER.info("[gate-debug] strip log at {} by {}",
+			pos, serverPlayer.getName().getString());
 		SkillService.progress(serverPlayer, SkillTrees.AXE).addCount("strip_logs", 1);
 	}
 

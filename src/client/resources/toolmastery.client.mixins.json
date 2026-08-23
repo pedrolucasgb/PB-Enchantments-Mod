@@ -3,6 +3,7 @@
 	"package": "dev.toolmastery.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"EnchantmentScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

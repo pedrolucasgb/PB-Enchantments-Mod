@@ -40,7 +40,9 @@ import java.util.UUID;
  * actually spawned — scanning inside the break event misses late spawns. Same
  * trick MeltHandler uses, and it is what makes Double Axe compose with a Logic
  * fell: every felled log fires its own break event, so every log rolls on its
- * own. For that to hold, {@link #tick} must run after TimberScheduler's.
+ * own. TimberScheduler fells synchronously inside the break event, so by
+ * the time {@link #tick} runs at the end of the tick every drop is already on
+ * the ground.
  */
 public final class AxeHarvest {
 	private static final double DROP_RADIUS = 1.5;
@@ -99,7 +101,7 @@ public final class AxeHarvest {
 		PENDING.add(new Pending(serverLevel, serverPlayer.getUUID(), pos, doubleAxePercent, pruner, magnet, sapling));
 	}
 
-	/** Called at the end of every server tick, after TimberScheduler has felled its batch. */
+	/** Called at the end of every server tick, once every drop of the tick has spawned. */
 	public static void tick(MinecraftServer server) {
 		if (PENDING.isEmpty()) {
 			return;

@@ -34,11 +34,15 @@ public class SkillTreeScreen extends Screen {
 	private static final int COLOR_XP = 0xFF7FE55F;
 	private static final int COLOR_GOLD = 0xFFF2C94C;
 	private static final int COLOR_LOCKED = 0xFF6C7280;
+	private static final int COLOR_COMING_SOON = 0xFFFFA94D;
 
-	private static final String[] COMING_SOON = {"Sword", "Bow", "Rod", "Armor", "Enchanter"};
+	private static final String[] COMING_SOON = {"Sword", "Bow", "Rod", "Armor"};
 
 	/** Fixed tab order: real trees first, then future classes. */
-	private static final List<String> TREE_TABS = List.of("pickaxe", "axe");
+	private static final List<String> TREE_TABS = List.of("pickaxe", "axe", "enchanter");
+
+	/** Tab button width — wide enough for the longest class name. */
+	private static final int TAB_WIDTH = 58;
 
 	private String treeId = "pickaxe";
 	@Nullable
@@ -84,7 +88,7 @@ public class SkillTreeScreen extends Screen {
 		int tabX = 8;
 		int tabY = 18;
 		for (String id : TREE_TABS) {
-			if (tabX + 52 > panelX - 4) {
+			if (tabX + TAB_WIDTH > panelX - 4) {
 				tabX = 8;
 				tabY += 18;
 			}
@@ -97,25 +101,25 @@ public class SkillTreeScreen extends Screen {
 						scheduleRebuild();
 					}
 				})
-				.bounds(tabX, tabY, 52, 16)
+				.bounds(tabX, tabY, TAB_WIDTH, 16)
 				.build();
 			tab.setTooltip(Tooltip.create(Component.translatable("tree.toolmastery." + id)));
 			addRenderableWidget(tab);
-			tabX += 55;
+			tabX += TAB_WIDTH + 3;
 		}
 		for (String name : COMING_SOON) {
-			if (tabX + 52 > panelX - 4) {
+			if (tabX + TAB_WIDTH > panelX - 4) {
 				tabX = 8;
 				tabY += 18;
 			}
 			Button tab = Button.builder(Component.literal(name), button -> {
 				})
-				.bounds(tabX, tabY, 52, 16)
+				.bounds(tabX, tabY, TAB_WIDTH, 16)
 				.build();
 			tab.active = false;
 			tab.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.coming_soon")));
 			addRenderableWidget(tab);
-			tabX += 55;
+			tabX += TAB_WIDTH + 3;
 		}
 		treeTop = tabY + 22;
 
@@ -161,8 +165,7 @@ public class SkillTreeScreen extends Screen {
 					.bounds(x, y, colWidth, 16)
 					.build();
 				if (!node.implemented() && !owned) {
-					// ships in a future update — not clickable, not purchasable
-					nodeButton.active = false;
+					// ships in a future update — readable (click for details), not purchasable
 					nodeButton.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.coming_soon")));
 				} else if (!tierOpen && !owned) {
 					// still clickable so the player can read what it does
@@ -290,6 +293,11 @@ public class SkillTreeScreen extends Screen {
 			y = wrappedText(graphics, Component.literal(nodeName(node.id())), x, y, COLOR_TEXT, 12);
 			graphics.text(font, Component.literal(node.type().name().toLowerCase()), x, y, COLOR_GOLD);
 			y += 12;
+			if (!node.implemented()) {
+				// highlighted badge — the full description still renders below
+				y = wrappedText(graphics, Component.translatable("screen.toolmastery.coming_soon_badge"),
+					x, y, COLOR_COMING_SOON, 12);
+			}
 			boolean owned = state.purchased().contains(node.id());
 			graphics.text(font,
 				owned

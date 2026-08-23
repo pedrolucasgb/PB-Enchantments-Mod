@@ -5,6 +5,7 @@
 	"mixins": [
 		"AxeItemMixin",
 		"BlockItemMixin",
+		"EnchantmentMenuAccessor",
 		"EnchantmentMenuMixin",
 		"FurnaceResultSlotMixin",
 		"ItemEntityMixin",

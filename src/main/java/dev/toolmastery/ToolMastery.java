@@ -57,8 +57,7 @@ public class ToolMastery implements ModInitializer {
 			dev.toolmastery.perk.MeltHandler.tick(server);
 			// After Melt, so the magnet pockets the smelted result rather than the raw ore.
 			MinersMagnet.tick(server);
-			TimberScheduler.tick(server);
-			// Last: it collects the drops the fell above has just spawned.
+			// Last: it collects the drops the break events above have just spawned.
 			AxeHarvest.tick(server);
 
 			// Slow checks (once a second): position-based gates.
@@ -68,6 +67,10 @@ public class ToolMastery implements ModInitializer {
 					TreeProgress pickaxe = SkillService.progress(player, SkillTrees.PICKAXE);
 					if (pickaxe.count("reach_y0") < 1 && player.getY() <= 0) {
 						pickaxe.counters.put("reach_y0", 1);
+					}
+					TreeProgress enchanter = SkillService.progress(player, SkillTrees.ENCHANTER);
+					if (enchanter.count("reach_level_30") < 1 && player.experienceLevel >= 30) {
+						enchanter.counters.put("reach_level_30", 1);
 					}
 					dev.toolmastery.track.FarmingTracker.scanSaplingChecklist(player);
 					DeepHaste.tick(player);
