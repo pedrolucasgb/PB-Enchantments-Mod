@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * All progression rules in one place: gate checks, tier unlocking, and the two
@@ -199,6 +200,80 @@ public final class SkillService {
 			}
 		}
 		ModAdvancements.syncAll(player);
+	}
+
+	/**
+	 * Debug: wipes a tree back to a brand-new player — no tiers, no nodes, no
+	 * gate counters. Pass null to wipe every tree. The exact inverse of
+	 * {@link #maxAll} + {@link #unlockAll}, so a feature can be re-tested from
+	 * the very first gate.
+	 *
+	 * <p>Enchantments already stamped on tools are on the items, not in the
+	 * progress, so they survive this — {@link #stripHeld} clears those.
+	 */
+	public static void reset(ServerPlayer player, @Nullable SkillTree only) {
+		for (SkillTree tree : SkillTrees.ALL.values()) {
+			if (only != null && only != tree) {
+				continue;
+			}
+			TreeProgress progress = progress(player, tree);
+			progress.unlockedTiers = 0;
+			progress.purchased.clear();
+			progress.counters.clear();
+		}
+		ModAdvancements.syncAll(player);
+	}
+
+	/**
+	 * Debug: re-locks one node, leaving tiers and gate counters alone — for
+	 * testing a single unlock over and over without redoing the whole tree.
+	 */
+	public static Result lockNode(ServerPlayer player, SkillTree tree, SkillNode node) {
+		if (!progress(player, tree).purchased.remove(node.id())) {
+			return fail("mastery.toolmastery.lock.fail.not_owned", node.displayName());
+		}
+		return ok("mastery.toolmastery.lock.ok", node.displayName());
+	}
+
+	/**
+	 * Debug: sets how many tiers of a tree are open, up or down. Nodes above the
+	 * new ceiling are re-locked, so lowering the tier is a real rollback rather
+	 * than a half-state where a locked tier still has bought nodes.
+	 */
+	public static Result setTier(ServerPlayer player, SkillTree tree, int tiers) {
+		if (tiers < 0 || tiers > tree.tiers().size()) {
+			return fail("mastery.toolmastery.tier.fail.range", tree.tiers().size());
+		}
+		TreeProgress progress = progress(player, tree);
+		progress.unlockedTiers = tiers;
+		for (SkillNode node : tree.nodes().values()) {
+			if (node.tier() >= tiers) {
+				progress.purchased.remove(node.id());
+			}
+		}
+		ModAdvancements.syncAll(player);
+		return ok("mastery.toolmastery.tier.set", tree.id(), tiers);
+	}
+
+	/**
+	 * Debug: strips every Tool Mastery enchantment off the held item, so the
+	 * same tool can be fed back through the Enchant button.
+	 */
+	public static Result stripHeld(ServerPlayer player) {
+		ItemStack stack = player.getMainHandItem();
+		if (stack.isEmpty()) {
+			return fail("mastery.toolmastery.strip.fail.empty");
+		}
+		int removed = 0;
+		for (ModEnchantments.Grant grant : ModEnchantments.NODE_GRANTS.values()) {
+			Holder<Enchantment> holder = ModEnchantments.holder(player, grant.enchantment());
+			if (holder == null || EnchantmentHelper.getItemEnchantmentLevel(holder, stack) <= 0) {
+				continue;
+			}
+			EnchantmentHelper.updateEnchantments(stack, mutable -> mutable.set(holder, 0));
+			removed++;
+		}
+		return ok("mastery.toolmastery.strip.ok", removed, stack.getHoverName());
 	}
 
 	/** Convenience for tracking hooks: bump a gate counter on the tree. */

@@ -76,6 +76,13 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 /mastery debug kit pickaxe          # tier kit for one tree
 /mastery debug kit pickaxe smelt    # one tool per level of a single enchantment
 /mastery debug add <tree> <counter> <amount>   # bump a gate counter
+
+# ...and the same thing backwards, to re-test a feature from a clean slate
+/mastery debug reset                # everything to zero: no tiers, no nodes, no counters
+/mastery debug reset pickaxe        # wipe one tree only
+/mastery debug tier pickaxe 2       # open exactly 2 tiers (re-locks nodes above)
+/mastery debug lock pickaxe smelt_1 # re-lock one node, leaving tiers and counters alone
+/mastery debug strip                # take every Tool Mastery enchantment off the held item
 ```
 
 ---
@@ -96,7 +103,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 ### Real enchantments (data-driven, era 26.x)
 | Enchantment | Tool | Levels | Effect |
 |---|---|---|---|
-| **Dig Range** | Pickaxe | I–III | Breaks extra **pickaxe-mineable** blocks: below → cross → 3×3 on the facing plane. Dirt, gravel, sand and wood are skipped |
+| **Dig Range** | Pickaxe | I–III | Breaks extra **pickaxe-mineable** blocks of **about the same hardness**: below → cross → 3×3 on the facing plane. Dirt and wood are skipped; stone next to obsidian leaves the obsidian standing — until your mining speed makes both near-instant |
 | **Smelt** | Pickaxe | I–III | Chance to smelt ore drops on the spot: 25% / 50% / 100% |
 | **Rich Vein** | Pickaxe | I–II | Vein miner: up to 8 / 16 connected ores |
 | **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a slower chop, III clears the canopy too (requires real trees — log houses are safe) |

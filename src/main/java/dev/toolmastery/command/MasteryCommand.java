@@ -28,6 +28,9 @@ import org.jetbrains.annotations.Nullable;
  *   /mastery unlock <tree> <node>     unlock a node (XP levels + materials)
  *   /mastery enchant <tree> <node>    stamp it on the held item (XP levels, repeatable)
  *   /mastery debug add <tree> <counter> <amount>   (op only)
+ *
+ * Debug also runs the whole thing backwards - reset / lock / tier / strip -
+ * so one feature can be tested from a clean slate without a new world.
  */
 public final class MasteryCommand {
 	private static final SuggestionProvider<CommandSourceStack> TREE_IDS =
@@ -119,6 +122,31 @@ public final class MasteryCommand {
 						context.getSource().sendSystemMessage(Component.literal("Every node unlocked. Enchantments are unlocked only - stamp them on a tool with /mastery enchant, the skill screen, or /mastery debug kit.").withStyle(ChatFormatting.YELLOW));
 						return 1;
 					}))
+				.then(Commands.literal("reset")
+					// bare: every tree back to a brand-new player - with a tree: just that one
+					.executes(context -> reset(context.getSource(), null))
+					.then(Commands.argument("tree", StringArgumentType.word())
+						.suggests(TREE_IDS)
+						.executes(context -> reset(context.getSource(), StringArgumentType.getString(context, "tree")))))
+				.then(Commands.literal("lock")
+					.then(Commands.argument("tree", StringArgumentType.word())
+						.suggests(TREE_IDS)
+						.then(Commands.argument("node", StringArgumentType.word())
+							.suggests(NODE_IDS)
+							.executes(context -> lock(
+								context.getSource(),
+								StringArgumentType.getString(context, "tree"),
+								StringArgumentType.getString(context, "node"))))))
+				.then(Commands.literal("tier")
+					.then(Commands.argument("tree", StringArgumentType.word())
+						.suggests(TREE_IDS)
+						.then(Commands.argument("tiers", IntegerArgumentType.integer(0, 5))
+							.executes(context -> setTier(
+								context.getSource(),
+								StringArgumentType.getString(context, "tree"),
+								IntegerArgumentType.getInteger(context, "tiers"))))))
+				.then(Commands.literal("strip")
+					.executes(context -> strip(context.getSource())))
 				.then(Commands.literal("add")
 					.then(Commands.argument("tree", StringArgumentType.word())
 						.suggests(TREE_IDS)
@@ -213,6 +241,61 @@ public final class MasteryCommand {
 			source.sendFailure(Component.literal("Unknown node '" + nodeId + "' in tree '" + treeId + "'."));
 		}
 		return node;
+	}
+
+	/** /mastery debug reset [tree] - wipe progress back to a brand-new player. */
+	private static int reset(CommandSourceStack source, @Nullable String treeId) {
+		ServerPlayer player = source.getPlayer();
+		if (player == null) {
+			return 0;
+		}
+		SkillTree tree = null;
+		if (treeId != null) {
+			tree = treeOrFail(source, treeId);
+			if (tree == null) {
+				return 0;
+			}
+		}
+		SkillService.reset(player, tree);
+		dev.toolmastery.network.ModNetworking.sendState(player);
+		source.sendSystemMessage(Component.literal(tree == null
+				? "Everything reset: no tiers, no nodes, no gate counters, tier advancements revoked. Enchantments already on tools stay - clear those with /mastery debug strip."
+				: "Tree '" + tree.id() + "' reset: no tiers, no nodes, no gate counters.")
+			.withStyle(ChatFormatting.YELLOW));
+		return 1;
+	}
+
+	/** /mastery debug lock <tree> <node> - re-lock one node, leaving the rest alone. */
+	private static int lock(CommandSourceStack source, String treeId, String nodeId) {
+		SkillNode node = nodeOrFail(source, treeId, nodeId);
+		ServerPlayer player = source.getPlayer();
+		if (node == null || player == null) {
+			return 0;
+		}
+		int result = report(source, SkillService.lockNode(player, SkillTrees.byId(treeId), node));
+		dev.toolmastery.network.ModNetworking.sendState(player);
+		return result;
+	}
+
+	/** /mastery debug tier <tree> <n> - open exactly n tiers, re-locking anything above. */
+	private static int setTier(CommandSourceStack source, String treeId, int tiers) {
+		SkillTree tree = treeOrFail(source, treeId);
+		ServerPlayer player = source.getPlayer();
+		if (tree == null || player == null) {
+			return 0;
+		}
+		int result = report(source, SkillService.setTier(player, tree, tiers));
+		dev.toolmastery.network.ModNetworking.sendState(player);
+		return result;
+	}
+
+	/** /mastery debug strip - take every Tool Mastery enchantment off the held item. */
+	private static int strip(CommandSourceStack source) {
+		ServerPlayer player = source.getPlayer();
+		if (player == null) {
+			return 0;
+		}
+		return report(source, SkillService.stripHeld(player));
 	}
 
 	private static int debugAdd(CommandSourceStack source, String treeId, String counterId, int amount) {
