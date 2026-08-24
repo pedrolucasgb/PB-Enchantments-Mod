@@ -67,6 +67,7 @@ public final class EnchantTracker {
 	public static void onAnvilCombine(Player player) {
 		if (player instanceof ServerPlayer serverPlayer) {
 			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "anvil_combines", 1);
+			SkillService.addCount(serverPlayer, SkillTrees.ARTISAN, "anvil_combines", 1);
 		}
 	}
 

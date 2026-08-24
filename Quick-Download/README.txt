@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.2.0
+Version 0.3.0
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,61 @@ out, with the reason in the tooltip.
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
 
+WHAT IS NEW IN 0.3.0
+--------------------
+- TWO NEW CLASSES, so the tab strip at the top of the skill screen now has
+  five playable trees instead of three.
+
+- EXPLORER (Path of the Horizon) - the first class that is not tied to a
+  tool. It levels from MOVEMENT: how far you have walked, sprinted, swum,
+  rowed and flown, how many biomes you have stood in, how many dimensions
+  and structures you have seen. Distance is read from the statistics the
+  game already keeps, counted from the moment you install the mod, so an
+  old world does not hand you tier 4 on day one.
+    Cartographer  - a new biome tells you its name and your coordinates
+    Tireless      - moving costs 20/40/60% less hunger
+    Sea Legs      - boats you steer cruise about 15% faster
+    Clear Sight   - underwater fog opens up; rank II also refills breath
+    Slipstream    - ENCHANTMENT for the Elytra: 10/25/50% of a firework's
+                    push carries over. Same rocket, more distance.
+    Remember      - you respawn holding a note with the coordinates,
+                    dimension and day of your last death
+    Trailblazer   - a long unbroken sprint ramps up to +12% speed
+    Soft Landing  - half damage from flying into a wall, and the first 3
+                    blocks of any fall are free
+    Waypoint      - sneak + right-click a compass to bind a spot; the
+                    needle points there from then on
+    Capstone, pick one: ENDLESS HORIZON (a quarter of your fireworks are
+    not consumed and Slipstream doubles) or WORLD'S MEMORY (once a day,
+    right-click a compass for the bearing to the nearest structure of a
+    kind you have already found).
+
+- ARTISAN (Path of Order) - storage and inventory quality of life, earned
+  instead of installed. Its buttons appear in a small column just left of
+  the inventory and chest windows, and only once you have bought them.
+    Sorter's Hand      - a Sort button, first for your bag, then for chests
+    Seeker's Eye       - a search field: your bag and the open chest, then
+                         every container within 8 blocks, then 16 blocks
+                         with directions, reading shulker boxes inside
+    Steady Grid        - the crafting grid keeps its contents when you
+                         close the table
+    Deft Hands         - an empty hotbar slot refills itself from your bag
+    Locked Slots       - ALT-CLICK any slot to pin it. Nothing the mod does
+                         will ever move a pinned slot.
+    Tidy Storage       - a chest is tidied again every time you close it
+    Artisan's Order    - choose category / name / count as the sort rule
+    Quartermaster's Call - tops up the stacks you already carry from
+                         nearby chests
+    The Ledger         - one searchable page of everything in reach
+    Capstone: HAND OF ORDER - Terraria's Quick Stack. One button and
+    everything you carry flies to the nearby chest that ALREADY holds that
+    item. It never puts anything into a chest that does not know it, so it
+    joins the organisation you built instead of inventing one. Anything
+    without a home stays on you. Hotbar, armour and pinned slots are never
+    touched, and furnaces, hoppers and ender chests are never filled.
+
+- NOT BUILT YET, shown starred and orange in the tree: Night Eyes,
+  Master's Batch and the rival capstone Craft from Storage.
 WHAT IS NEW IN 0.2.0
 --------------------
 - LIBRARIANS SELL TOOL MASTERY BOOKS (new): from apprentice onwards a
@@ -101,7 +156,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.2.0.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.3.0.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
