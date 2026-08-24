@@ -56,6 +56,9 @@ public class SkillTreeScreen extends Screen {
 	private static final int TITLE_BAR = 16;
 	private static final int COLUMN_GAP = 6;
 
+	/** How far a wrapped gate line is indented under its checkbox. */
+	private static final int GATE_INDENT = 8;
+
 	/** Which purchase is waiting for a Confirm click. */
 	private enum Pending {
 		NONE,
@@ -702,10 +705,17 @@ public class SkillTreeScreen extends Screen {
 		for (GateRequirement gate : tier.gates()) {
 			int count = Math.min(state.counters().getOrDefault(gate.id(), 0), gate.target());
 			boolean done = count >= gate.target();
-			String line = (done ? "✓ " : "□ ") + gate.displayName() + " " + count + "/" + gate.target();
-			graphics.text(font, SkillTreeStyle.trim(font, line, panelWidth - 12), x, y,
-				done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED);
-			y += 10;
+			int color = done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED;
+			Component line = Component.literal((done ? "✓ " : "□ ") + gate.displayName()
+				+ " " + count + "/" + gate.target());
+			// A gate name too long for the panel wraps; the continuation is
+			// indented under the checkbox so the list still reads as a list.
+			boolean first = true;
+			for (FormattedCharSequence part : font.split(line, panelWidth - 12 - GATE_INDENT)) {
+				graphics.text(font, part, first ? x : x + GATE_INDENT, y, color);
+				y += 10;
+				first = false;
+			}
 			SkillTreeStyle.progressBar(graphics, x, y, panelWidth - 12, 3,
 				(float) count / gate.target(), done ? SkillTreeStyle.GREEN : SkillTreeStyle.GOLD);
 			y += 7;
