@@ -73,7 +73,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | Action | How |
 |---|---|
 | Open the skill trees | Press **K** (rebindable) — or the `/mastery` command |
-| Check progress / gates | `/mastery status <tree>` or click a tier header (T1–T5) in the GUI |
+| Check progress / gates | `/mastery status <tree>` or click a tier header in the GUI |
 | Unlock the next tier | GUI button, or `/mastery unlock <tree>` |
 | Unlock a node | Click the node → **Unlock** → Confirm, or `/mastery unlock <tree> <node>` |
 | Enchant the held item | Click the node → **Enchant** → Confirm, or `/mastery enchant <tree> <node>` |
@@ -109,7 +109,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ Achievement gates fed by live block-break tracking (ores, stone, logs, leaves, checklists as bitmasks)
 - ✅ Two-price economy: tier access costs, per-node unlock (XP levels + materials) and a repeatable per-node enchant price — all validated server-side
 - ✅ Enchant-time compatibility checks (supported item + exclusive sets), mirrored on the client so the button explains itself before you spend
-- ✅ Skill tree GUI (key **K**): class tabs, tier columns, gate checklist panel, material checklist, unlock/enchant with a confirmation card — future classes shown as *Coming soon*
+- ✅ Skill tree GUI (key **K**): class tabs with class icons, one column per named tier, item-icon nodes coloured by state, prerequisite connectors, type badges, gate and material checklists, unlock/enchant with a confirmation card, and the player XP bar along the bottom — future classes shown as *Coming soon*
 - ✅ Every tier mirrored as a vanilla advancement in the **L** screen (*Tool Mastery* tab), with toast + chat announce on unlock
 - ✅ Client–server sync via custom payloads; all actions validated on the server
 - ✅ `/mastery` command suite with tab completion
@@ -164,6 +164,41 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ Tools never break themselves: area perks stop at 2 durability
 - ✅ Nothing is spent on an impossible enchant: the item, the level and the conflicting enchantments are all checked before the levels leave your bar
 - ✅ Tree detection requires leaves, with a 256-log flood-fill cap
+
+## Extending the tree
+
+Everything the skill screen draws comes off the data in
+[`SkillTrees.java`](src/main/java/dev/toolmastery/skill/SkillTrees.java) — the GUI has no per-class code in it.
+
+**A new node** is one line in its tree's node list, plus its lang keys:
+
+```java
+SkillNode.chained("smelt_4", 3, 12, "smelt_3", SkillType.ENCHANTMENT).icon(Items.MAGMA_BLOCK)
+    .costing(mat(Items.BLAZE_ROD, 8))
+    .enchantFor(60),
+```
+
+The screen picks it up on its own: the icon goes on the tile, the type decides the badge colour and the
+stripe under the icon, and `requires` draws the connector back to `smelt_3`. Add
+`node.toolmastery.smelt_4.desc` to `en_us.json` (and `node.toolmastery.smelt` once per family, for the
+name). `.future()` marks a node that is designed but not built yet: it shows up starred and orange and
+refuses to be unlocked. `.icon(...)` is optional — a node without one falls back to the first item of
+its price.
+
+**A new class** is a `SkillTree` and an entry in `SkillTrees.ORDER`:
+
+```java
+public static final SkillTree SWORD = new SkillTree("sword", Items.DIAMOND_SWORD, TIERS, NODES);
+...
+public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, SWORD);
+```
+
+That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
+the class from `SkillTrees.PLANNED` (the greyed "coming soon" tabs), add `tree.toolmastery.sword`,
+`tree.toolmastery.sword.short` and `tier.toolmastery.sword.1`-`.5` to `en_us.json`, and the five
+advancement JSONs under `data/toolmastery/advancement/sword/` if the tiers should show up in the **L**
+screen. Gate counters still need a tracker feeding them and perks still need their own code — but
+nothing about *displaying* the class does.
 
 ## Roadmap
 

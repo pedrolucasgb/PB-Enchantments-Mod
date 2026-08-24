@@ -1,5 +1,10 @@
 package dev.toolmastery.client;
 
+import dev.toolmastery.client.gui.ClassTabWidget;
+import dev.toolmastery.client.gui.NodeState;
+import dev.toolmastery.client.gui.SkillNodeWidget;
+import dev.toolmastery.client.gui.SkillTreeStyle;
+import dev.toolmastery.client.gui.TierHeaderWidget;
 import dev.toolmastery.enchant.EnchantCompat;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.network.SkillActionPayload;
@@ -18,16 +23,22 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * The skill tree screen (default key: K). Layout mirrors the approved design:
- * class tabs on top (future classes disabled as "Coming soon"), tier columns
- * with node buttons, details panel on the right, player XP at the bottom.
+ * The skill tree screen (default key: K), drawn as a tree rather than a list of
+ * buttons: class tabs across the top, one column per tier headed by the tier's
+ * own name, nodes as item icons in a frame whose colour is their state, and
+ * connector lines running from a rank to the rank that unlocks it. The details
+ * panel sits on the right, the player's XP bar along the bottom mirroring the
+ * HUD.
  *
  * <p>A node offers up to two purchases, and neither happens on a single click:
  * <b>Unlock</b> (XP levels + materials, once) and <b>Enchant</b> (whole XP
@@ -35,27 +46,15 @@ import java.util.List;
  * swaps the details panel for a confirmation card that spells out exactly what
  * the player is about to buy — the enchanting-table promise for an unlock, the
  * held item and its compatibility for an enchant — with Confirm and Cancel.
+ *
+ * <p>Nothing here is written per class: the tabs come from
+ * {@link SkillTrees#ORDER}, the tier names and icons off the tree and its
+ * nodes. A new class or node appears correctly without this file changing.
  */
 public class SkillTreeScreen extends Screen {
-	// Palette (ARGB) — mirrors the design mockup.
-	private static final int COLOR_BACKDROP = 0xE0101216;
-	private static final int COLOR_PANEL = 0xFF191C22;
-	private static final int COLOR_PANEL_BORDER = 0xFF2C313B;
-	private static final int COLOR_TEXT = 0xFFE8E6DF;
-	private static final int COLOR_MUTED = 0xFF9AA1AD;
-	private static final int COLOR_XP = 0xFF7FE55F;
-	private static final int COLOR_GOLD = 0xFFF2C94C;
-	private static final int COLOR_LOCKED = 0xFF6C7280;
-	private static final int COLOR_COMING_SOON = 0xFFFFA94D;
-	private static final int COLOR_BAD = 0xFFE86B6B;
-
-	private static final String[] COMING_SOON = {"Sword", "Bow", "Rod", "Armor"};
-
-	/** Fixed tab order: real trees first, then future classes. */
-	private static final List<String> TREE_TABS = List.of("pickaxe", "axe", "enchanter");
-
-	/** Tab button width — wide enough for the longest class name. */
-	private static final int TAB_WIDTH = 58;
+	private static final int MARGIN = 6;
+	private static final int TITLE_BAR = 16;
+	private static final int COLUMN_GAP = 6;
 
 	/** Which purchase is waiting for a Confirm click. */
 	private enum Pending {
@@ -65,14 +64,21 @@ public class SkillTreeScreen extends Screen {
 		ENCHANT_NODE
 	}
 
-	private String treeId = "pickaxe";
+	private String treeId = SkillTrees.ORDER.getFirst().id();
 	@Nullable
 	private String selectedNode;
 	private int selectedTier = -1;
 	private Pending pending = Pending.NONE;
 
 	private int panelX;
+	private int panelWidth;
+	private int treeRight;
 	private int treeTop;
+	private int treeBottom;
+	private int columnWidth;
+
+	/** Node id to the widget drawing it, so the connectors know where to run. */
+	private final Map<String, SkillNodeWidget> nodeWidgets = new LinkedHashMap<>();
 
 	public SkillTreeScreen() {
 		super(Component.translatable("screen.toolmastery.title"));
@@ -108,113 +114,196 @@ public class SkillTreeScreen extends Screen {
 		scheduleRebuild();
 	}
 
+	// ---------- layout ----------
+
 	private void rebuild() {
 		clearWidgets();
-		panelX = width - 148;
+		nodeWidgets.clear();
 
-		// --- class tabs (wrap to a new row instead of overflowing the panel) ---
-		int tabX = 8;
-		int tabY = 18;
-		for (String id : TREE_TABS) {
-			if (tabX + TAB_WIDTH > panelX - 4) {
-				tabX = 8;
-				tabY += 18;
+		panelWidth = width >= 400 ? 152 : 134;
+		panelX = width - panelWidth - MARGIN;
+		treeRight = panelX - MARGIN;
+
+		treeTop = buildTabs() + 6;
+		treeBottom = height - 20;
+
+		SkillTree tree = SkillTrees.byId(treeId);
+		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
+		if (tree != null) {
+			buildTree(tree, state);
+			buildActionButtons(tree, state);
+		}
+
+		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
+			.bounds(panelX + 6, height - 26, panelWidth - 12, 18)
+			.build());
+	}
+
+	/**
+	 * Class tabs. Every class gets a labelled tab when the row has room for
+	 * one; on a narrow window they all shrink to icon-only instead, because a
+	 * second and third row of tabs would eat the height the tree needs. The
+	 * name is still one hover away either way.
+	 */
+	private int buildTabs() {
+		int x = MARGIN;
+		int y = TITLE_BAR + 3;
+		boolean compact = !tabsFitLabelled();
+		for (SkillTree tree : SkillTrees.ORDER) {
+			Component label = tree.shortName();
+			int tabWidth = compact ? ClassTabWidget.ICON_ONLY_WIDTH : ClassTabWidget.widthFor(font, label);
+			if (x + tabWidth > treeRight && x > MARGIN) {
+				x = MARGIN;
+				y += ClassTabWidget.HEIGHT + 2;
 			}
-			String label = (treeId.equals(id) ? "▶ " : "") + id.substring(0, 1).toUpperCase() + id.substring(1);
-			Button tab = Button.builder(Component.literal(label), button -> {
+			String id = tree.id();
+			ClassTabWidget tab = new ClassTabWidget(x, y, tabWidth, tree.iconStack(), label,
+				treeId.equals(id), () -> {
 					if (!treeId.equals(id)) {
 						treeId = id;
 						select(null, -1);
 					}
-				})
-				.bounds(tabX, tabY, TAB_WIDTH, 16)
-				.build();
-			tab.setTooltip(Tooltip.create(Component.translatable("tree.toolmastery." + id)));
+				});
+			tab.setTooltip(Tooltip.create(tree.displayName()));
 			addRenderableWidget(tab);
-			tabX += TAB_WIDTH + 3;
+			x += tabWidth + 2;
 		}
-		for (String name : COMING_SOON) {
-			if (tabX + TAB_WIDTH > panelX - 4) {
-				tabX = 8;
-				tabY += 18;
+		for (SkillTrees.PlannedTree planned : SkillTrees.PLANNED) {
+			Component label = Component.literal(planned.name());
+			int tabWidth = compact ? ClassTabWidget.ICON_ONLY_WIDTH : ClassTabWidget.widthFor(font, label);
+			if (x + tabWidth > treeRight && x > MARGIN) {
+				x = MARGIN;
+				y += ClassTabWidget.HEIGHT + 2;
 			}
-			Button tab = Button.builder(Component.literal(name), button -> {
-				})
-				.bounds(tabX, tabY, TAB_WIDTH, 16)
-				.build();
+			ClassTabWidget tab = new ClassTabWidget(x, y, tabWidth, new ItemStack(planned.icon()), label,
+				false, () -> {
+				});
 			tab.active = false;
 			tab.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.coming_soon")));
 			addRenderableWidget(tab);
-			tabX += TAB_WIDTH + 3;
+			x += tabWidth + 2;
 		}
-		treeTop = tabY + 22;
+		return y + ClassTabWidget.HEIGHT;
+	}
 
-		// --- tier columns with node buttons ---
-		SkillTree tree = SkillTrees.byId(treeId);
-		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
-		if (tree == null) {
-			return;
+	/** Whether one row holds every tab with its name on it. */
+	private boolean tabsFitLabelled() {
+		int total = MARGIN;
+		for (SkillTree tree : SkillTrees.ORDER) {
+			total += ClassTabWidget.widthFor(font, tree.shortName()) + 2;
 		}
+		for (SkillTrees.PlannedTree planned : SkillTrees.PLANNED) {
+			total += ClassTabWidget.widthFor(font, Component.literal(planned.name())) + 2;
+		}
+		return total <= treeRight;
+	}
+
+	/** One column per tier: a header, then the tier's nodes stacked under it. */
+	private void buildTree(SkillTree tree, @Nullable SkillStatePayload.TreeState state) {
 		int columns = tree.tiers().size();
-		int colWidth = Math.min(86, (panelX - 16 - (columns - 1) * 4) / columns);
+		columnWidth = Math.min(112, (treeRight - MARGIN - (columns - 1) * COLUMN_GAP) / columns);
 		int unlocked = state == null ? 0 : state.unlockedTiers();
 
-		for (int tierIndex = 0; tierIndex < columns; tierIndex++) {
-			int x = 8 + tierIndex * (colWidth + 4);
-			boolean tierOpen = tierIndex < unlocked;
+		int tallest = 1;
+		for (int tier = 0; tier < columns; tier++) {
+			tallest = Math.max(tallest, tree.nodesInTier(tier).size());
+		}
+		int nodesTop = treeTop + TierHeaderWidget.HEIGHT + 6;
+		int pitch = Math.clamp((treeBottom - nodesTop) / tallest, 20, SkillTreeStyle.NODE_PITCH);
+		int nodeHeight = Math.min(SkillTreeStyle.NODE_HEIGHT, pitch - 4);
 
-			final int capturedTier = tierIndex;
-			String headerText = "T" + (tierIndex + 1) + (tierOpen ? " ✓" : " 🔒");
-			Button header = Button.builder(Component.literal(headerText), button -> select(null, capturedTier))
-				.bounds(x, treeTop, colWidth, 14)
-				.build();
-			header.setTooltip(Tooltip.create(Component.translatable("tier.toolmastery." + treeId + "." + (tierIndex + 1))));
+		for (int tier = 0; tier < columns; tier++) {
+			int x = MARGIN + tier * (columnWidth + COLUMN_GAP);
+			TierHeaderWidget.State headerState = tier < unlocked
+				? TierHeaderWidget.State.OPEN
+				: tier == unlocked ? TierHeaderWidget.State.NEXT : TierHeaderWidget.State.LOCKED;
+			TierHeaderWidget header = new TierHeaderWidget(x, treeTop, columnWidth, tier, tree.tierName(tier),
+				headerState, index -> select(null, index));
+			header.selected(selectedTier == tier);
+			header.setTooltip(Tooltip.create(tierTooltip(tree, tier, state)));
 			addRenderableWidget(header);
 
-			int y = treeTop + 18;
-			for (SkillNode node : tree.nodes().values()) {
-				if (node.tier() != tierIndex) {
-					continue;
-				}
-				boolean owned = state != null && state.purchased().contains(node.id());
-				Component label = Component.literal(owned ? "✓ " : "").append(node.displayName());
-				final String capturedNode = node.id();
-				Button nodeButton = Button.builder(label, button -> select(capturedNode, -1))
-					.bounds(x, y, colWidth, 16)
-					.build();
-				// Always clickable so the player can read what it does; the tooltip
-				// carries whatever is standing between them and unlocking it.
-				Component blocker = owned || state == null ? null : unlockProblem(node, state);
-				if (blocker != null) {
-					nodeButton.setTooltip(Tooltip.create(blocker));
-				}
-				addRenderableWidget(nodeButton);
-				y += 19;
+			int y = nodesTop;
+			for (SkillNode node : tree.nodesInTier(tier)) {
+				NodeState nodeState = stateOf(node, state);
+				SkillNodeWidget widget = new SkillNodeWidget(x, y, columnWidth, nodeHeight, node, nodeState,
+					picked -> select(picked.id(), -1));
+				widget.selected(node.id().equals(selectedNode));
+				widget.setTooltip(Tooltip.create(nodeTooltip(node, nodeState, state)));
+				addRenderableWidget(widget);
+				nodeWidgets.put(node.id(), widget);
+				y += pitch;
 			}
 		}
+	}
 
-		buildActionButtons(tree, state);
+	/** The colour a node wears in the tree, and the reason behind it. */
+	private NodeState stateOf(SkillNode node, @Nullable SkillStatePayload.TreeState state) {
+		if (state != null && state.purchased().contains(node.id())) {
+			return NodeState.OWNED;
+		}
+		if (!node.implemented()) {
+			return NodeState.FUTURE;
+		}
+		if (state == null) {
+			return NodeState.LOCKED;
+		}
+		if (node.exclusiveWith() != null && state.purchased().contains(node.exclusiveWith())) {
+			return NodeState.BLOCKED;
+		}
+		if (node.tier() >= state.unlockedTiers()
+			|| (node.requires() != null && !state.purchased().contains(node.requires()))) {
+			return NodeState.LOCKED;
+		}
+		return NodeState.AVAILABLE;
+	}
 
-		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
-			.bounds(panelX + 6, height - 26, 136, 18)
-			.build());
+	private Component nodeTooltip(SkillNode node, NodeState nodeState, @Nullable SkillStatePayload.TreeState state) {
+		MutableComponent tip = Component.empty().append(node.displayName())
+			.append(Component.literal("\n"))
+			.append(SkillTreeStyle.typeName(node.type())
+				.withColor(SkillTreeStyle.typeColor(node.type()) & 0xFFFFFF));
+		if (nodeState == NodeState.OWNED) {
+			tip.append(Component.literal("\n"))
+				.append(Component.translatable("screen.toolmastery.unlocked").withColor(0x5FBF4F));
+			return tip;
+		}
+		tip.append(Component.literal("\n"))
+			.append(Component.translatable("screen.toolmastery.unlock_cost", node.unlockCost())
+				.withColor(0x9AA1AD));
+		Component blocker = state == null ? null : unlockProblem(node, state);
+		if (blocker != null) {
+			tip.append(Component.literal("\n")).append(blocker.copy().withColor(0xE86B6B));
+		}
+		return tip;
+	}
+
+	private Component tierTooltip(SkillTree tree, int tier, @Nullable SkillStatePayload.TreeState state) {
+		MutableComponent tip = Component.empty().append(tree.tierName(tier)).append(Component.literal("\n"));
+		int unlocked = state == null ? 0 : state.unlockedTiers();
+		if (tier < unlocked) {
+			return tip.append(Component.translatable("screen.toolmastery.unlocked").withColor(0x5FBF4F));
+		}
+		return tip.append(Component.translatable("screen.toolmastery.unlock_cost_tier",
+			tree.tiers().get(tier).accessCost()).withColor(0x9AA1AD));
 	}
 
 	// ---------- actions ----------
 
 	private void buildActionButtons(SkillTree tree, @Nullable SkillStatePayload.TreeState state) {
-		int primaryY = height - 66;
-		int secondaryY = height - 46;
+		int primaryY = height - 68;
+		int secondaryY = height - 48;
+		int buttonWidth = panelWidth - 12;
 
 		if (pending != Pending.NONE) {
 			addRenderableWidget(Button.builder(Component.translatable("screen.toolmastery.confirm"), button -> confirm())
-				.bounds(panelX + 6, primaryY, 136, 18)
+				.bounds(panelX + 6, primaryY, buttonWidth, 18)
 				.build());
 			addRenderableWidget(Button.builder(Component.translatable("screen.toolmastery.cancel"), button -> {
 					pending = Pending.NONE;
 					scheduleRebuild();
 				})
-				.bounds(panelX + 6, secondaryY, 136, 18)
+				.bounds(panelX + 6, secondaryY, buttonWidth, 18)
 				.build());
 			return;
 		}
@@ -236,7 +325,7 @@ public class SkillTreeScreen extends Screen {
 						pending = Pending.UNLOCK_NODE;
 						scheduleRebuild();
 					})
-					.bounds(panelX + 6, primaryY, 136, 18)
+					.bounds(panelX + 6, primaryY, buttonWidth, 18)
 					.build());
 			} else {
 				Component blockedLabel = node.implemented()
@@ -255,7 +344,7 @@ public class SkillTreeScreen extends Screen {
 							pending = Pending.ENCHANT_NODE;
 							scheduleRebuild();
 						})
-						.bounds(panelX + 6, secondaryY, 136, 18)
+						.bounds(panelX + 6, secondaryY, buttonWidth, 18)
 						.build());
 				} else {
 					Button disabled = addDisabled(enchantLabel, secondaryY);
@@ -278,7 +367,7 @@ public class SkillTreeScreen extends Screen {
 							pending = Pending.UNLOCK_TIER;
 							scheduleRebuild();
 						})
-					.bounds(panelX + 6, primaryY, 136, 18)
+					.bounds(panelX + 6, primaryY, buttonWidth, 18)
 					.build());
 			} else {
 				// Tiers open strictly in order, so this one is not even a choice yet.
@@ -295,7 +384,7 @@ public class SkillTreeScreen extends Screen {
 	private Button addDisabled(Component label, int y) {
 		Button button = Button.builder(label, ignored -> {
 			})
-			.bounds(panelX + 6, y, 136, 18)
+			.bounds(panelX + 6, y, panelWidth - 12, 18)
 			.build();
 		button.active = false;
 		return addRenderableWidget(button);
@@ -380,22 +469,117 @@ public class SkillTreeScreen extends Screen {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		graphics.fill(0, 0, width, height, COLOR_BACKDROP);
+		graphics.fill(0, 0, width, height, SkillTreeStyle.BACKDROP);
 
-		// details panel background
-		graphics.fill(panelX, 36, width - 4, height - 4, COLOR_PANEL);
-		graphics.outline(panelX, 36, width - 4 - panelX, height - 40, COLOR_PANEL_BORDER);
+		SkillTree tree = SkillTrees.byId(treeId);
+		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
 
+		drawTitleBar(graphics, tree);
+		drawTreeCanvas(graphics, tree, state);
+		SkillTreeStyle.panel(graphics, panelX, TITLE_BAR + 3, panelWidth, height - TITLE_BAR - 7,
+			SkillTreeStyle.PANEL, SkillTreeStyle.BORDER);
+
+		// Widgets (tabs, tier headers, node tiles, buttons) draw over the frame;
+		// the details text goes on last, clipped to its panel.
 		super.extractRenderState(graphics, mouseX, mouseY, delta);
 
-		graphics.text(font, title, 8, 6, COLOR_TEXT);
-		if (minecraft != null && minecraft.player != null) {
-			graphics.text(font,
-				Component.translatable("screen.toolmastery.levels", minecraft.player.experienceLevel),
-				panelX + 6, 6, COLOR_XP);
-		}
-
 		drawDetails(graphics);
+		drawXpBar(graphics);
+	}
+
+	private void drawTitleBar(GuiGraphicsExtractor graphics, @Nullable SkillTree tree) {
+		graphics.fill(0, 0, width, TITLE_BAR, SkillTreeStyle.PANEL_DEEP);
+		graphics.fill(0, TITLE_BAR, width, TITLE_BAR + 1, SkillTreeStyle.BORDER);
+		graphics.text(font, title, MARGIN, 4, SkillTreeStyle.GOLD);
+		if (tree != null) {
+			String name = SkillTreeStyle.trim(font, tree.displayName().getString(),
+				Math.max(40, treeRight - MARGIN - font.width(title) - 12));
+			graphics.text(font, name, treeRight - font.width(name), 4, SkillTreeStyle.MUTED);
+		}
+	}
+
+	/** The tree background: the column strips, then the prerequisite wiring. */
+	private void drawTreeCanvas(GuiGraphicsExtractor graphics, @Nullable SkillTree tree,
+			@Nullable SkillStatePayload.TreeState state) {
+		if (tree == null) {
+			return;
+		}
+		SkillTreeStyle.panel(graphics, MARGIN - 3, treeTop - 3, treeRight - MARGIN + 6,
+			treeBottom - treeTop + 6, SkillTreeStyle.PANEL_DEEP, SkillTreeStyle.BORDER);
+
+		int unlocked = state == null ? 0 : state.unlockedTiers();
+		for (int tier = 0; tier < tree.tiers().size(); tier++) {
+			int x = MARGIN + tier * (columnWidth + COLUMN_GAP);
+			graphics.fill(x - 2, treeTop - 1, x + columnWidth + 2, treeBottom + 1,
+				tier < unlocked ? SkillTreeStyle.COLUMN_OPEN : SkillTreeStyle.COLUMN_LOCKED);
+		}
+		drawConnectors(graphics, state);
+	}
+
+	/**
+	 * The lines that make a rank chain read as a chain: Melt I to II to III.
+	 * A prerequisite one column back is wired with a Z through the gutter
+	 * between the columns; one in the same column — a node that needs the top
+	 * rank of its own tier — routes around the left edge instead.
+	 */
+	private void drawConnectors(GuiGraphicsExtractor graphics, @Nullable SkillStatePayload.TreeState state) {
+		for (SkillNodeWidget target : nodeWidgets.values()) {
+			String requires = target.node().requires();
+			if (requires == null) {
+				continue;
+			}
+			SkillNodeWidget source = nodeWidgets.get(requires);
+			if (source == null) {
+				continue;
+			}
+			boolean satisfied = state != null && state.purchased().contains(requires);
+			int color = satisfied ? SkillTreeStyle.GREEN : SkillTreeStyle.BORDER_LIT;
+			int fromY = source.connectorY();
+			int toY = target.connectorY();
+			int toX = target.getX();
+
+			if (source.getRight() <= toX) {
+				int fromX = source.getRight();
+				int mid = (fromX + toX) / 2;
+				horizontal(graphics, fromX, mid, fromY, color);
+				vertical(graphics, mid, fromY, toY, color);
+				horizontal(graphics, mid, toX, toY, color);
+			} else {
+				int gutter = toX - 3;
+				horizontal(graphics, gutter, source.getX(), fromY, color);
+				vertical(graphics, gutter, fromY, toY, color);
+				horizontal(graphics, gutter, toX, toY, color);
+			}
+			// A stub where the line lands, so the direction of the chain reads.
+			graphics.fill(toX - 2, toY - 1, toX, toY + 2, color);
+		}
+	}
+
+	private void horizontal(GuiGraphicsExtractor graphics, int x1, int x2, int y, int color) {
+		graphics.fill(Math.min(x1, x2), y, Math.max(x1, x2), y + 1, color);
+	}
+
+	private void vertical(GuiGraphicsExtractor graphics, int x, int y1, int y2, int color) {
+		graphics.fill(x, Math.min(y1, y2), x + 1, Math.max(y1, y2) + 1, color);
+	}
+
+	/** The player's experience, drawn the way the HUD draws it. */
+	private void drawXpBar(GuiGraphicsExtractor graphics) {
+		LocalPlayer player = minecraft == null ? null : minecraft.player;
+		if (player == null) {
+			return;
+		}
+		int barX = MARGIN;
+		int barWidth = treeRight - MARGIN;
+		int barY = height - 14;
+		SkillTreeStyle.progressBar(graphics, barX, barY, barWidth, 11, player.experienceProgress,
+			SkillTreeStyle.XP_GREEN);
+
+		// The level rides on the bar rather than above it: the HUD has the whole
+		// screen to breathe in, this strip has eleven pixels.
+		String level = Component.translatable("screen.toolmastery.levels", player.experienceLevel).getString();
+		SkillTreeStyle.outlinedText(graphics, font, level,
+			barX + (barWidth - font.width(level)) / 2, barY + 2, SkillTreeStyle.TEXT);
 	}
 
 	/**
@@ -403,8 +587,7 @@ public class SkillTreeScreen extends Screen {
 	 * escape the panel. Returns the y just below the last drawn line.
 	 */
 	private int wrappedText(GuiGraphicsExtractor graphics, Component text, int x, int y, int color, int lineSpacing) {
-		int wrap = width - 12 - x;
-		for (FormattedCharSequence line : font.split(text, wrap)) {
+		for (FormattedCharSequence line : font.split(text, panelWidth - 12)) {
 			graphics.text(font, line, x, y, color);
 			y += lineSpacing;
 		}
@@ -415,40 +598,47 @@ public class SkillTreeScreen extends Screen {
 		SkillTree tree = SkillTrees.byId(treeId);
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
 		int x = panelX + 6;
-		int y = 42;
+		int y = TITLE_BAR + 9;
 
+		// Everything below belongs to the buttons: clip, so a long description
+		// stops at the edge instead of running under them.
+		graphics.enableScissor(panelX + 1, TITLE_BAR + 4, panelX + panelWidth - 1, height - 72);
 		if (tree == null || state == null) {
-			graphics.text(font, Component.translatable("screen.toolmastery.syncing"), x, y, COLOR_MUTED);
-			return;
-		}
-		if (pending != Pending.NONE) {
+			graphics.text(font, Component.translatable("screen.toolmastery.syncing"), x, y, SkillTreeStyle.MUTED);
+		} else if (pending != Pending.NONE) {
 			drawConfirmation(graphics, tree, x, y);
-			return;
-		}
-		if (selectedNode != null) {
+		} else if (selectedNode != null) {
 			SkillNode node = tree.node(selectedNode);
 			if (node != null) {
 				drawNode(graphics, node, state, x, y);
 			}
-			return;
-		}
-		if (selectedTier >= 0) {
+		} else if (selectedTier >= 0) {
 			drawTier(graphics, tree, state, x, y);
-			return;
+		} else {
+			graphics.textWithWordWrap(font, Component.translatable("screen.toolmastery.help"),
+				x, y, panelWidth - 12, SkillTreeStyle.MUTED);
 		}
-		graphics.textWithWordWrap(font, Component.translatable("screen.toolmastery.help"),
-			x, y, width - 12 - x, COLOR_MUTED);
+		graphics.disableScissor();
 	}
 
 	private void drawNode(GuiGraphicsExtractor graphics, SkillNode node, SkillStatePayload.TreeState state, int x, int y) {
-		int wrap = width - 12 - x;
-		y = wrappedText(graphics, node.displayName(), x, y, COLOR_TEXT, 12);
-		graphics.text(font, Component.literal(node.type().name().toLowerCase()), x, y, COLOR_GOLD);
-		y += 12;
+		int wrap = panelWidth - 12;
+		graphics.item(node.iconStack(), x, y);
+		int afterTitle = y;
+		for (FormattedCharSequence line : font.split(node.displayName(), wrap - 20)) {
+			graphics.text(font, line, x + 20, afterTitle + 4, SkillTreeStyle.TEXT);
+			afterTitle += 10;
+		}
+		y = Math.max(afterTitle, y + 18) + 2;
+
+		SkillTreeStyle.badge(graphics, font, SkillTreeStyle.typeName(node.type()), x, y,
+			SkillTreeStyle.typeColor(node.type()));
+		y += 15;
+
 		if (!node.implemented()) {
 			// highlighted badge — the full description still renders below
 			y = wrappedText(graphics, Component.translatable("screen.toolmastery.coming_soon_badge"),
-				x, y, COLOR_COMING_SOON, 12);
+				x, y, SkillTreeStyle.SOON, 11) + 2;
 		}
 
 		boolean owned = state.purchased().contains(node.id());
@@ -456,31 +646,31 @@ public class SkillTreeScreen extends Screen {
 			owned
 				? Component.translatable("screen.toolmastery.unlocked")
 				: Component.translatable("screen.toolmastery.unlock_cost", node.unlockCost()),
-			x, y, owned ? COLOR_XP : COLOR_MUTED, 12);
+			x, y, owned ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 11);
 		if (!owned) {
 			y = drawMaterials(graphics, node, x, y);
 		}
 		if (node.enchantable()) {
 			y = wrappedText(graphics, Component.translatable("screen.toolmastery.enchant_cost", node.enchantCost()),
-				x, y, COLOR_MUTED, 12);
+				x, y, SkillTreeStyle.MUTED, 11);
 		}
 		if (node.requires() != null) {
 			boolean has = state.purchased().contains(node.requires());
 			y = wrappedText(graphics,
 				Component.translatable("screen.toolmastery.requires", SkillNode.displayName(node.requires())),
-				x, y, has ? COLOR_XP : COLOR_BAD, 12);
+				x, y, has ? SkillTreeStyle.GREEN : SkillTreeStyle.BAD, 11);
 		}
 		if (node.exclusiveWith() != null) {
 			y = wrappedText(graphics,
 				Component.translatable("screen.toolmastery.exclusive", SkillNode.displayName(node.exclusiveWith())),
-				x, y, COLOR_LOCKED, 12);
+				x, y, SkillTreeStyle.DIM, 11);
 		}
 		y += 4;
 		// Keyed on the full node id, not the family: every rank describes only
 		// what that rank does, so Dig Range II does not recite I and III too.
 		graphics.textWithWordWrap(font,
 			Component.translatable("node.toolmastery." + node.id() + ".desc"),
-			x, y, wrap, COLOR_MUTED);
+			x, y, wrap, SkillTreeStyle.MUTED);
 	}
 
 	/** The have/need checklist for a node's unlock materials. */
@@ -492,23 +682,33 @@ public class SkillTreeScreen extends Screen {
 			Component line = Component.literal(done ? "✓ " : "□ ")
 				.append(material.label())
 				.append(done ? Component.empty() : Component.literal(" (" + held + ")"));
-			y = wrappedText(graphics, line, x, y, done ? COLOR_XP : COLOR_MUTED, 11);
+			y = wrappedText(graphics, line, x, y, done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 11);
 		}
 		return y;
 	}
 
 	private void drawTier(GuiGraphicsExtractor graphics, SkillTree tree, SkillStatePayload.TreeState state, int x, int y) {
 		SkillTier tier = tree.tiers().get(selectedTier);
+		boolean open = selectedTier < state.unlockedTiers();
+		y = wrappedText(graphics, tree.tierName(selectedTier), x, y, SkillTreeStyle.TEXT, 11);
 		y = wrappedText(graphics,
-			Component.translatable("tier.toolmastery." + treeId + "." + (selectedTier + 1)),
-			x, y, COLOR_TEXT, 12);
-		graphics.text(font, Component.translatable("screen.toolmastery.gate"), x, y, COLOR_GOLD);
+			open
+				? Component.translatable("screen.toolmastery.unlocked")
+				: Component.translatable("screen.toolmastery.unlock_cost_tier", tier.accessCost()),
+			x, y, open ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 13);
+
+		graphics.text(font, Component.translatable("screen.toolmastery.gate"), x, y, SkillTreeStyle.GOLD);
 		y += 12;
 		for (GateRequirement gate : tier.gates()) {
 			int count = Math.min(state.counters().getOrDefault(gate.id(), 0), gate.target());
 			boolean done = count >= gate.target();
 			String line = (done ? "✓ " : "□ ") + gate.displayName() + " " + count + "/" + gate.target();
-			y = wrappedText(graphics, Component.literal(line), x, y, done ? COLOR_XP : COLOR_MUTED, 11);
+			graphics.text(font, SkillTreeStyle.trim(font, line, panelWidth - 12), x, y,
+				done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED);
+			y += 10;
+			SkillTreeStyle.progressBar(graphics, x, y, panelWidth - 12, 3,
+				(float) count / gate.target(), done ? SkillTreeStyle.GREEN : SkillTreeStyle.GOLD);
+			y += 7;
 		}
 	}
 
@@ -517,17 +717,18 @@ public class SkillTreeScreen extends Screen {
 	 * and — for an enchant — which item is about to receive it.
 	 */
 	private void drawConfirmation(GuiGraphicsExtractor graphics, SkillTree tree, int x, int y) {
-		int wrap = width - 12 - x;
+		int wrap = panelWidth - 12;
 		SkillNode node = selectedNode == null ? null : tree.node(selectedNode);
 
 		if (pending == Pending.UNLOCK_TIER) {
-			SkillTier tier = tree.tiers().get(Math.max(selectedTier, 0));
+			int tierIndex = Math.max(selectedTier, 0);
+			SkillTier tier = tree.tiers().get(tierIndex);
 			y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.tier_title",
-				Component.translatable("tier.toolmastery." + treeId + "." + (selectedTier + 1))), x, y, COLOR_GOLD, 12);
+				tree.tierName(tierIndex)), x, y, SkillTreeStyle.GOLD, 11);
 			y += 2;
 			graphics.textWithWordWrap(font,
 				Component.translatable("screen.toolmastery.confirm.tier_body", tier.accessCost()),
-				x, y, wrap, COLOR_MUTED);
+				x, y, wrap, SkillTreeStyle.MUTED);
 			return;
 		}
 		if (node == null) {
@@ -536,9 +737,9 @@ public class SkillTreeScreen extends Screen {
 
 		if (pending == Pending.UNLOCK_NODE) {
 			y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.unlock_title",
-				node.displayName()), x, y, COLOR_GOLD, 12);
+				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
 			y = wrappedText(graphics, Component.translatable("screen.toolmastery.unlock_cost", node.unlockCost()),
-				x, y, COLOR_MUTED, 12);
+				x, y, SkillTreeStyle.MUTED, 11);
 			y = drawMaterials(graphics, node, x, y);
 			y += 2;
 			ModEnchantments.Grant grant = ModEnchantments.NODE_GRANTS.get(node.id());
@@ -551,7 +752,8 @@ public class SkillTreeScreen extends Screen {
 				bodyKey = "screen.toolmastery.confirm.unlock_body_capstone";
 			}
 			graphics.textWithWordWrap(font,
-				Component.translatable(bodyKey, node.displayName(), node.enchantCost()), x, y, wrap, COLOR_MUTED);
+				Component.translatable(bodyKey, node.displayName(), node.enchantCost()), x, y, wrap,
+				SkillTreeStyle.MUTED);
 			return;
 		}
 
@@ -559,18 +761,18 @@ public class SkillTreeScreen extends Screen {
 		LocalPlayer player = minecraft == null ? null : minecraft.player;
 		Component held = player == null ? Component.empty() : player.getMainHandItem().getHoverName();
 		y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.enchant_title",
-			node.displayName()), x, y, COLOR_GOLD, 12);
+			node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
 		y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.enchant_target", held),
-			x, y, COLOR_TEXT, 12);
+			x, y, SkillTreeStyle.TEXT, 11);
 		y = wrappedText(graphics, Component.translatable("screen.toolmastery.enchant_cost", node.enchantCost()),
-			x, y, COLOR_MUTED, 12);
+			x, y, SkillTreeStyle.MUTED, 11);
 		Component problem = enchantProblem(node);
 		if (problem != null) {
-			y = wrappedText(graphics, problem, x, y, COLOR_BAD, 11);
+			y = wrappedText(graphics, problem, x, y, SkillTreeStyle.BAD, 11);
 		}
 		y += 2;
 		graphics.textWithWordWrap(font, Component.translatable("screen.toolmastery.confirm.enchant_body"),
-			x, y, wrap, COLOR_MUTED);
+			x, y, wrap, SkillTreeStyle.MUTED);
 	}
 
 	@Override
