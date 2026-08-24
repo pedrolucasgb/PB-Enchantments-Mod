@@ -135,7 +135,7 @@ public final class SkillTrees {
 			)),
 			// Tier 2 — Feller
 			new SkillTier(10, List.of(
-				new GateRequirement("overworld_wood_checklist", 9),
+				new GateRequirement("overworld_wood_checklist", 6),
 				new GateRequirement("chop_logs_total", 512),
 				new GateRequirement("strip_logs", 32)
 			)),
@@ -147,6 +147,7 @@ public final class SkillTrees {
 			)),
 			// Tier 4 — Grove Warden
 			new SkillTier(20, List.of(
+				new GateRequirement("overworld_wood_checklist", 9),
 				new GateRequirement("plant_saplings", 128),
 				new GateRequirement("harvest_apples", 32),
 				new GateRequirement("fell_trees_total", 500)
@@ -215,27 +216,29 @@ public final class SkillTrees {
 			// Tier 2 — Rune Reader
 			new SkillTier(10, List.of(
 				new GateRequirement("enchant_items", 20),
-				new GateRequirement("spend_levels", 30),
 				new GateRequirement("mine_lapis", 64),
-				new GateRequirement("craft_books", 32)
+				new GateRequirement("craft_books", 32),
+				new GateRequirement("buy_enchanted_books", 3)
 			)),
 			// Tier 3 — Arcanist
 			new SkillTier(15, List.of(
-				new GateRequirement("enchant_items", 50),
+				new GateRequirement("reach_level_30", 1),
 				new GateRequirement("max_slot_enchants", 10),
-				new GateRequirement("reach_level_30", 1)
+				new GateRequirement("enchant_type_checklist", 6),
+				new GateRequirement("anvil_combines", 15)
 			)),
 			// Tier 4 — Master Enchanter
 			new SkillTier(20, List.of(
-				new GateRequirement("enchant_items", 100),
 				new GateRequirement("spend_levels", 150),
-				new GateRequirement("collect_xp", 10000)
+				new GateRequirement("collect_xp", 10000),
+				new GateRequirement("grindstone_disenchants", 20),
+				new GateRequirement("buy_enchanted_books", 12)
 			)),
 			// Tier 5 — Archmage
 			new SkillTier(30, List.of(
 				new GateRequirement("enchant_items", 200),
 				new GateRequirement("max_slot_enchants", 50),
-				new GateRequirement("spend_levels", 400)
+				new GateRequirement("enchanted_book_checklist", 12)
 			))
 		),
 		List.of(

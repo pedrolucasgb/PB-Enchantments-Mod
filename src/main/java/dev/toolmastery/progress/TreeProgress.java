@@ -27,6 +27,10 @@ public final class TreeProgress {
 		"melt_3", "smelt_3"
 	);
 
+	private static final String WOOD_MASK = "overworld_wood_checklist_mask";
+	private static final String RARE_MASK = "rare_wood_checklist_mask";
+	private static final int OVERWORLD_WOOD_BITS = 0b1_1111_1111;
+
 	/** How many tiers are unlocked (0 = none; 1 = tier 1 open, ...). */
 	public int unlockedTiers;
 	public final Set<String> purchased = new HashSet<>();
@@ -41,6 +45,25 @@ public final class TreeProgress {
 			this.purchased.add(RENAMED.getOrDefault(nodeId, nodeId));
 		}
 		this.counters.putAll(counters);
+		mergeWoodChecklist();
+	}
+
+	/**
+	 * A development build briefly cut the Overworld wood checklist in two — six
+	 * common woods, three biome-hunt ones. It is one nine-bit line again, read at
+	 * two targets, so any save written under the split has its second mask folded
+	 * back into the first and the popcount recomputed. A save that never saw the
+	 * split has no second mask and falls straight through.
+	 */
+	private void mergeWoodChecklist() {
+		Integer rare = counters.remove(RARE_MASK);
+		counters.remove("rare_wood_checklist");
+		if (rare == null) {
+			return;
+		}
+		int merged = (counters.getOrDefault(WOOD_MASK, 0) | (rare << 6)) & OVERWORLD_WOOD_BITS;
+		counters.put(WOOD_MASK, merged);
+		counters.put("overworld_wood_checklist", Integer.bitCount(merged));
 	}
 
 	public int count(String counterId) {
