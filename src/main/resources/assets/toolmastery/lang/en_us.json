@@ -16,6 +16,10 @@
 
 	"screen.toolmastery.title": "Tool Mastery",
 	"screen.toolmastery.levels": "Level %s",
+	"screen.toolmastery.type.enchantment": "Enchantment",
+	"screen.toolmastery.type.passive": "Passive",
+	"screen.toolmastery.type.active": "Active",
+	"screen.toolmastery.type.item": "Item",
 	"screen.toolmastery.coming_soon": "Coming soon",
 	"screen.toolmastery.coming_soon_badge": "★ COMING SOON — planned for a future update",
 	"screen.toolmastery.syncing": "Syncing...",
@@ -23,6 +27,7 @@
 	"screen.toolmastery.unlock": "Unlock tier (%s lv)",
 	"screen.toolmastery.unlock_node": "Unlock (%s lv)",
 	"screen.toolmastery.enchant_node": "Enchant (%s lv)",
+	"screen.toolmastery.unlock_cost_tier": "Unlock: %s levels",
 	"screen.toolmastery.unlock_cost": "Unlock: %s levels + materials",
 	"screen.toolmastery.enchant_cost": "Enchant: %s levels, repeatable",
 	"screen.toolmastery.enchant_needs_unlock": "Unlock this node before you can enchant with it.",
@@ -46,7 +51,7 @@
 	"screen.toolmastery.exclusive": "Exclusive with: %s",
 	"screen.toolmastery.gate": "Gate achievements",
 	"screen.toolmastery.select_hint": "Select a node or tier",
-	"screen.toolmastery.help": "Click a node to see its details. Unlock buys it once with XP levels plus materials; passives start working straight away and enchantments join your enchanting table. Enchant then stamps an unlocked enchantment on the item in your hand, as often as you like. Click a tier header (T1-T5) for its gate achievements.",
+	"screen.toolmastery.help": "Click a node to see what it does. A green frame is already yours, a pulsing gold one is ready to unlock, grey is still out of reach and red was locked out by a capstone choice. Lines join a rank to the rank that unlocks it. Unlock buys a node once with XP levels plus materials; passives start working straight away and enchantments join your enchanting table. Enchant then stamps an unlocked enchantment on the item in your hand, as often as you like. Click a tier header for its gate achievements.",
 	"screen.toolmastery.insight_title": "Arcane Insight",
 	"screen.toolmastery.insight_slot": "Slot %s:",
 
@@ -116,6 +121,9 @@
 	"advancements.toolmastery.enchanter.tier_5.title": "Archmage",
 	"advancements.toolmastery.enchanter.tier_5.description": "Unlock the final tier of the Enchanter tree and claim its capstone.",
 
+	"tree.toolmastery.pickaxe.short": "Pickaxe",
+	"tree.toolmastery.axe.short": "Axe",
+	"tree.toolmastery.enchanter.short": "Enchanter",
 	"tree.toolmastery.pickaxe": "Pickaxe — Path of the Deep",
 	"tree.toolmastery.axe": "Axe — Path of the Grove",
 	"tree.toolmastery.enchanter": "Enchanter — Path of the Arcane",
