@@ -73,6 +73,7 @@ public class ToolMastery implements ModInitializer {
 						enchanter.counters.put("reach_level_30", 1);
 					}
 					dev.toolmastery.track.FarmingTracker.scanSaplingChecklist(player);
+					dev.toolmastery.track.EnchantTracker.scanBookChecklist(player);
 					DeepHaste.tick(player);
 				}
 			}

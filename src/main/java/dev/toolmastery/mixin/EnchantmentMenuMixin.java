@@ -189,6 +189,6 @@ public abstract class EnchantmentMenuMixin {
 		shift = At.Shift.AFTER))
 	private void toolmastery$trackTableEnchant(ItemStack itemStack, int id, Player player, int levels,
 	                                           ItemStack lapisStack, Level level, BlockPos pos, CallbackInfo ci) {
-		EnchantTracker.onTableEnchant(player, id, levels);
+		EnchantTracker.onTableEnchant(player, itemStack, id, levels);
 	}
 }

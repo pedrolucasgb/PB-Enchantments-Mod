@@ -4,12 +4,15 @@
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
 		"AxeItemMixin",
+		"AnvilMenuMixin",
 		"ItemStackMixin",
 		"BlockItemMixin",
 		"EnchantmentMenuMixin",
 		"FurnaceResultSlotMixin",
+		"GrindstoneResultSlotMixin",
 		"ItemEntityMixin",
 		"LivingEntityMixin",
+		"MerchantResultSlotMixin",
 		"PlayerMixin",
 		"ResultSlotMixin"
 	],

@@ -21,6 +21,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * counter; the visible counter holds the popcount.
  */
 public final class BlockBreakTracker {
+	/** Widths of the checklist masks, so a stale bit cannot leak into a popcount. */
+	public static final int ORE_BITS = 0b111_1111_1111;
+	public static final int OVERWORLD_WOOD_BITS = 0b1_1111_1111;
+	public static final int NETHER_WOOD_BITS = 0b11;
+
 	private BlockBreakTracker() {
 	}
 
@@ -85,7 +90,7 @@ public final class BlockBreakTracker {
 			oreBit = 10;
 		}
 		if (oreBit >= 0) {
-			updateChecklist(progress, "ore_checklist", oreBit);
+			updateChecklist(progress, "ore_checklist", oreBit, ORE_BITS);
 		}
 	}
 
@@ -105,11 +110,11 @@ public final class BlockBreakTracker {
 
 			int woodBit = overworldWoodBit(state);
 			if (woodBit >= 0) {
-				updateChecklist(progress, "overworld_wood_checklist", woodBit);
+				updateChecklist(progress, "overworld_wood_checklist", woodBit, OVERWORLD_WOOD_BITS);
 			}
 			int netherBit = netherWoodBit(state);
 			if (netherBit >= 0) {
-				updateChecklist(progress, "nether_wood_checklist", netherBit);
+				updateChecklist(progress, "nether_wood_checklist", netherBit, NETHER_WOOD_BITS);
 			}
 		}
 		if (state.is(BlockTags.LEAVES)) {
@@ -117,6 +122,10 @@ public final class BlockBreakTracker {
 		}
 	}
 
+	/**
+	 * One checklist read twice: tier 2 wants any six of these, tier 4 wants all
+	 * nine. Which six come first is the player's to choose.
+	 */
 	private static int overworldWoodBit(BlockState state) {
 		if (state.is(Blocks.OAK_LOG)) return 0;
 		if (state.is(Blocks.SPRUCE_LOG)) return 1;
@@ -136,9 +145,13 @@ public final class BlockBreakTracker {
 		return -1;
 	}
 
-	private static void updateChecklist(TreeProgress progress, String id, int bit) {
+	/**
+	 * Bits above the checklist width are dropped: a mask saved under an older
+	 * split of the list cannot inflate the popcount past its new target.
+	 */
+	private static void updateChecklist(TreeProgress progress, String id, int bit, int width) {
 		String maskId = id + "_mask";
-		int mask = progress.count(maskId) | (1 << bit);
+		int mask = (progress.count(maskId) | (1 << bit)) & width;
 		progress.counters.put(maskId, mask);
 		progress.counters.put(id, Integer.bitCount(mask));
 	}
