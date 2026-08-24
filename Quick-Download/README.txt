@@ -45,6 +45,26 @@ describes the cross, not the whole family.
 
 WHAT IS NEW IN 0.2.0
 --------------------
+- LIBRARIANS SELL TOOL MASTERY BOOKS (new): from apprentice onwards a
+  librarian may offer one Tool Mastery enchanted book, whatever stage you
+  are at - a brand new player can see Dig Range III on day one. Buying it
+  is another matter: the trade is refused unless you have already unlocked
+  that skill at that rank or higher. The offer shows up barred and the book
+  tooltip tells you what you still owe, so you never click into a refusal
+  and never lose an emerald to one. Books are expensive on purpose - around
+  30 emeralds for a rank I, near 64 for a rank III - so the Enchant button
+  stays worth using.
+
+- BORROWED GEAR ONLY WORKS AS WELL AS YOU HAVE EARNED (new): hold a tool
+  carrying an enchantment you have not unlocked and it behaves as if your
+  hands were empty - bare-hand speed, blocks that need a tool drop nothing,
+  bare-hand damage. The tool is not damaged or changed in any way; it just
+  sits there as a goal until your tree catches up, and it does not even
+  lose durability while inert. If you own a LOWER rank than the tool
+  carries - your Dig Range I against a Dig Range III pickaxe - it works at
+  your rank instead, and improves as you buy the next one. The tooltip
+  names what to unlock. Creative mode ignores all of this.
+
 - THE SKILL SCREEN (K) IS A REAL TREE NOW: every skill is an item icon
   in a coloured frame - green is already yours, a pulsing gold one is
   ready to unlock, grey is still out of reach, orange is not built yet.

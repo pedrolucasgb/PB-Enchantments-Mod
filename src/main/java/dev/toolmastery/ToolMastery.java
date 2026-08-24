@@ -5,6 +5,7 @@ import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AreaBreak;
 import dev.toolmastery.perk.AxeHarvest;
 import dev.toolmastery.perk.DeepHaste;
+import dev.toolmastery.perk.ItemAuthority;
 import dev.toolmastery.perk.MinersMagnet;
 import dev.toolmastery.perk.TimberScheduler;
 import dev.toolmastery.progress.ModAttachments;
@@ -44,6 +45,10 @@ public class ToolMastery implements ModInitializer {
 			ModAdvancements.syncAll(handler.getPlayer()));
 
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
+			// Before anything reads the tool: if the holder has not earned what
+			// it carries, none of the perks below will fire and the block just
+			// gave up no drops. Say so, or it reads as a bug.
+			ItemAuthority.noticeInertUse(player, player.getMainHandItem());
 			BlockBreakTracker.onBreak(level, player, pos, state);
 			dev.toolmastery.perk.SmeltHandler.onBreak(level, player, pos, state);
 			dev.toolmastery.perk.VeinMiner.onBreak(level, player, pos, state);

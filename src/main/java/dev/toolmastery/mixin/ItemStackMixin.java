@@ -1,6 +1,7 @@
 package dev.toolmastery.mixin;
 
 import dev.toolmastery.perk.Indestructible;
+import dev.toolmastery.perk.ItemAuthority;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,7 +35,14 @@ public class ItemStackMixin {
 		method = "applyDamage(ILnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V",
 		at = @At("HEAD"), argsOnly = true)
 	private int toolmastery$indestructibleClamp(int damage, int ignored, ServerPlayer player, Consumer<?> onBreak) {
-		return Indestructible.clampDamage((ItemStack) (Object) this, damage);
+		ItemStack self = (ItemStack) (Object) this;
+		// An item its holder has not earned wears not at all: they are not
+		// really using it, and it closes the griefing angle where handing
+		// someone a tool burns it out for them.
+		if (player != null && ItemAuthority.locked(player, self)) {
+			return 0;
+		}
+		return Indestructible.clampDamage(self, damage);
 	}
 
 	@Inject(method = "getDestroySpeed", at = @At("HEAD"), cancellable = true)
