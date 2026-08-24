@@ -51,7 +51,7 @@ public final class SmeltHandler {
 		if (!pickaxe.is(ItemTags.PICKAXES)) {
 			return;
 		}
-		int smeltLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.SMELT);
+		int smeltLevel = ItemAuthority.effectiveLevel(serverPlayer, pickaxe, ModEnchantments.SMELT);
 		if (smeltLevel <= 0) {
 			return;
 		}

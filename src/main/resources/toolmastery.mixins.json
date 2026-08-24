@@ -14,7 +14,8 @@
 		"LivingEntityMixin",
 		"MerchantResultSlotMixin",
 		"PlayerMixin",
-		"ResultSlotMixin"
+		"ResultSlotMixin",
+		"SlotMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

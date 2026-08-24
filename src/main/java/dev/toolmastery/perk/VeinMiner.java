@@ -47,7 +47,7 @@ public final class VeinMiner {
 		if (!pickaxe.is(ItemTags.PICKAXES)) {
 			return;
 		}
-		int veinLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.RICH_VEIN);
+		int veinLevel = ItemAuthority.effectiveLevel(serverPlayer, pickaxe, ModEnchantments.RICH_VEIN);
 		if (veinLevel <= 0) {
 			return;
 		}
