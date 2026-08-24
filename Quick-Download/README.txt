@@ -45,6 +45,14 @@ describes the cross, not the whole family.
 
 WHAT IS NEW IN 0.2.0
 --------------------
+- THE SKILL SCREEN (K) IS A REAL TREE NOW: every skill is an item icon
+  in a coloured frame - green is already yours, a pulsing gold one is
+  ready to unlock, grey is still out of reach, orange is not built yet.
+  Lines join a rank to the rank that unlocks it (Smelt I - II - III), the
+  columns are headed by the tier name instead of T1-T5, each skill shows
+  a badge saying whether it is a passive or an enchantment, and your XP
+  bar runs along the bottom of the screen.
+
 - INDESTRUCTIBLE (new, Enchanter tier 3, unlocked with phantom membrane):
   the item never breaks. Damage stops one point short of the end, like an
   Elytra. While it sits there spent it works like an empty hand - bare-hand
