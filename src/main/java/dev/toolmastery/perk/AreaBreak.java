@@ -69,7 +69,7 @@ public final class AreaBreak {
 			return;
 		}
 		float budgetTicks = ticksToBreak(serverLevel, pos, state, serverPlayer) + GRACE_TICKS;
-		int rangeLevel = ModEnchantments.level(serverPlayer, pickaxe, ModEnchantments.DIG_RANGE);
+		int rangeLevel = ItemAuthority.effectiveLevel(serverPlayer, pickaxe, ModEnchantments.DIG_RANGE);
 		if (rangeLevel <= 0) {
 			return;
 		}

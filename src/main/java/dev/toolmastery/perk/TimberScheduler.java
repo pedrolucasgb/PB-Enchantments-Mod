@@ -78,7 +78,7 @@ public final class TimberScheduler {
 		if (!axe.is(ItemTags.AXES)) {
 			return;
 		}
-		int logicLevel = ModEnchantments.level(serverPlayer, axe, ModEnchantments.LOGIC);
+		int logicLevel = ItemAuthority.effectiveLevel(serverPlayer, axe, ModEnchantments.LOGIC);
 		if (logicLevel <= 0) {
 			return;
 		}
@@ -95,7 +95,7 @@ public final class TimberScheduler {
 		SkillService.addCount(serverPlayer, SkillTrees.AXE, "fell_trees_total", 1);
 		SkillService.addCount(serverPlayer, SkillTrees.AXE, "fell_trees_grand_total", 1);
 
-		if (logicLevel >= 3 && ModEnchantments.level(serverPlayer, axe, ModEnchantments.ENVIRONMENT) > 0) {
+		if (logicLevel >= 3 && ItemAuthority.effectiveLevel(serverPlayer, axe, ModEnchantments.ENVIRONMENT) > 0) {
 			replant(serverPlayer, serverLevel, pos, state);
 		}
 	}

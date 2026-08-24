@@ -39,6 +39,10 @@ public class ToolMasteryClient implements ClientModInitializer {
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientSkillState.clear());
 
+		// Why a borrowed tool feels dead, and why a librarian will not sell a
+		// book yet — both read the same per-holder check as the gameplay hooks.
+		LockedItemTooltip.register();
+
 		// Speed passives are computed on both sides; on this one the answer comes
 		// from the synced snapshot, and only ever for the local player.
 		PerkAccess.setClientLookup((player, treeId, nodeId) ->
