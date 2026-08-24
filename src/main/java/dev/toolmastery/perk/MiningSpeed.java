@@ -85,7 +85,7 @@ public final class MiningSpeed {
 		if (!state.is(BlockTags.LOGS) || player.isShiftKeyDown() || !held.is(ItemTags.AXES)) {
 			return 1.0F;
 		}
-		return ModEnchantments.level(player, held, ModEnchantments.LOGIC) == 1 ? LOGIC_1_SLOWDOWN : 1.0F;
+		return ItemAuthority.effectiveLevel(player, held, ModEnchantments.LOGIC) == 1 ? LOGIC_1_SLOWDOWN : 1.0F;
 	}
 
 	/** Stone, granite, diorite, andesite, tuff, deepslate (BASE_STONE_OVERWORLD) plus every ore. */

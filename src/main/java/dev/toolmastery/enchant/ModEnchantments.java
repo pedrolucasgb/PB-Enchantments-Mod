@@ -58,6 +58,16 @@ public final class ModEnchantments {
 	public static final Set<ResourceKey<Enchantment>> TABLE_POOL =
 		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE);
 
+	/**
+	 * Every enchantment the tree hands out, derived from {@link #NODE_GRANTS}
+	 * so that a new grant joins it for free. This is the set the per-holder
+	 * gates ask about — "is this one of ours?" — and it is deliberately not
+	 * {@link #TABLE_POOL}, which is about the enchanting table specifically.
+	 */
+	public static final Set<ResourceKey<Enchantment>> ALL = NODE_GRANTS.values().stream()
+		.map(Grant::enchantment)
+		.collect(java.util.stream.Collectors.toUnmodifiableSet());
+
 	private ModEnchantments() {
 	}
 

@@ -55,6 +55,10 @@
 	"screen.toolmastery.insight_title": "Arcane Insight",
 	"screen.toolmastery.insight_slot": "Slot %s:",
 
+	"item.toolmastery.locked.tool": "Unlock %s in the skill tree — until then this handles like your bare hands.",
+	"item.toolmastery.locked.book": "Unlock %s in the skill tree before a librarian will part with it.",
+	"item.toolmastery.locked.use": "Your %1$s is inert — unlock %2$s in the skill tree to wake it up.",
+
 	"enchant.toolmastery.fail.empty_hand": "Hold the tool you want to give %s to in your main hand.",
 	"enchant.toolmastery.fail.unsupported": "A %1$s cannot take %2$s — that enchantment belongs on a different kind of tool.",
 	"enchant.toolmastery.fail.already": "Your %1$s already carries %2$s.",

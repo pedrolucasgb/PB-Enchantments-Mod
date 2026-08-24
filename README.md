@@ -15,6 +15,7 @@ Every tool class has its own skill tree. You earn access by **playing the class*
 3. **Pay the access cost** — unlocking a tier consumes XP levels (5 / 10 / 15 / 20 / 30).
 4. **Unlock nodes** — a one-off purchase: a few XP levels plus materials. Passives switch on immediately; enchantments join your enchanting-table pool.
 5. **Enchant your tools** — an unlocked enchantment can be stamped onto the item in your hand for whole XP levels, as often as you like.
+6. **Or buy the book** — librarians sell Tool Mastery enchanted books to anyone who has already unlocked the rank on the label.
 
 ### Unlock vs. Enchant
 
@@ -156,6 +157,36 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ Rolls above your unlocked level are clamped down, never hidden
 - ✅ Vanilla **Fortune** is raised to a max of IV in the data pack, then clamped back to III at the table for anyone who has not bought Ancient Fortune — a data pack cannot be per-player, this is what makes the capstone a reward
 - ✅ Natural combinations with vanilla enchantments via the vanilla bonus mechanic
+
+### Librarian book trades
+Enchanted books are the third way onto a tool, next to the enchanting table and the skill screen's Enchant button — and the two halves are deliberately asymmetric.
+
+- ✅ **The villager offers them at any stage.** Trade generation never looks at your tree. A brand-new player can walk into a village on day one and see *Dig Range III* in a librarian's list. The offer is bait: it advertises what the tree holds.
+- ✅ **Only an unlocked player can buy.** Taking the book is refused server-side unless you own that node at that rank or higher — no emerald is spent and no book is produced.
+- ✅ **Refused, not clamped.** A *Dig Range III* book offered to someone who owns only rank I is blocked outright. The enchanting table clamps because the roll is invisible until it lands; a trade puts the rank and the price on the label, so quietly handing over a weaker book for the full price would be a bug.
+- ✅ **No click-into-refusal.** The offer renders with vanilla's barred arrow and the book's tooltip names the rank you still owe.
+- ✅ **One book per librarian.** The offer joins the vanilla *apprentice* pool, from which a librarian draws two trades for life — so mod books never crowd the vanilla book trades out of a village.
+- ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#toolmastery:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
+
+**Price.** 24 emeralds flat plus vanilla's own rank-scaled book price, so a rank I lands around 30 and a rank III up near the 64 ceiling. Books are deliberately expensive: emeralds are a currency the progression does not otherwise touch, and a cheap book would make the skill screen's Enchant button dead UI.
+
+**The anvil.** There is no unlock check on the anvil, so a bought book can be applied to any tool and handed to anyone. That is fine, and intended: under *shared items* below the resulting tool is inert in unearned hands, so the book is a certificate that only works for someone who has done the work anyway.
+
+### Shared items — gear only works as well as its holder has unlocked
+A gear-rich player can hand a beginner a Dig Range III / Smelt III netherite pickaxe. Trading stays legal; what changes is that the item does not do the beginner's growing for them.
+
+> Hold an item carrying an enchantment you have not unlocked, and it behaves as if your hands were empty.
+
+- ✅ **The whole item goes inert, not just the enchantment.** A borrowed pickaxe digs at the bare-hand rate and stone drops nothing; a borrowed axe hits for bare-hand damage. The item is intact and keeps its enchantments — it is carried, not usable, and it becomes a goal in your inventory instead of a shortcut past ten hours of play.
+- ✅ **Partial ownership clamps instead.** Own Dig Range I and hold a Dig Range III pickaxe and it works at rank I. The tool wakes up further as the tree catches up.
+- ✅ **A locked item takes no durability damage.** You are not really using it, and it closes the angle where handing someone a tool burns it out for them.
+- ✅ **Both sides agree.** The check runs on the client and the server from the same synced state, so blocks never "heal" mid-swing.
+- ✅ **You are told.** The item's tooltip names the rank to unlock, and swinging one puts a rate-limited note on the action bar. Silent degradation reads as a bug.
+- ✅ **Creative mode bypasses it**, so testing every other feature does not mean grinding the tree first.
+
+Environmental modifiers still apply on top: a locked pickaxe swung underwater is as slow as bare hands underwater, not as fast as bare hands on dry land.
+
+**Not covered.** Vanilla enchantments have no unlock concept, so a plain Efficiency V pickaxe still transfers freely. Attack *speed* is left vanilla — only damage is suppressed — because it is read in many places including the client cooldown bar, and no weapon-tree enchantment exists yet to make the difference felt. Armour, bows and elytra are out of scope; the check is written generally enough that "inert" can mean something different per item class later.
 
 ### Safety & feel
 - ✅ Sneak disables all area effects (Dig Range, Rich Vein, Logic)
