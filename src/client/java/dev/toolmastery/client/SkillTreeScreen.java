@@ -182,12 +182,11 @@ public class SkillTreeScreen extends Screen {
 				Button nodeButton = Button.builder(label, button -> select(capturedNode, -1))
 					.bounds(x, y, colWidth, 16)
 					.build();
-				if (!node.implemented() && !owned) {
-					// ships in a future update — readable (click for details), not unlockable
-					nodeButton.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.coming_soon")));
-				} else if (!tierOpen && !owned) {
-					// still clickable so the player can read what it does
-					nodeButton.setTooltip(Tooltip.create(Component.translatable("screen.toolmastery.tier_locked")));
+				// Always clickable so the player can read what it does; the tooltip
+				// carries whatever is standing between them and unlocking it.
+				Component blocker = owned || state == null ? null : unlockProblem(node, state);
+				if (blocker != null) {
+					nodeButton.setTooltip(Tooltip.create(blocker));
 				}
 				addRenderableWidget(nodeButton);
 				y += 19;
@@ -231,7 +230,8 @@ public class SkillTreeScreen extends Screen {
 			Component unlockLabel = owned
 				? Component.translatable("screen.toolmastery.unlocked")
 				: Component.translatable("screen.toolmastery.unlock_node", node.unlockCost());
-			if (!owned && node.implemented()) {
+			Component unlockBlocker = owned ? null : unlockProblem(node, state);
+			if (!owned && unlockBlocker == null) {
 				addRenderableWidget(Button.builder(unlockLabel, button -> {
 						pending = Pending.UNLOCK_NODE;
 						scheduleRebuild();
@@ -239,7 +239,13 @@ public class SkillTreeScreen extends Screen {
 					.bounds(panelX + 6, primaryY, 136, 18)
 					.build());
 			} else {
-				addDisabled(node.implemented() ? unlockLabel : Component.translatable("screen.toolmastery.coming_soon"), primaryY);
+				Component blockedLabel = node.implemented()
+					? Component.translatable("screen.toolmastery.locked")
+					: Component.translatable("screen.toolmastery.coming_soon");
+				Button disabled = addDisabled(owned ? unlockLabel : blockedLabel, primaryY);
+				if (unlockBlocker != null) {
+					disabled.setTooltip(Tooltip.create(unlockBlocker));
+				}
 			}
 
 			if (node.enchantable()) {
@@ -275,7 +281,10 @@ public class SkillTreeScreen extends Screen {
 					.bounds(panelX + 6, primaryY, 136, 18)
 					.build());
 			} else {
-				addDisabled(Component.translatable("screen.toolmastery.unlock", tier.accessCost()), primaryY);
+				// Tiers open strictly in order, so this one is not even a choice yet.
+				Button disabled = addDisabled(Component.translatable("screen.toolmastery.unlock", tier.accessCost()), primaryY);
+				disabled.setTooltip(Tooltip.create(
+					Component.translatable("screen.toolmastery.tier_needs_previous", state.unlockedTiers() + 1)));
 			}
 			return;
 		}
@@ -314,6 +323,38 @@ public class SkillTreeScreen extends Screen {
 		}
 		pending = Pending.NONE;
 		scheduleRebuild();
+	}
+
+	/**
+	 * Why this node cannot be unlocked yet, or null when it can. Mirrors the
+	 * structural half of {@code SkillService.unlockNode} — the part that is
+	 * about the shape of the tree rather than about your wallet: tiers open in
+	 * order, and a rank needs the rank below it.
+	 *
+	 * <p>Running cost (materials and XP levels) is deliberately left out. The
+	 * server still checks it and nothing is spent on a failed attempt, and the
+	 * details panel already shows the material checklist — greying the button
+	 * for "come back with more coal" would hide the difference between
+	 * <em>not yet affordable</em> and <em>not yet reachable</em>, which is
+	 * exactly the distinction this is here to make.
+	 */
+	@Nullable
+	private Component unlockProblem(SkillNode node, SkillStatePayload.TreeState state) {
+		if (!node.implemented()) {
+			return Component.translatable("screen.toolmastery.coming_soon");
+		}
+		if (node.tier() >= state.unlockedTiers()) {
+			return Component.translatable("screen.toolmastery.unlock_needs_tier", node.tier() + 1);
+		}
+		if (node.requires() != null && !state.purchased().contains(node.requires())) {
+			return Component.translatable("screen.toolmastery.unlock_needs_node",
+				SkillNode.displayName(node.requires()));
+		}
+		if (node.exclusiveWith() != null && state.purchased().contains(node.exclusiveWith())) {
+			return Component.translatable("screen.toolmastery.unlock_blocked_by",
+				SkillNode.displayName(node.exclusiveWith()));
+		}
+		return null;
 	}
 
 	/**
@@ -427,7 +468,7 @@ public class SkillTreeScreen extends Screen {
 			boolean has = state.purchased().contains(node.requires());
 			y = wrappedText(graphics,
 				Component.translatable("screen.toolmastery.requires", SkillNode.displayName(node.requires())),
-				x, y, has ? COLOR_XP : COLOR_LOCKED, 12);
+				x, y, has ? COLOR_XP : COLOR_BAD, 12);
 		}
 		if (node.exclusiveWith() != null) {
 			y = wrappedText(graphics,

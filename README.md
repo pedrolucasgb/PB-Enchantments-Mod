@@ -18,6 +18,13 @@ Every tool class has its own skill tree. You earn access by **playing the class*
 
 ### Unlock vs. Enchant
 
+Two rules order the whole tree, and they bind **Unlock** only:
+
+- **Tiers open in sequence.** Tier 3 needs tier 2, which needs tier 1 — finishing a later tier's gate early does not let you skip ahead.
+- **Ranks are bought in order.** Dig Range III needs II, which needs I. Once a rank is unlocked, though, **Enchant** stamps it straight onto a bare tool: you never have to put I and II on an item on the way to III.
+
+Both are enforced on the server, and the skill screen greys the Unlock button out with the reason in its tooltip rather than letting you click into a refusal.
+
 Every node is bought once with **Unlock** — cheap in XP, paid partly in materials you gathered while playing the class. What that buys depends on the node:
 
 | Node type | What Unlock gives you | Second step? |
