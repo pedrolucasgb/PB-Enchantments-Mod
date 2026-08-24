@@ -5,6 +5,7 @@ import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.network.EnchantPreviewPayload;
 import dev.toolmastery.network.SkillActionPayload;
 import dev.toolmastery.network.SkillStatePayload;
+import dev.toolmastery.network.StorageResultPayload;
 import dev.toolmastery.perk.PerkAccess;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -29,6 +30,8 @@ public class ToolMasteryClient implements ClientModInitializer {
 			ClientSkillState.accept(payload));
 		ClientPlayNetworking.registerGlobalReceiver(EnchantPreviewPayload.TYPE, (payload, context) ->
 			EnchantPreviewState.accept(payload));
+		ClientPlayNetworking.registerGlobalReceiver(StorageResultPayload.TYPE, (payload, context) ->
+			ClientArtisanState.accept(payload));
 
 		// Lets common code (enchanting menu logic) check enchanter perk
 		// ownership on the client via the synced skill state.
@@ -42,6 +45,11 @@ public class ToolMasteryClient implements ClientModInitializer {
 		// Why a borrowed tool feels dead, and why a librarian will not sell a
 		// book yet — both read the same per-holder check as the gameplay hooks.
 		LockedItemTooltip.register();
+
+		// The Artisan class lives in the inventory screen rather than the skill
+		// screen: Sort, Quick Stack, Restock, Seeker's Eye and the pinned-slot
+		// markers attach themselves to whatever container the player opens.
+		ArtisanScreenHooks.register();
 
 		// Speed passives are computed on both sides; on this one the answer comes
 		// from the synced snapshot, and only ever for the local player.

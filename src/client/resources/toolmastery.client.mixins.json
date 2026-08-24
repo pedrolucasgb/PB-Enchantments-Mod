@@ -3,7 +3,9 @@
 	"package": "dev.toolmastery.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"ContainerScreenAccessor",
 		"EnchantmentScreenMixin",
+		"LocalPlayerMixin",
 		"MerchantOfferMixin"
 	],
 	"injectors": {

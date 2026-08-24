@@ -4,7 +4,7 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Version **0.2.0** · internal mod id: `toolmastery` · package `dev.toolmastery`
+> Version **0.3.0** · internal mod id: `toolmastery` · package `dev.toolmastery`
 
 ---
 
@@ -89,7 +89,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 /mastery debug kit pickaxe          # tier kit for one tree
 /mastery debug kit pickaxe smelt    # one tool per level of a single enchantment
 /mastery debug unlocktier pickaxe 3 # gates + tier + every node of exactly that tier
-/mastery debug unlocktier all 1     # ...for all three trees at once
+/mastery debug unlocktier all 1     # ...for every tree at once
 /mastery debug add <tree> <counter> <amount>   # bump a gate counter
 
 # ...and the same thing backwards, to re-test a feature from a clean slate
@@ -103,7 +103,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ---
 
-## Implemented so far (Sprint 1 — Pickaxe, Axe & Enchanter)
+## Implemented so far (Pickaxe, Axe, Enchanter, Explorer & Artisan)
 
 ### Core systems
 - ✅ Per-player skill progress (tiers, nodes, counters) persisted via data attachments
@@ -124,6 +124,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a slower chop, III clears the canopy too (requires real trees — log houses are safe) |
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
 | **Indestructible** | Enchanter, any damageable item | I | The item never breaks — damage stops one point short, like an Elytra. Spent, it works like an empty hand until repaired |
+| **Slipstream** | Explorer, Elytra | I–III | 10% / 25% / 50% of a firework's push carries over past the point where the boost would normally have died — same rocket, more distance |
 
 ### Passive skills (pickaxe)
 | Node | Levels | Effect |
@@ -151,6 +152,56 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Scholar** I–III | 1 / 2 / 4 | +20% / +40% / +60% XP from every source (orbs, bottles, smelting, breeding) |
 | **Inner Focus** | 3 | Enchanting no longer requires nor consumes lapis lazuli |
 | **Indestructible** | 3 | Enchantment: the item never breaks (see the enchantment table above) |
+
+### Explorer nodes (Path of the Horizon)
+The first class that is not tied to a tool: it levels from **movement**, so its gates read distance travelled and places seen rather than blocks broken. The distance counters are diffed off the vanilla `*_ONE_CM` statistics once a second, from a baseline taken the first time the mod ever sees you — installing it on a world with a hundred kilometres on the clock does not hand you tier 4.
+
+| Node | Tier | Effect |
+|---|---|---|
+| **Cartographer** | 1 | Walking into a biome you have never visited prints its name and your coordinates in the action bar, and the tree keeps the list |
+| **Tireless** I–III | 1 / 2 / 4 | Moving under your own power — walking, sprinting, swimming, jumping — costs 20% / 40% / 60% less hunger |
+| **Sea Legs** | 1 | A boat you are steering cruises ~15% faster |
+| **Clear Sight** I–II | 2 / 3 | Underwater fog pushes out as far as Respiration III gives, and stacks on top of it; II clears the water fully and refills your breath about twice as fast |
+| **Slipstream** I–III | 2 / 3 / 4 | **Enchantment** for the Elytra: 10% / 25% / 50% of a firework's push carries over past where it would normally have died |
+| **Remember** | 3 | You respawn holding a named slip of paper with the coordinates, dimension and in-game day of your last death — it replaces the previous one, so it never becomes clutter |
+| **Trailblazer** | 3 | Sprinting for 8 seconds without stopping ramps to +12% movement speed and lingers 2 seconds after you slow down |
+| **Soft Landing** | 4 | Elytra wall-crash damage halved, and the first 3 blocks of any fall are free |
+| **Waypoint Stone** | 4 | Sneak + right-click with a compass binds the spot you are standing on; the needle points there from then on |
+| **Endless Horizon** | capstone | A quarter of the fireworks you burn flying are not consumed, and Slipstream carryover doubles |
+| **World's Memory** | capstone | Once per in-game day, right-click a compass for the bearing and distance to the nearest structure of a kind you have already found |
+
+**Slipstream is the momentum reading, not the refund one.** It lengthens the rocket's own life rather than re-applying a decaying slice of its velocity, so the acceleration curve, the collision handling and the client prediction all stay vanilla's — the extra distance is real, the physics is not reimplemented. The refund idea ships too, priced apart, as the Endless Horizon capstone.
+
+**Night Eyes is not built.** 26.2 removed the light-texture pipeline the "lift the darkness a little without going full Night Vision" effect needs, so the node ships starred and orange like the other coming-soon nodes rather than as a gamma hack on the player's video settings.
+
+### Artisan nodes (Path of Order)
+Where Pickaxe and Axe are about *getting* resources, the Artisan is about *keeping them in order* — inventory and storage quality of life, earned instead of installed. Named Artisan rather than Crafter because the class barely crafts, and Minecraft already ships a block called the Crafter.
+
+The buttons live in a column just outside the left edge of the inventory and container windows — the inside is where Inventory Profiles Next, Quark and Sophisticated Storage all put theirs. Nothing appears until the node behind it is unlocked.
+
+| Node | Tier | Effect |
+|---|---|---|
+| **Sorter's Hand** I–II | 1 / 2 | A Sort button on your backpack, then on chests, barrels and shulker boxes too |
+| **Seeker's Eye** I–III | 1 / 2 / 3 | A search field: your inventory and the open container → every container within 8 blocks → 16 blocks with per-container bearings, reading shulker boxes stored inside them |
+| **Steady Grid** | 1 | The 3×3 grid keeps its contents when you close a crafting table and hands them back next time |
+| **Deft Hands** | 2 | A hotbar stack that runs out refills itself from your backpack |
+| **Locked Slots** | 3 | Alt-click any slot to pin it — sorting, auto-refill, Quick Stack and Restock all step around it |
+| **Tidy Storage** | 3 | A container is tidied again every time you close it, so one you sorted stays sorted |
+| **Artisan's Order** | 3 | Pick the sort rule: category, name or count |
+| **Quartermaster's Call** | 4 | Tops up the stacks you already carry from containers within 8 blocks — never hands you something new |
+| **The Ledger** | 4 | One searchable page listing everything in reach, with counts and bearings. Read-only: an index, not a remote inventory |
+| **Hand of Order** | capstone | Terraria's *Quick Stack to Nearby Chests* — see below |
+
+**Hand of Order.** Press the button and every item you are carrying flies to the nearby container that already holds its kind. The rule that makes it safe is that half: an item is only ever deposited into a container that **already contains that item type**, so Quick Stack joins the organisation you built and never invents one. Anything with no home stays on you.
+
+- **Reach:** 8 blocks, loaded chunks only, at most 32 containers, nearest first.
+- **Fill order:** partial stacks are topped up before empty slots are used, so a chest with three half-stacks of cobblestone ends with full stacks rather than five scattered piles.
+- **Containers:** chests (a double chest counts as one), trapped chests, barrels and placed shulker boxes. Furnaces, hoppers, droppers, dispensers and brewing stands are excluded — accidentally filling a hopper is a griefing machine. Ender chests are out too: quietly emptying your pockets into a shared void would be a trap.
+- **Access:** only containers you could legitimately open. A locked container without the key, or a chest under a solid block or a sitting cat, is simply not there — the same path a real right-click takes, so claim mods that hook it work by construction.
+- **Never touched:** armour, offhand, the crafting grid, pinned slots, and the hotbar.
+- **Server-authoritative.** Unlike every client-side storage mod, none of this can be done on the client: the tree state is the server's, so the client only expresses intent.
+
+**Not built yet:** *Master's Batch* (craft a full stack pulling from the whole inventory) and the rival capstone *Craft from Storage* ship starred and orange, so the tier-5 choice is visible before it is playable.
 
 ### Enchanting table integration
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
@@ -221,7 +272,7 @@ its price.
 ```java
 public static final SkillTree SWORD = new SkillTree("sword", Items.DIAMOND_SWORD, TIERS, NODES);
 ...
-public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, SWORD);
+public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, SWORD);
 ```
 
 That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
@@ -233,7 +284,7 @@ nothing about *displaying* the class does.
 
 ## Roadmap
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, custom items (Miner's Helm, Rich Bark, Arcane Tome), gate counters for crafting and smelting, and the four future classes (Sword, Bow, Rod, Armor).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, custom items (Miner's Helm, Rich Bark, Arcane Tome), Night Eyes, Master's Batch, Craft from Storage, and the four future classes (Sword, Bow, Rod, Armor).
 
 Known gap: the Fortune IV ceiling is gated at the enchanting table but not at the anvil, so combining two Fortune III books can still reach IV without the capstone.
 

@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
 
 /**
  * Static definitions of every skill tree — the design document in code.
- * Sprint 1 ships Pickaxe, Axe and Enchanter; the other four classes are coming soon.
+ * Pickaxe, Axe, Enchanter, Explorer and Artisan are playable; Sword, Bow, Rod
+ * and Armor are still coming.
  *
  * <p>Every node carries two prices. {@code of/chained/capstone} sets the XP half
  * of the <b>unlock</b>, {@code .costing(...)} its materials, and
@@ -277,12 +278,194 @@ public final class SkillTrees {
 		)
 	);
 
+	// ---------- Explorer — Path of the Horizon ----------
+
+	/**
+	 * The first class that is not tied to a tool: it levels from <em>movement</em>,
+	 * so its gates read distance travelled and places seen instead of blocks
+	 * broken. The distance counters are diffed off the vanilla {@code *_ONE_CM}
+	 * statistics once a second, which survives teleports and deaths for free.
+	 */
+	public static final SkillTree EXPLORER = new SkillTree(
+		"explorer",
+		Items.COMPASS,
+		List.of(
+			// Tier 1 — Wanderer
+			new SkillTier(5, List.of(
+				new GateRequirement("walk_blocks", 5000),
+				new GateRequirement("biome_checklist", 8),
+				new GateRequirement("craft_boat", 1)
+			)),
+			// Tier 2 — Traveler
+			new SkillTier(10, List.of(
+				new GateRequirement("travel_total", 25000),
+				new GateRequirement("biome_checklist", 16),
+				new GateRequirement("boat_blocks", 3000),
+				new GateRequirement("swim_blocks", 1000)
+			)),
+			// Tier 3 — Pathfinder
+			new SkillTier(15, List.of(
+				new GateRequirement("biome_checklist", 24),
+				new GateRequirement("elytra_blocks", 5000),
+				new GateRequirement("structure_checklist", 5),
+				new GateRequirement("dimension_checklist", 2),
+				new GateRequirement("swim_blocks", 5000)
+			)),
+			// Tier 4 — Voyager
+			new SkillTier(20, List.of(
+				new GateRequirement("elytra_blocks", 25000),
+				new GateRequirement("biome_checklist", 32),
+				new GateRequirement("dimension_checklist", 3),
+				new GateRequirement("structure_checklist", 10),
+				new GateRequirement("travel_total", 100000)
+			)),
+			// Tier 5 — Worldwalker
+			new SkillTier(30, List.of(
+				new GateRequirement("travel_total", 250000),
+				new GateRequirement("elytra_blocks", 100000),
+				new GateRequirement("biome_checklist", 45)
+			))
+		),
+		List.of(
+			// Tier 1
+			SkillNode.of("cartographer_1", 0, 3, SkillType.PASSIVE).icon(Items.MAP)
+				.costing(mat(Items.PAPER, 8), mat(Items.COMPASS, 1)),
+			SkillNode.of("tireless_1", 0, 4, SkillType.PASSIVE).icon(Items.SUGAR)
+				.costing(mat(Items.LEATHER, 16), mat(Items.SUGAR, 8)),
+			SkillNode.of("sea_legs", 0, 4, SkillType.PASSIVE).icon(Items.OAK_BOAT)
+				.costing(mat(Items.OAK_PLANKS, 32), mat(Items.STRING, 16)),
+			// Tier 2
+			SkillNode.of("night_eyes", 1, 5, SkillType.PASSIVE).icon(Items.GLOWSTONE_DUST)
+				.costing(mat(Items.GLOWSTONE_DUST, 16), mat(Items.GOLDEN_CARROT, 8)).future(),
+			SkillNode.of("clear_sight_1", 1, 5, SkillType.PASSIVE).icon(Items.PRISMARINE_SHARD)
+				.costing(mat(Items.PRISMARINE_SHARD, 16), mat(Items.GLASS, 4)),
+			SkillNode.chained("tireless_2", 1, 6, "tireless_1", SkillType.PASSIVE).icon(Items.RABBIT_FOOT)
+				.costing(mat(Items.LEATHER, 32), mat(Items.SUGAR, 16), mat(Items.RABBIT_FOOT, 4)),
+			SkillNode.of("slipstream_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.PHANTOM_MEMBRANE)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 8), mat(Items.FIREWORK_ROCKET, 16))
+				.enchantFor(20),
+			// Tier 3
+			SkillNode.of("remember", 2, 9, SkillType.PASSIVE).icon(Items.WRITTEN_BOOK)
+				.costing(mat(Items.PAPER, 16), mat(Items.COMPASS, 1), mat(Items.ENDER_PEARL, 4)),
+			SkillNode.chained("slipstream_2", 2, 8, "slipstream_1", SkillType.ENCHANTMENT).icon(Items.FIREWORK_ROCKET)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.FIREWORK_ROCKET, 32))
+				.enchantFor(35),
+			SkillNode.chained("clear_sight_2", 2, 8, "clear_sight_1", SkillType.PASSIVE).icon(Items.HEART_OF_THE_SEA)
+				.costing(mat(Items.PRISMARINE_SHARD, 32), mat(Items.HEART_OF_THE_SEA, 1)),
+			SkillNode.of("trailblazer", 2, 7, SkillType.PASSIVE).icon(Items.GRAVEL)
+				.costing(mat(Items.GRAVEL, 64), mat(Items.IRON_INGOT, 8)),
+			// Tier 4
+			SkillNode.chained("tireless_3", 3, 8, "tireless_2", SkillType.PASSIVE).icon(Items.GOLDEN_CARROT)
+				.costing(mat(Items.LEATHER, 64), mat(Items.GOLDEN_CARROT, 8), mat(Items.DIAMOND, 4)),
+			SkillNode.chained("slipstream_3", 3, 14, "slipstream_2", SkillType.ENCHANTMENT).icon(Items.ELYTRA)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.FIREWORK_ROCKET, 64))
+				.enchantFor(50),
+			SkillNode.of("soft_landing", 3, 10, SkillType.PASSIVE).icon(Items.SLIME_BALL)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.SLIME_BALL, 16)),
+			SkillNode.of("waypoint", 3, 10, SkillType.ACTIVE).icon(Items.AMETHYST_SHARD)
+				.costing(mat(Items.AMETHYST_SHARD, 8), mat(Items.ECHO_SHARD, 1), mat(Items.GOLD_INGOT, 4)),
+			// Tier 5 — capstone (pick one)
+			SkillNode.capstone("endless_horizon", 4, 20, "worlds_memory", SkillType.PASSIVE).icon(Items.FIREWORK_ROCKET)
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.FIREWORK_ROCKET, 64), mat(Items.PHANTOM_MEMBRANE, 16)),
+			SkillNode.capstone("worlds_memory", 4, 20, "endless_horizon", SkillType.PASSIVE).icon(Items.FILLED_MAP)
+				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.PAPER, 16), mat(Items.ECHO_SHARD, 1))
+		)
+	);
+
+	// ---------- Artisan — Path of Order ----------
+
+	/**
+	 * Where Pickaxe and Axe are about <em>getting</em> resources, this class is
+	 * about <em>keeping them in order</em>: every perk is inventory and storage
+	 * quality of life, earned instead of installed, and the capstone is
+	 * Terraria's Quick Stack to Nearby Chests.
+	 *
+	 * <p>Named Artisan rather than Crafter on purpose — the class barely crafts,
+	 * and Minecraft already ships a block called the Crafter.
+	 */
+	public static final SkillTree ARTISAN = new SkillTree(
+		"artisan",
+		Items.CHEST,
+		List.of(
+			// Tier 1 — Apprentice
+			new SkillTier(5, List.of(
+				new GateRequirement("craft_total", 500),
+				new GateRequirement("craft_crafting_table", 1),
+				new GateRequirement("place_containers", 8)
+			)),
+			// Tier 2 — Organiser
+			new SkillTier(10, List.of(
+				new GateRequirement("craft_total", 2000),
+				new GateRequirement("workstation_checklist", 8),
+				new GateRequirement("deposit_items", 2000),
+				new GateRequirement("craft_chests", 32)
+			)),
+			// Tier 3 — Quartermaster
+			new SkillTier(15, List.of(
+				new GateRequirement("craft_total", 6000),
+				new GateRequirement("craft_tools", 128),
+				new GateRequirement("craft_shulker_boxes", 4),
+				new GateRequirement("sort_actions", 100)
+			)),
+			// Tier 4 — Master Artisan
+			new SkillTier(20, List.of(
+				new GateRequirement("craft_total", 15000),
+				new GateRequirement("deposit_items", 15000),
+				new GateRequirement("recipe_checklist", 12),
+				new GateRequirement("anvil_combines", 25)
+			)),
+			// Tier 5 — Hand of Order
+			new SkillTier(30, List.of(
+				new GateRequirement("craft_total", 30000),
+				new GateRequirement("containers_sorted", 500),
+				new GateRequirement("deposit_items", 40000)
+			))
+		),
+		List.of(
+			// Tier 1
+			SkillNode.of("sorters_hand_1", 0, 3, SkillType.PASSIVE).icon(Items.OAK_PLANKS)
+				.costing(mat(Items.OAK_PLANKS, 16), mat(Items.IRON_INGOT, 4)),
+			SkillNode.of("chest_search_1", 0, 4, SkillType.PASSIVE).icon(Items.SPYGLASS)
+				.costing(mat(Items.OAK_PLANKS, 32), mat(Items.CHEST, 1)),
+			SkillNode.of("steady_grid", 0, 3, SkillType.PASSIVE).icon(Items.CRAFTING_TABLE)
+				.costing(mat(Items.CRAFTING_TABLE, 1), mat(Items.OAK_PLANKS, 32)),
+			// Tier 2
+			SkillNode.chained("sorters_hand_2", 1, 5, "sorters_hand_1", SkillType.PASSIVE).icon(Items.CHEST)
+				.costing(mat(Items.CHEST, 1), mat(Items.IRON_INGOT, 8)),
+			SkillNode.chained("chest_search_2", 1, 6, "chest_search_1", SkillType.PASSIVE).icon(Items.ENDER_PEARL)
+				.costing(mat(Items.IRON_INGOT, 16), mat(Items.ENDER_PEARL, 1)),
+			SkillNode.of("deft_hands", 1, 5, SkillType.PASSIVE).icon(Items.IRON_INGOT)
+				.costing(mat(Items.IRON_INGOT, 16), mat(Items.OAK_PLANKS, 16)),
+			// Tier 3
+			SkillNode.chained("chest_search_3", 2, 9, "chest_search_2", SkillType.PASSIVE).icon(Items.GOLD_INGOT)
+				.costing(mat(Items.IRON_INGOT, 32), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.of("slot_lock", 2, 7, SkillType.PASSIVE).icon(Items.OBSIDIAN)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.OBSIDIAN, 4)),
+			SkillNode.chained("tidy_chests", 2, 8, "sorters_hand_2", SkillType.PASSIVE).icon(Items.BARREL)
+				.costing(mat(Items.CHEST, 16), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.of("sort_profiles", 2, 6, SkillType.PASSIVE).icon(Items.PAPER)
+				.costing(mat(Items.GOLD_INGOT, 8), mat(Items.PAPER, 16)),
+			// Tier 4
+			SkillNode.of("restock_nearby", 3, 10, SkillType.PASSIVE).icon(Items.HOPPER)
+				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.DIAMOND, 8)),
+			SkillNode.chained("storage_ledger", 3, 10, "chest_search_3", SkillType.PASSIVE).icon(Items.WRITABLE_BOOK)
+				.costing(mat(Items.DIAMOND, 8), mat(Items.PAPER, 32)),
+			SkillNode.of("bulk_craft", 3, 8, SkillType.PASSIVE).icon(Items.CRAFTER)
+				.costing(mat(Items.DIAMOND, 8), mat(Items.IRON_INGOT, 64)).future(),
+			// Tier 5 — capstone (pick one)
+			SkillNode.capstone("hand_of_order", 4, 20, "craft_from_storage", SkillType.PASSIVE).icon(Items.ENDER_CHEST)
+				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CHEST, 64)),
+			SkillNode.capstone("craft_from_storage", 4, 20, "hand_of_order", SkillType.PASSIVE).icon(Items.CRAFTING_TABLE)
+				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CRAFTING_TABLE, 16)).future()
+		)
+	);
+
 	/**
 	 * Every playable tree, in the order the skill screen tabs them. Adding a
 	 * class is one entry here plus its {@code SkillTree} above — the GUI, the
 	 * commands, the advancements and the state packet all read this list.
 	 */
-	public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER);
+	public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN);
 
 	/**
 	 * Classes the design calls for but that have no tree yet. They show up as

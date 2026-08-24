@@ -5,6 +5,7 @@
 		"toolmastery:logic",
 		"toolmastery:rich_vein",
 		"toolmastery:environment",
-		"toolmastery:indestructible"
+		"toolmastery:indestructible",
+		"toolmastery:slipstream"
 	]
 }
