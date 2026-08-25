@@ -4,10 +4,14 @@
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
 		"AxeItemMixin",
+		"AbstractBoatMixin",
 		"AnvilMenuMixin",
 		"ItemStackMixin",
 		"BlockItemMixin",
+		"CraftingMenuMixin",
 		"EnchantmentMenuMixin",
+		"FireworkRocketEntityMixin",
+		"FireworkRocketItemMixin",
 		"FurnaceResultSlotMixin",
 		"GrindstoneResultSlotMixin",
 		"ItemEntityMixin",
@@ -15,6 +19,7 @@
 		"MerchantResultSlotMixin",
 		"PlayerMixin",
 		"ResultSlotMixin",
+		"ServerPlayerMixin",
 		"SlotMixin"
 	],
 	"injectors": {

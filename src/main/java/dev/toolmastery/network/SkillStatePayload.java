@@ -18,7 +18,8 @@ import java.util.Set;
  * requests it and after every successful action.
  */
 public record SkillStatePayload(Map<String, TreeState> trees) implements CustomPacketPayload {
-	public record TreeState(int unlockedTiers, Set<String> purchased, Map<String, Integer> counters) {
+	public record TreeState(int unlockedTiers, Set<String> purchased, Map<String, Integer> counters,
+		long lockedSlots) {
 	}
 
 	public static final Type<SkillStatePayload> TYPE =
@@ -43,7 +44,7 @@ public record SkillStatePayload(Map<String, TreeState> trees) implements CustomP
 			for (int j = 0; j < counterCount; j++) {
 				counters.put(buf.readUtf(), buf.readVarInt());
 			}
-			trees.put(treeId, new TreeState(unlocked, purchased, counters));
+			trees.put(treeId, new TreeState(unlocked, purchased, counters, buf.readLong()));
 		}
 		return new SkillStatePayload(trees);
 	}
@@ -64,6 +65,7 @@ public record SkillStatePayload(Map<String, TreeState> trees) implements CustomP
 				buf.writeUtf(counter.getKey());
 				buf.writeVarInt(counter.getValue());
 			}
+			buf.writeLong(state.lockedSlots());
 		}
 	}
 

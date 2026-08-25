@@ -1,6 +1,7 @@
 package dev.toolmastery.mixin;
 
 import dev.toolmastery.track.FarmingTracker;
+import dev.toolmastery.track.PlaceTracker;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionResult;
@@ -8,6 +9,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,9 +31,11 @@ public class BlockItemMixin {
 		if (level.isClientSide() || !(context.getPlayer() instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
-		ItemStack placed = new ItemStack(level.getBlockState(context.getClickedPos()).getBlock());
+		BlockState state = level.getBlockState(context.getClickedPos());
+		ItemStack placed = new ItemStack(state.getBlock());
 		if (placed.is(ItemTags.SAPLINGS)) {
 			FarmingTracker.onSaplingPlaced(serverPlayer);
 		}
+		PlaceTracker.onPlace(serverPlayer, state);
 	}
 }

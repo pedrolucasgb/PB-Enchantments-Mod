@@ -28,6 +28,7 @@ public final class ModEnchantments {
 	public static final ResourceKey<Enchantment> RICH_VEIN = key("rich_vein");
 	public static final ResourceKey<Enchantment> ENVIRONMENT = key("environment");
 	public static final ResourceKey<Enchantment> INDESTRUCTIBLE = key("indestructible");
+	public static final ResourceKey<Enchantment> SLIPSTREAM = key("slipstream");
 
 	/** Which skill node grants which enchantment level. */
 	public record Grant(ResourceKey<Enchantment> enchantment, int level) {
@@ -46,7 +47,10 @@ public final class ModEnchantments {
 		Map.entry("rich_vein_1", new Grant(RICH_VEIN, 1)),
 		Map.entry("rich_vein_2", new Grant(RICH_VEIN, 2)),
 		Map.entry("environment", new Grant(ENVIRONMENT, 1)),
-		Map.entry("indestructible", new Grant(INDESTRUCTIBLE, 1))
+		Map.entry("indestructible", new Grant(INDESTRUCTIBLE, 1)),
+		Map.entry("slipstream_1", new Grant(SLIPSTREAM, 1)),
+		Map.entry("slipstream_2", new Grant(SLIPSTREAM, 2)),
+		Map.entry("slipstream_3", new Grant(SLIPSTREAM, 3))
 	);
 
 	/**
@@ -56,7 +60,7 @@ public final class ModEnchantments {
 	 * screen promises.
 	 */
 	public static final Set<ResourceKey<Enchantment>> TABLE_POOL =
-		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE);
+		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE, SLIPSTREAM);
 
 	/**
 	 * Every enchantment the tree hands out, derived from {@link #NODE_GRANTS}
