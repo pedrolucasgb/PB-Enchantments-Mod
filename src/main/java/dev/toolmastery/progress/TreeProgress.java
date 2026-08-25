@@ -14,7 +14,9 @@ public final class TreeProgress {
 	public static final Codec<TreeProgress> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 		Codec.INT.fieldOf("unlocked_tiers").forGetter(t -> t.unlockedTiers),
 		Codec.STRING.listOf().fieldOf("purchased").forGetter(t -> List.copyOf(t.purchased)),
-		Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("counters").forGetter(t -> Map.copyOf(t.counters))
+		Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("counters").forGetter(t -> Map.copyOf(t.counters)),
+		Codec.STRING.listOf().optionalFieldOf("seen", List.of()).forGetter(t -> List.copyOf(t.seen)),
+		Codec.LONG.optionalFieldOf("locked_slots", 0L).forGetter(t -> t.lockedSlots)
 	).apply(instance, TreeProgress::new));
 
 	/**
@@ -36,15 +38,38 @@ public final class TreeProgress {
 	public final Set<String> purchased = new HashSet<>();
 	public final Map<String, Integer> counters = new HashMap<>();
 
+	/**
+	 * Distinct things this player has been to, as {@code "<kind>/<id>"} strings
+	 * — {@code "biome/minecraft:plains"}, {@code "struct/minecraft:village_plains"}.
+	 *
+	 * <p>The bitmask trick the ore and wood checklists use needs a fixed ordered
+	 * list that fits in one {@code int}; the Overworld alone has more biomes than
+	 * that, and the structure list grows with every data pack. So the wide
+	 * checklists keep names instead, and {@link #recountSeen} keeps the visible
+	 * gate counter in step with the set.
+	 */
+	public final Set<String> seen = new HashSet<>();
+
+	/**
+	 * Inventory slots the player pinned: sorting, auto-refill and Quick Stack
+	 * step around them. One bit per slot, which covers the 41 an inventory has
+	 * with room to spare. Player-wide rather than per-tree; it lives on the
+	 * Artisan tree because that is the class that grants the ability to set it.
+	 */
+	public long lockedSlots;
+
 	public TreeProgress() {
 	}
 
-	private TreeProgress(int unlockedTiers, List<String> purchased, Map<String, Integer> counters) {
+	private TreeProgress(int unlockedTiers, List<String> purchased, Map<String, Integer> counters,
+			List<String> seen, long lockedSlots) {
 		this.unlockedTiers = unlockedTiers;
 		for (String nodeId : purchased) {
 			this.purchased.add(RENAMED.getOrDefault(nodeId, nodeId));
 		}
 		this.counters.putAll(counters);
+		this.seen.addAll(seen);
+		this.lockedSlots = lockedSlots;
 		mergeWoodChecklist();
 	}
 
@@ -76,5 +101,45 @@ public final class TreeProgress {
 
 	public boolean owns(String nodeId) {
 		return purchased.contains(nodeId);
+	}
+
+	/**
+	 * Records one entry of a name-based checklist and refreshes its counter.
+	 * Returns true when this is the first time — the caller uses that to decide
+	 * whether the player is told about it.
+	 *
+	 * @param kind      checklist prefix, e.g. {@code "biome"}
+	 * @param id        the thing seen, e.g. {@code "minecraft:plains"}
+	 * @param counterId gate counter that holds how many are on the list
+	 */
+	public boolean see(String kind, String id, String counterId) {
+		if (!seen.add(kind + "/" + id)) {
+			return false;
+		}
+		recountSeen(kind, counterId);
+		return true;
+	}
+
+	/** Recomputes a name-based checklist counter from the set behind it. */
+	public void recountSeen(String kind, String counterId) {
+		String prefix = kind + "/";
+		int total = 0;
+		for (String entry : seen) {
+			if (entry.startsWith(prefix)) {
+				total++;
+			}
+		}
+		counters.put(counterId, total);
+	}
+
+	public boolean slotLocked(int slot) {
+		return slot >= 0 && slot < Long.SIZE && (lockedSlots & (1L << slot)) != 0L;
+	}
+
+	public void setSlotLocked(int slot, boolean locked) {
+		if (slot < 0 || slot >= Long.SIZE) {
+			return;
+		}
+		lockedSlots = locked ? lockedSlots | (1L << slot) : lockedSlots & ~(1L << slot);
 	}
 }

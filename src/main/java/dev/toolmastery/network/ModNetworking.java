@@ -26,12 +26,27 @@ public final class ModNetworking {
 		PayloadTypeRegistry.serverboundPlay().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(StorageResultPayload.TYPE, StorageResultPayload.CODEC);
 
 		// The client needs the snapshot from login on, not from the first time the
 		// tree screen is opened: the speed passives are computed client-side while
 		// you mine, and the enchanting perks (lapis-free offers, the reroll
 		// button) consult it outside the skill screen too.
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.getPlayer()));
+
+		// Artisan buttons live in the inventory screen, not the skill screen, and
+		// change the world rather than the tree — so they get their own channel
+		// and do not drag a full progress snapshot behind every keystroke of a
+		// search. The lock toggle is the exception: it edits the tree, so it
+		// re-syncs below.
+		ServerPlayNetworking.registerGlobalReceiver(ArtisanActionPayload.TYPE, (payload, context) -> {
+			ArtisanHandler.handle(context.player(), payload);
+			if (payload.action() == ArtisanActionPayload.Action.TOGGLE_SLOT_LOCK
+				|| payload.action() == ArtisanActionPayload.Action.CYCLE_SORT_MODE) {
+				sendState(context.player());
+			}
+		});
 
 		ServerPlayNetworking.registerGlobalReceiver(SkillActionPayload.TYPE, (payload, context) -> {
 			ServerPlayer player = context.player();
@@ -82,7 +97,8 @@ public final class ModNetworking {
 			trees.put(tree.id(), new SkillStatePayload.TreeState(
 				treeProgress.unlockedTiers,
 				new HashSet<>(treeProgress.purchased),
-				new HashMap<>(treeProgress.counters)
+				new HashMap<>(treeProgress.counters),
+				treeProgress.lockedSlots
 			));
 		}
 		ServerPlayNetworking.send(player, new SkillStatePayload(trees));

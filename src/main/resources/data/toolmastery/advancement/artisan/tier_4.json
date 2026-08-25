@@ -1,0 +1,29 @@
+{
+	"parent": "toolmastery:root",
+	"display": {
+		"icon": {
+			"id": "minecraft:shulker_box"
+		},
+		"title": {
+			"translate": "advancements.toolmastery.artisan.tier_4.title"
+		},
+		"description": {
+			"translate": "advancements.toolmastery.artisan.tier_4.description"
+		},
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"criteria": {
+		"unlocked": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"requirements": [
+		[
+			"unlocked"
+		]
+	],
+	"sends_telemetry_event": false
+}

@@ -1,8 +1,11 @@
 package dev.toolmastery.track;
 
+import dev.toolmastery.progress.TreeProgress;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -46,6 +49,37 @@ public final class ItemGainTracker {
 			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "craft_books", amount);
 		} else if (stack.is(Items.ENCHANTING_TABLE)) {
 			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "craft_enchanting_table", amount);
+		}
+		trackArtisanCraft(serverPlayer, stack, amount);
+	}
+
+	/**
+	 * The Artisan's crafting gates. Unlike the other classes, which want one
+	 * specific item, this tree measures the <em>volume and breadth</em> of what
+	 * a player makes: everything feeds {@code craft_total}, containers and tools
+	 * have lines of their own, and the recipe checklist counts distinct results
+	 * so that a base built out of one recipe does not open tier 4.
+	 */
+	private static void trackArtisanCraft(ServerPlayer player, ItemStack stack, int amount) {
+		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
+		progress.addCount("craft_total", amount);
+		progress.see("recipe", BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), "recipe_checklist");
+
+		if (stack.is(Items.CRAFTING_TABLE)) {
+			progress.addCount("craft_crafting_table", amount);
+		}
+		if (stack.is(Items.CHEST) || stack.is(Items.TRAPPED_CHEST) || stack.is(Items.BARREL)) {
+			progress.addCount("craft_chests", amount);
+		}
+		if (stack.is(ItemTags.SHULKER_BOXES)) {
+			progress.addCount("craft_shulker_boxes", amount);
+		}
+		if (stack.is(ItemTags.PICKAXES) || stack.is(ItemTags.AXES) || stack.is(ItemTags.SHOVELS)
+			|| stack.is(ItemTags.HOES) || stack.is(ItemTags.SWORDS)) {
+			progress.addCount("craft_tools", amount);
+		}
+		if (stack.is(ItemTags.BOATS)) {
+			SkillService.addCount(player, SkillTrees.EXPLORER, "craft_boat", amount);
 		}
 	}
 }
