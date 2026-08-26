@@ -145,6 +145,8 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Double Axe** I–II | 3 / 4 | 10% / 20% chance for a log to drop twice — every log of a Logic fell rolls on its own |
 | **Shield Breaker** | 3 | Axes disable a blocking shield 2s longer and push 2 more damage through it |
 
+**Tier 5, not built yet.** Two finishers ship starred and orange so the shape of the tier is visible before it is playable: *Everbloom* (a tree you fell replants itself and grows back where it stood) and *Bountiful Grove* (felled logs yield more than they should, scaling with how much of the tree you took in one go).
+
 ### Enchanter nodes (Path of the Arcane)
 | Node | Tier | Effect |
 |---|---|---|
@@ -152,6 +154,16 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Scholar** I–III | 1 / 2 / 4 | +20% / +40% / +60% XP from every source (orbs, bottles, smelting, breeding) |
 | **Inner Focus** | 3 | Enchanting no longer requires nor consumes lapis lazuli |
 | **Indestructible** | 3 | Enchantment: the item never breaks (see the enchantment table above) |
+| **Anvil Adept** | 3 | Every anvil job costs 30% fewer levels, and *"Too Expensive!"* stops applying to you |
+| **Ancient Knowledge** | capstone | The three table offers become 35 / 40 / 45 — and the top one sometimes rolls a perfect item |
+
+**Anvil Adept.** Two things, and neither rewrites vanilla’s arithmetic. *"Too Expensive!"* is a hard stop at 40 levels that no amount of XP gets past — the anvil simply refuses, and it is what eventually makes a well-loved tool unrepairable. In the bytecode that wall is one `hasInfiniteMaterials` branch, so the perk answers that question instead, exactly as Inner Focus does for the lapis check. The 30% discount then lands at the very end of `createResult`, after the last thing vanilla does to the price, so the number on the label is the number `onTake` charges. A priced job never falls below one level — a free anvil would make the Arcanist gate that counts combines complete itself.
+
+**Ancient Knowledge.** Vanilla tops out at 30, and 30 is the reason a whole shelf of enchantments is folklore rather than gameplay: **Sharpness V** needs an enchanting level of 45 before it will even enter the draw, **Efficiency V** needs 41, and a 30-level offer on a diamond sword lands around 36 after the enchantability roll. Those are not rare at a vanilla table — they are *impossible*, and every one you have ever seen came off an anvil. At a fully powered table (15 bookshelves) this capstone makes the three offers ask for **35, 40 and 45**, which puts them back in the draw and drags a longer list in with them, because vanilla keeps rolling for extra enchantments as long as the level holds up.
+
+The XP is a requirement, not a bill: vanilla charges the slot number in levels (1, 2 or 3) and only asks that you *have* the offered level. Ancient Knowledge asks you to be level 45, not to spend 45. It is gated on a full table on purpose — making it unconditional would delete the one ritual the class is built around.
+
+And at the 45 offer there is a **chance, not a promise**, of a perfect item: every enchantment the item can legally carry, each at its own maximum, in a mutually compatible set. Two guard rails keep it a reward rather than a cheat — nothing ever rolls above an enchantment’s own `getMaxLevel()`, so a perfect sword is Sharpness V and never a Sharpness VI no other route in the game can produce; and the pool is the table’s own pool filtered to primary targets, so Mending and the other treasure enchantments are not in it and librarians keep the job they had. Which compatible set you get is rolled too — Sharpness or Smite, Fortune or Silk Touch are exclusive by design, and a fixed pick would mean every perfect axe in the world was the same axe. All of it runs off the same seeded `RandomSource` vanilla uses, so the offer stays deterministic for a given seed and the Arcane Insight preview still shows exactly what you are about to get.
 
 ### Explorer nodes (Path of the Horizon)
 The first class that is not tied to a tool: it levels from **movement**, so its gates read distance travelled and places seen rather than blocks broken. The distance counters are diffed off the vanilla `*_ONE_CM` statistics once a second, from a baseline taken the first time the mod ever sees you — installing it on a world with a hundred kilometres on the clock does not hand you tier 4.
@@ -168,9 +180,8 @@ The first class that is not tied to a tool: it levels from **movement**, so its 
 | **Soft Landing** | 4 | Elytra wall-crash damage halved, and the first 3 blocks of any fall are free |
 | **Waypoint Stone** | 4 | Sneak + right-click with a compass binds the spot you are standing on; the needle points there from then on |
 | **Endless Horizon** | capstone | A quarter of the fireworks you burn flying are not consumed, and Slipstream carryover doubles |
-| **World's Memory** | capstone | Once per in-game day, right-click a compass for the bearing and distance to the nearest structure of a kind you have already found |
 
-**Slipstream is the momentum reading, not the refund one.** It lengthens the rocket's own life rather than re-applying a decaying slice of its velocity, so the acceleration curve, the collision handling and the client prediction all stay vanilla's — the extra distance is real, the physics is not reimplemented. The refund idea ships too, priced apart, as the Endless Horizon capstone.
+**Slipstream is the momentum reading, not the refund one.** It lengthens the rocket's own life rather than re-applying a decaying slice of its velocity, so the acceleration curve, the collision handling and the client prediction all stay vanilla's — the extra distance is real, the physics is not reimplemented. The refund idea ships too, priced apart, as the Endless Horizon capstone, which is now the tier on its own.
 
 **Night Eyes.** 26.2 did not remove the light-texture pipeline this needs — `LightTexture` was *renamed* to `Lightmap`, and its inputs were pulled out into `LightmapRenderState`, a per-frame struct with a `brightness` field on it. Writing there beats the usual approach twice over: it is not the player’s persisted gamma setting, so a crash mid-session leaves no video option they never chose; and it is not bounded by the slider, so the node can deliver a lift the options screen cannot. The lightmap shader reads brightness as `mix(colour, liftedColour, brightness)` and the lifted colour equals the original wherever the picture is already bright — so a value past 1 extrapolates in dark pixels and does nothing at all in daylight. Ambient light gets a very dark blue floor too, because a lift alone cannot help where the picture is pure black. The Darkness effect is subtracted afterwards exactly as vanilla does it, so a warden still blinds an Explorer.
 
@@ -201,8 +212,6 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 - **Access:** only containers you could legitimately open. A locked container without the key, or a chest under a solid block or a sitting cat, is simply not there — the same path a real right-click takes, so claim mods that hook it work by construction.
 - **Never touched:** armour, offhand, the crafting grid, pinned slots, and the hotbar.
 - **Server-authoritative.** Unlike every client-side storage mod, none of this can be done on the client: the tree state is the server's, so the client only expresses intent.
-
-**Not built yet:** *Master's Batch* (craft a full stack pulling from the whole inventory) and the rival capstone *Craft from Storage* ship starred and orange, so the tier-5 choice is visible before it is playable.
 
 ### Enchanting table integration
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
@@ -285,7 +294,7 @@ nothing about *displaying* the class does.
 
 ## Roadmap
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, custom items (Miner's Helm, Rich Bark, Arcane Tome), Master's Batch, Craft from Storage, and the four future classes (Sword, Bow, Rod, Armor).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the four future classes (Sword, Bow, Rod, Armor).
 
 Known gap: the Fortune IV ceiling is gated at the enchanting table but not at the anvil, so combining two Fortune III books can still reach IV without the capstone.
 
