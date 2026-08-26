@@ -192,7 +192,7 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 
 | Node | Tier | Effect |
 |---|---|---|
-| **Sorter's Hand** I–II | 1 / 2 | One Sort button: it tidies your backpack, and once II is bought it tidies whatever chest, barrel or shulker box you have open instead |
+| **Sorter's Hand** I–II | 1 / 2 | One Sort button, aimed by the screen: on the inventory it tidies your backpack, and once II is bought it also appears on chests, barrels and shulker boxes and tidies those. Rank I alone shows nothing on a chest — sorting containers is what II buys |
 | **Seeker's Eye** I–II | 1 / 2 | Ctrl+F for slots: type in the magnifier field and every matching slot turns yellow — your inventory, then the open container too, with the query remembered from one chest to the next |
 | **Steady Grid** | 1 | The 3×3 grid keeps its contents when you close a crafting table and hands them back next time |
 | **Deft Hands** | 2 | A hotbar stack that runs out refills itself from your backpack |

@@ -77,8 +77,9 @@ WHAT IS NEW IN 0.3.0
   instead of installed. Its buttons are small symbols in the top-right
   corner of the inventory and chest windows - hover one to see its name.
   They appear only once you have bought them.
-    Sorter's Hand      - one S button: it sorts the chest when a chest is
-                         open, and your bag when it is not
+    Sorter's Hand      - one S button, aimed by the screen it is on. Rank I
+                         puts it on your inventory and sorts your bag;
+                         rank II also puts it on chests and sorts those
     Seeker's Eye       - the magnifier: type a word and every matching slot
                          turns yellow, like CTRL+F. First your bag, then
                          the open chest too, remembering what you typed
