@@ -273,7 +273,7 @@
 	"node.toolmastery.sea_legs": "Sea Legs",
 	"node.toolmastery.sea_legs.desc": "Passive: a boat you are steering cruises about 15% faster. Passengers ride at whatever the person holding the tiller has earned.",
 	"node.toolmastery.night_eyes": "Night Eyes",
-	"node.toolmastery.night_eyes.desc": "A small brightness lift above the vanilla maximum — dark corners read as deep blue instead of black, without turning night into day.",
+	"node.toolmastery.night_eyes.desc": "Passive: a small brightness lift above what the video settings allow — dark corners read as deep blue instead of black, without turning night into day. Daylight is untouched, and a warden still blinds you.",
 	"node.toolmastery.clear_sight": "Clear Sight",
 	"node.toolmastery.clear_sight_1.desc": "Passive: underwater fog pushes out about as far as Respiration III gives, and stacks on top of it.",
 	"node.toolmastery.clear_sight_2.desc": "Passive: the water goes fully clear, and your breath refills about twice as fast once you surface.",

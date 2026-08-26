@@ -116,15 +116,20 @@ public final class ArtisanScreenHooks {
 				(graphics, font, x, y, color) -> ArtisanIcons.magnifier(graphics, x, y, color),
 				() -> toggleSearch(screen));
 		}
-		if (ClientArtisanState.owns("sorters_hand_1")) {
-			add(widgets, "screen.toolmastery.button.sort",
-				(graphics, font, x, y, color) -> ArtisanIcons.letter(graphics, font, "S", x, y, color),
-				() -> send(ArtisanActionPayload.Action.SORT_INVENTORY));
-		}
-		if (hasStorage && ClientArtisanState.owns("sorters_hand_2")) {
-			add(widgets, "screen.toolmastery.button.sort_chest",
-				(graphics, font, x, y, color) -> ArtisanIcons.letterOnShelf(graphics, font, "S", x, y, color),
-				() -> send(ArtisanActionPayload.Action.SORT_CONTAINER));
+		// One Sort button, not two. Which one you meant is never ambiguous: with
+		// a container on screen it is the container, otherwise it is your own
+		// backpack — and if Sorter's Hand II is not bought yet, it is always the
+		// backpack, because that is all this player can sort.
+		boolean sortsContainer = hasStorage && ClientArtisanState.owns("sorters_hand_2");
+		if (sortsContainer || ClientArtisanState.owns("sorters_hand_1")) {
+			add(widgets,
+				sortsContainer ? "screen.toolmastery.button.sort_chest" : "screen.toolmastery.button.sort",
+				sortsContainer
+					? (graphics, font, x, y, color) -> ArtisanIcons.letterOnShelf(graphics, font, "S", x, y, color)
+					: (graphics, font, x, y, color) -> ArtisanIcons.letter(graphics, font, "S", x, y, color),
+				() -> send(sortsContainer
+					? ArtisanActionPayload.Action.SORT_CONTAINER
+					: ArtisanActionPayload.Action.SORT_INVENTORY));
 		}
 		if (ClientArtisanState.owns("sort_profiles")) {
 			shownMode = ClientArtisanState.sortMode();

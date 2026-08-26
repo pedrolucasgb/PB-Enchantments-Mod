@@ -336,7 +336,7 @@ public final class SkillTrees {
 				.costing(mat(Items.OAK_PLANKS, 32), mat(Items.STRING, 16)),
 			// Tier 2
 			SkillNode.of("night_eyes", 1, 5, SkillType.PASSIVE).icon(Items.GLOWSTONE_DUST)
-				.costing(mat(Items.GLOWSTONE_DUST, 16), mat(Items.GOLDEN_CARROT, 8)).future(),
+				.costing(mat(Items.GLOWSTONE_DUST, 16), mat(Items.GOLDEN_CARROT, 8)),
 			SkillNode.of("clear_sight_1", 1, 5, SkillType.PASSIVE).icon(Items.PRISMARINE_SHARD)
 				.costing(mat(Items.PRISMARINE_SHARD, 16), mat(Items.GLASS, 4)),
 			SkillNode.chained("tireless_2", 1, 6, "tireless_1", SkillType.PASSIVE).icon(Items.RABBIT_FOOT)

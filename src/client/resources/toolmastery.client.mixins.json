@@ -5,6 +5,7 @@
 	"client": [
 		"ContainerScreenAccessor",
 		"EnchantmentScreenMixin",
+		"LightmapExtractorMixin",
 		"LocalPlayerMixin",
 		"MerchantOfferMixin"
 	],

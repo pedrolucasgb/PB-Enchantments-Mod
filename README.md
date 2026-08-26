@@ -172,7 +172,7 @@ The first class that is not tied to a tool: it levels from **movement**, so its 
 
 **Slipstream is the momentum reading, not the refund one.** It lengthens the rocket's own life rather than re-applying a decaying slice of its velocity, so the acceleration curve, the collision handling and the client prediction all stay vanilla's — the extra distance is real, the physics is not reimplemented. The refund idea ships too, priced apart, as the Endless Horizon capstone.
 
-**Night Eyes is not built.** 26.2 removed the light-texture pipeline the "lift the darkness a little without going full Night Vision" effect needs, so the node ships starred and orange like the other coming-soon nodes rather than as a gamma hack on the player's video settings.
+**Night Eyes.** 26.2 did not remove the light-texture pipeline this needs — `LightTexture` was *renamed* to `Lightmap`, and its inputs were pulled out into `LightmapRenderState`, a per-frame struct with a `brightness` field on it. Writing there beats the usual approach twice over: it is not the player’s persisted gamma setting, so a crash mid-session leaves no video option they never chose; and it is not bounded by the slider, so the node can deliver a lift the options screen cannot. The lightmap shader reads brightness as `mix(colour, liftedColour, brightness)` and the lifted colour equals the original wherever the picture is already bright — so a value past 1 extrapolates in dark pixels and does nothing at all in daylight. Ambient light gets a very dark blue floor too, because a lift alone cannot help where the picture is pure black. The Darkness effect is subtracted afterwards exactly as vanilla does it, so a warden still blinds an Explorer.
 
 ### Artisan nodes (Path of Order)
 Where Pickaxe and Axe are about *getting* resources, the Artisan is about *keeping them in order* — inventory and storage quality of life, earned instead of installed. Named Artisan rather than Crafter because the class barely crafts, and Minecraft already ships a block called the Crafter.
@@ -181,7 +181,7 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 
 | Node | Tier | Effect |
 |---|---|---|
-| **Sorter's Hand** I–II | 1 / 2 | A Sort button on your backpack, then on chests, barrels and shulker boxes too |
+| **Sorter's Hand** I–II | 1 / 2 | One Sort button: it tidies your backpack, and once II is bought it tidies whatever chest, barrel or shulker box you have open instead |
 | **Seeker's Eye** I–II | 1 / 2 | Ctrl+F for slots: type in the magnifier field and every matching slot turns yellow — your inventory, then the open container too, with the query remembered from one chest to the next |
 | **Steady Grid** | 1 | The 3×3 grid keeps its contents when you close a crafting table and hands them back next time |
 | **Deft Hands** | 2 | A hotbar stack that runs out refills itself from your backpack |
@@ -285,7 +285,7 @@ nothing about *displaying* the class does.
 
 ## Roadmap
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, custom items (Miner's Helm, Rich Bark, Arcane Tome), Night Eyes, Master's Batch, Craft from Storage, and the four future classes (Sword, Bow, Rod, Armor).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, custom items (Miner's Helm, Rich Bark, Arcane Tome), Master's Batch, Craft from Storage, and the four future classes (Sword, Bow, Rod, Armor).
 
 Known gap: the Fortune IV ceiling is gated at the enchanting table but not at the anvil, so combining two Fortune III books can still reach IV without the capstone.
 
