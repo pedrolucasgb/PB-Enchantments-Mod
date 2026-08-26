@@ -73,12 +73,14 @@ WHAT IS NEW IN 0.3.0
     kind you have already found).
 
 - ARTISAN (Path of Order) - storage and inventory quality of life, earned
-  instead of installed. Its buttons appear in a small column just left of
-  the inventory and chest windows, and only once you have bought them.
-    Sorter's Hand      - a Sort button, first for your bag, then for chests
-    Seeker's Eye       - a search field: your bag and the open chest, then
-                         every container within 8 blocks, then 16 blocks
-                         with directions, reading shulker boxes inside
+  instead of installed. Its buttons are small symbols in the top-right
+  corner of the inventory and chest windows - hover one to see its name.
+  They appear only once you have bought them.
+    Sorter's Hand      - an S button, first for your bag, then for chests
+    Seeker's Eye       - the magnifier: type a word and every matching slot
+                         turns yellow, like CTRL+F. First your bag, then
+                         the open chest too, remembering what you typed
+                         from one chest to the next
     Steady Grid        - the crafting grid keeps its contents when you
                          close the table
     Deft Hands         - an empty hotbar slot refills itself from your bag
@@ -88,13 +90,13 @@ WHAT IS NEW IN 0.3.0
     Artisan's Order    - choose category / name / count as the sort rule
     Quartermaster's Call - tops up the stacks you already carry from
                          nearby chests
-    The Ledger         - one searchable page of everything in reach
     Capstone: HAND OF ORDER - Terraria's Quick Stack. One button and
-    everything you carry flies to the nearby chest that ALREADY holds that
-    item. It never puts anything into a chest that does not know it, so it
-    joins the organisation you built instead of inventing one. Anything
-    without a home stays on you. Hotbar, armour and pinned slots are never
-    touched, and furnaces, hoppers and ender chests are never filled.
+    everything in your bag flies to the nearby chest that ALREADY keeps
+    that kind of thing - oak planks join the chest of birch and spruce,
+    ruby ingots join the chest of iron and gold. It never starts a pile of
+    its own, so anything without a home stays on you. Hotbar, armour and
+    pinned slots are never touched, and furnaces, hoppers and ender chests
+    are never filled.
 
 - NOT BUILT YET, shown starred and orange in the tree: Night Eyes,
   Master's Batch and the rival capstone Craft from Storage.

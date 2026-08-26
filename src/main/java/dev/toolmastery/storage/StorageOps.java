@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntPredicate;
 
 /**
  * The Artisan's hands: sorting a container, Quick Stack, and Restock.
@@ -147,9 +148,19 @@ public final class StorageOps {
 	 * already holds its kind.
 	 *
 	 * <p>The rule that makes it safe is the "already holds its kind" half. An
-	 * item is only ever deposited into a container that <em>already contains
-	 * that item type</em> — Quick Stack joins the organisation you built, it
-	 * never invents one. Anything with no home stays in your inventory.
+	 * item is only ever deposited into a container that already keeps that kind
+	 * of thing — Quick Stack joins the organisation you built, it never invents
+	 * one, and anything with no home stays in your inventory.
+	 *
+	 * <p>"Its kind" is deliberately wider than "the identical item": a chest of
+	 * oak and birch planks is a planks chest, and jungle planks belong in it.
+	 * {@link ItemKinship} decides that, from the item's registry name, so the
+	 * rule holds for items this mod has never heard of.
+	 *
+	 * <p>Two passes, and the order is the whole point: every container that
+	 * holds the <em>exact</em> item is offered the stack first, and only what is
+	 * left over goes looking for a chest of the same kind. Cobblestone therefore
+	 * still lands in the cobblestone chest even when a nearer chest holds stone.
 	 *
 	 * <p>Within a container, partial stacks are topped up before empty slots are
 	 * used, so a chest holding three half-stacks of cobblestone ends with full
@@ -161,9 +172,16 @@ public final class StorageOps {
 		if (containers.isEmpty()) {
 			return new Outcome(0, 0);
 		}
-		List<Set<Item>> known = new ArrayList<>(containers.size());
+		List<Set<Item>> exact = new ArrayList<>(containers.size());
+		List<Set<String>> kinds = new ArrayList<>(containers.size());
 		for (ContainerScan.Found found : containers) {
-			known.add(typesIn(found.container()));
+			Set<Item> types = typesIn(found.container());
+			exact.add(types);
+			Set<String> kind = new HashSet<>();
+			for (Item type : types) {
+				kind.add(ItemKinship.kindOf(type));
+			}
+			kinds.add(kind);
 		}
 
 		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
@@ -179,17 +197,10 @@ public final class StorageOps {
 			if (stack.isEmpty()) {
 				continue;
 			}
-			for (int index = 0; index < containers.size() && !stack.isEmpty(); index++) {
-				if (!known.get(index).contains(stack.getItem())) {
-					continue;
-				}
-				int before = stack.getCount();
-				insert(containers.get(index).container(), stack);
-				if (stack.getCount() < before) {
-					moved += before - stack.getCount();
-					touched.add(index);
-				}
-			}
+			moved += pour(stack, containers, touched,
+				index -> exact.get(index).contains(stack.getItem()));
+			moved += pour(stack, containers, touched,
+				index -> kinds.get(index).contains(ItemKinship.kindOf(stack.getItem())));
 			if (stack.isEmpty()) {
 				inventory.setItem(slot, ItemStack.EMPTY);
 			}
@@ -199,6 +210,27 @@ public final class StorageOps {
 			progress.addCount("deposit_items", moved);
 		}
 		return new Outcome(moved, touched.size());
+	}
+
+	/**
+	 * Offers one stack to every container the predicate accepts, nearest first,
+	 * until it is empty. Mutates {@code stack}; returns how many items left it.
+	 */
+	private static int pour(ItemStack stack, List<ContainerScan.Found> containers, Set<Integer> touched,
+			IntPredicate knowsIt) {
+		int moved = 0;
+		for (int index = 0; index < containers.size() && !stack.isEmpty(); index++) {
+			if (!knowsIt.test(index)) {
+				continue;
+			}
+			int before = stack.getCount();
+			insert(containers.get(index).container(), stack);
+			if (stack.getCount() < before) {
+				moved += before - stack.getCount();
+				touched.add(index);
+			}
+		}
+		return moved;
 	}
 
 	/**

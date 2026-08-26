@@ -1,16 +1,19 @@
 package dev.toolmastery.client;
 
+import dev.toolmastery.client.gui.ArtisanIconButton;
+import dev.toolmastery.client.gui.ArtisanIcons;
 import dev.toolmastery.client.gui.SkillTreeStyle;
-import dev.toolmastery.client.gui.StorageResultWidget;
 import dev.toolmastery.client.mixin.ContainerScreenAccessor;
 import dev.toolmastery.network.ArtisanActionPayload;
+import dev.toolmastery.storage.SortMode;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -23,29 +26,52 @@ import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Where the Artisan class actually lives: a column of buttons down the left of
- * the inventory screen and every container screen.
+ * Where the Artisan class actually lives: a row of small symbol buttons in the
+ * top-right corner of the inventory and of every container screen.
  *
- * <p>The mod always meant to have an inventory button as a discovery route and
- * never built one; this class finally delivers it, and Sort, Quick Stack,
- * Restock and Seeker's Eye all hang off the same anchor.
+ * <p>Three rules shape it, and each one was a bug first:
  *
- * <p>Every control here is added only when the node behind it is unlocked, so a
- * player who has not touched the tree sees precisely nothing new. The anchor is
- * on the <em>outside</em> of the window on purpose: the inside is where
- * Inventory Profiles Next, Quark and Sophisticated Storage all put theirs.
+ * <ul>
+ *   <li><b>Symbols, not words.</b> Six labelled vanilla buttons are a second
+ *       window bolted onto the first. Slot-sized icons in a corner nobody was
+ *       using cost no space, and the tooltip that appears the instant you hover
+ *       one is what teaches it — a picture with a delayed tooltip is a guess.</li>
+ *   <li><b>The layout is recomputed every frame.</b> Opening the recipe book
+ *       slides the window sideways <em>without</em> re-running {@code init}, so
+ *       anything positioned once at init is left stranded in the middle of the
+ *       screen. {@link #layout} runs before every extract instead, off the
+ *       window's live origin, and the row simply travels with it.</li>
+ *   <li><b>Nothing appears until it is earned.</b> A player who has not touched
+ *       the tree sees an inventory screen with nothing new on it at all.</li>
+ * </ul>
  */
 public final class ArtisanScreenHooks {
-	private static final int BUTTON_WIDTH = 58;
-	private static final int BUTTON_HEIGHT = 16;
 	private static final int GAP = 2;
-	private static final int PANEL_WIDTH = 150;
 
-	/** Search text survives a screen rebuild so a resize does not wipe the query. */
-	private static String lastQuery = "";
+	/** Distance from the window edge to the button row. */
+	private static final int MARGIN = 3;
+
+	private static final int SEARCH_WIDTH = 92;
+
+	/** The yellow behind a slot Seeker's Eye matched — see-through, so the item still reads. */
+	private static final int MATCH_FILL = 0x66FFE14D;
+
+	/** This screen's buttons, in the order they are laid out from the corner leftwards. */
+	private static final List<ArtisanIconButton> BUTTONS = new ArrayList<>();
+
+	@Nullable
+	private static ArtisanIconButton orderButton;
+
+	@Nullable
+	private static EditBox search;
+
+	/** The order the order button is currently titled with, so it is only retitled on a change. */
+	@Nullable
+	private static SortMode shownMode;
 
 	private ArtisanScreenHooks() {
 	}
@@ -57,92 +83,207 @@ public final class ArtisanScreenHooks {
 				return;
 			}
 			attach(container);
-			ScreenEvents.afterForeground(screen).register(ArtisanScreenHooks::drawPins);
+			ScreenEvents.beforeExtract(screen).register((self, graphics, mouseX, mouseY, delta) ->
+				layout(container));
+			ScreenEvents.afterForeground(screen).register(ArtisanScreenHooks::drawOverlay);
 			ScreenMouseEvents.allowMouseClick(screen).register((clicked, event) ->
 				!pinClicked(container, event));
+			ScreenEvents.remove(screen).register(self -> {
+				forget();
+				ArtisanSearch.screenClosed();
+			});
 		});
 	}
 
-	// ---------- the button column ----------
+	// ---------- the button row ----------
 
+	/**
+	 * Builds the row for this screen. Positions are left at zero on purpose:
+	 * {@link #layout} sets them before the first frame is drawn and on every
+	 * frame after it, which is precisely what makes the recipe book harmless.
+	 */
 	private static void attach(AbstractContainerScreen<?> screen) {
-		int left = ((ContainerScreenAccessor) screen).toolmastery$leftPos() - BUTTON_WIDTH - 4;
-		int y = ((ContainerScreenAccessor) screen).toolmastery$topPos() + 4;
-		boolean hasStorage = isStorageMenu(screen);
+		forget();
+		if (!ArtisanSearch.available()) {
+			// The node can be lost to a /mastery reset between two screens.
+			ArtisanSearch.clear();
+		}
 		List<AbstractWidget> widgets = Screens.getWidgets(screen);
+		boolean hasStorage = isStorageMenu(screen);
 
+		if (ArtisanSearch.available()) {
+			add(widgets, "screen.toolmastery.button.search",
+				(graphics, font, x, y, color) -> ArtisanIcons.magnifier(graphics, x, y, color),
+				() -> toggleSearch(screen));
+		}
 		if (ClientArtisanState.owns("sorters_hand_1")) {
-			widgets.add(button(left, y, "screen.toolmastery.button.sort",
-				() -> send(ArtisanActionPayload.of(ArtisanActionPayload.Action.SORT_INVENTORY))));
-			y += BUTTON_HEIGHT + GAP;
+			add(widgets, "screen.toolmastery.button.sort",
+				(graphics, font, x, y, color) -> ArtisanIcons.letter(graphics, font, "S", x, y, color),
+				() -> send(ArtisanActionPayload.Action.SORT_INVENTORY));
 		}
 		if (hasStorage && ClientArtisanState.owns("sorters_hand_2")) {
-			widgets.add(button(left, y, "screen.toolmastery.button.sort_chest",
-				() -> send(ArtisanActionPayload.of(ArtisanActionPayload.Action.SORT_CONTAINER))));
-			y += BUTTON_HEIGHT + GAP;
+			add(widgets, "screen.toolmastery.button.sort_chest",
+				(graphics, font, x, y, color) -> ArtisanIcons.letterOnShelf(graphics, font, "S", x, y, color),
+				() -> send(ArtisanActionPayload.Action.SORT_CONTAINER));
 		}
 		if (ClientArtisanState.owns("sort_profiles")) {
-			Button order = Button.builder(
-					Component.translatable("screen.toolmastery.button.order", ClientArtisanState.sortMode().label()),
-					widget -> send(ArtisanActionPayload.of(ArtisanActionPayload.Action.CYCLE_SORT_MODE)))
-				.bounds(left, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-				.build();
-			widgets.add(order);
-			y += BUTTON_HEIGHT + GAP;
+			shownMode = ClientArtisanState.sortMode();
+			orderButton = add(widgets, orderLabel(shownMode), ArtisanScreenHooks::drawOrderSymbol,
+				() -> send(ArtisanActionPayload.Action.CYCLE_SORT_MODE));
 		}
 		if (ClientArtisanState.owns("hand_of_order")) {
-			widgets.add(button(left, y, "screen.toolmastery.button.quick_stack",
-				() -> send(ArtisanActionPayload.of(ArtisanActionPayload.Action.QUICK_STACK))));
-			y += BUTTON_HEIGHT + GAP;
+			add(widgets, "screen.toolmastery.button.quick_stack",
+				(graphics, font, x, y, color) -> ArtisanIcons.outbound(graphics, x, y, color),
+				() -> send(ArtisanActionPayload.Action.QUICK_STACK));
 		}
 		if (ClientArtisanState.owns("restock_nearby")) {
-			widgets.add(button(left, y, "screen.toolmastery.button.restock",
-				() -> send(ArtisanActionPayload.of(ArtisanActionPayload.Action.RESTOCK))));
-			y += BUTTON_HEIGHT + GAP;
+			add(widgets, "screen.toolmastery.button.restock",
+				(graphics, font, x, y, color) -> ArtisanIcons.inbound(graphics, x, y, color),
+				() -> send(ArtisanActionPayload.Action.RESTOCK));
 		}
-		if (ClientArtisanState.owns("storage_ledger")) {
-			widgets.add(button(left, y, "screen.toolmastery.button.ledger", () -> {
-				send(ArtisanActionPayload.search(""));
-				net.minecraft.client.Minecraft.getInstance().setScreenAndShow(new LedgerScreen(screen));
-			}));
-			y += BUTTON_HEIGHT + GAP;
-		}
-		if (ClientArtisanState.owns("chest_search_1")) {
-			attachSearch(screen, widgets, left, y);
+		if (ArtisanSearch.available()) {
+			attachSearch(screen, widgets);
 		}
 	}
 
-	private static void attachSearch(AbstractContainerScreen<?> screen, List<AbstractWidget> widgets,
-			int left, int y) {
-		EditBox search = new EditBox(Screens.getFont(screen), left, y, BUTTON_WIDTH, BUTTON_HEIGHT,
-			Component.translatable("screen.toolmastery.search"));
-		search.setMaxLength(ArtisanActionPayload.MAX_QUERY);
-		search.setHint(Component.translatable("screen.toolmastery.search.hint"));
-		search.setValue(lastQuery);
-		search.setResponder(query -> {
-			lastQuery = query;
-			send(ArtisanActionPayload.search(query));
-		});
-		widgets.add(search);
+	private static ArtisanIconButton add(List<AbstractWidget> widgets, String key,
+			ArtisanIconButton.Symbol symbol, Runnable onPress) {
+		return add(widgets, Component.translatable(key), symbol, onPress);
+	}
 
-		// Just outside the right edge of the window, pulled back on screen when
-		// the window is wide enough to leave no room there.
+	private static ArtisanIconButton add(List<AbstractWidget> widgets, Component name,
+			ArtisanIconButton.Symbol symbol, Runnable onPress) {
+		ArtisanIconButton button = new ArtisanIconButton(0, 0, name, symbol, onPress);
+		BUTTONS.add(button);
+		widgets.add(button);
+		return button;
+	}
+
+	/**
+	 * Puts the row in the window's top-right corner, just outside the frame. The
+	 * corner inside belongs to the container's own title; the strip outside
+	 * belongs to nobody, and the recipe book — which only ever opens to the
+	 * left — never reaches it.
+	 *
+	 * <p>A window tall enough to leave no room above it gets the row underneath
+	 * instead, which beats drawing it off the top of the display.
+	 */
+	private static void layout(AbstractContainerScreen<?> screen) {
+		if (BUTTONS.isEmpty()) {
+			return;
+		}
 		ContainerScreenAccessor geometry = (ContainerScreenAccessor) screen;
-		int panelX = geometry.toolmastery$leftPos() + geometry.toolmastery$imageWidth() + 4;
-		widgets.add(new StorageResultWidget(
-			Math.min(panelX, Math.max(0, screen.width - PANEL_WIDTH - 4)),
-			geometry.toolmastery$topPos(),
-			PANEL_WIDTH, screen.height - 40, ClientArtisanState::searchResults));
+		int right = geometry.toolmastery$leftPos() + geometry.toolmastery$imageWidth();
+		int above = geometry.toolmastery$topPos() - ArtisanIconButton.SIZE - MARGIN;
+		int y = above >= MARGIN
+			? above
+			: geometry.toolmastery$topPos() + geometry.toolmastery$imageHeight() + MARGIN;
 
-		if (!lastQuery.isEmpty()) {
-			send(ArtisanActionPayload.search(lastQuery));
+		int x = right - ArtisanIconButton.SIZE;
+		for (ArtisanIconButton button : BUTTONS) {
+			button.setPosition(x, y);
+			x -= ArtisanIconButton.SIZE + GAP;
+		}
+
+		if (orderButton != null) {
+			SortMode mode = ClientArtisanState.sortMode();
+			if (mode != shownMode) {
+				shownMode = mode;
+				orderButton.rename(orderLabel(mode));
+			}
+		}
+		if (search != null) {
+			boolean showing = ArtisanSearch.isOpen() || !ArtisanSearch.query().isEmpty();
+			search.visible = showing;
+			search.active = showing;
+			// x now sits one slot to the left of the leftmost button: the field
+			// ends where that button begins and grows away from the corner.
+			search.setPosition(x + ArtisanIconButton.SIZE - SEARCH_WIDTH, y);
 		}
 	}
 
-	private static Button button(int x, int y, String key, Runnable onPress) {
-		return Button.builder(Component.translatable(key), widget -> onPress.run())
-			.bounds(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-			.build();
+	private static void attachSearch(AbstractContainerScreen<?> screen, List<AbstractWidget> widgets) {
+		EditBox box = new EditBox(Minecraft.getInstance().font, 0, 0, SEARCH_WIDTH, ArtisanIconButton.SIZE,
+			Component.translatable("screen.toolmastery.search"));
+		box.setMaxLength(ArtisanSearch.MAX_QUERY);
+		box.setHint(Component.translatable("screen.toolmastery.search.hint"));
+		box.setValue(ArtisanSearch.query());
+		box.setResponder(ArtisanSearch::setQuery);
+		box.visible = false;
+		box.active = false;
+		widgets.add(box);
+		search = box;
+	}
+
+	/** The magnifier is a switch: it shows the field, hands it the caret, and clears it again. */
+	private static void toggleSearch(AbstractContainerScreen<?> screen) {
+		boolean opening = !ArtisanSearch.isOpen();
+		ArtisanSearch.setOpen(opening);
+		if (search == null) {
+			return;
+		}
+		if (opening) {
+			search.visible = true;
+			search.active = true;
+			search.setFocused(true);
+			screen.setFocused(search);
+		} else {
+			search.setValue("");
+			search.setFocused(false);
+			screen.setFocused(null);
+		}
+	}
+
+	/** Artisan's Order wears the order it is set to, so one glance says which one that is. */
+	private static void drawOrderSymbol(GuiGraphicsExtractor graphics, Font font, int x, int y, int color) {
+		switch (ClientArtisanState.sortMode()) {
+			case CATEGORY -> ArtisanIcons.byCategory(graphics, x, y, color);
+			case NAME -> ArtisanIcons.letter(graphics, font, "A", x, y, color);
+			case COUNT -> ArtisanIcons.byCount(graphics, x, y, color);
+		}
+	}
+
+	private static Component orderLabel(SortMode mode) {
+		return Component.translatable("screen.toolmastery.button.order", mode.label());
+	}
+
+	private static void forget() {
+		BUTTONS.clear();
+		orderButton = null;
+		search = null;
+		shownMode = null;
+	}
+
+	// ---------- overlays ----------
+
+	/**
+	 * Everything the mod paints onto a container: the yellow behind the slots
+	 * Seeker's Eye matched, and the gold corner on the pinned ones.
+	 */
+	private static void drawOverlay(Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+			float delta) {
+		if (!(screen instanceof AbstractContainerScreen<?> container)) {
+			return;
+		}
+		boolean searching = ArtisanSearch.available() && !ArtisanSearch.query().isEmpty();
+		boolean pinning = ClientArtisanState.owns("slot_lock");
+		if (!searching && !pinning) {
+			return;
+		}
+		int left = ((ContainerScreenAccessor) container).toolmastery$leftPos();
+		int top = ((ContainerScreenAccessor) container).toolmastery$topPos();
+
+		for (Slot slot : container.getMenu().slots) {
+			if (searching && ArtisanSearch.matches(slot)) {
+				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 16, top + slot.y + 16, MATCH_FILL);
+				graphics.outline(left + slot.x, top + slot.y, 16, 16, SkillTreeStyle.GOLD);
+			}
+			if (pinning && slot.container instanceof Inventory
+				&& ClientArtisanState.slotLocked(slot.getContainerSlot())) {
+				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 4, top + slot.y + 4,
+					SkillTreeStyle.GOLD);
+			}
+		}
 	}
 
 	// ---------- pinned slots ----------
@@ -161,23 +302,8 @@ public final class ArtisanScreenHooks {
 		if (slot == null || !(slot.container instanceof Inventory)) {
 			return false;
 		}
-		send(ArtisanActionPayload.lock(slot.getContainerSlot()));
+		ClientPlayNetworking.send(ArtisanActionPayload.lock(slot.getContainerSlot()));
 		return true;
-	}
-
-	/** A gold corner on every pinned slot — small enough not to hide the item. */
-	private static void drawPins(Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		if (!(screen instanceof AbstractContainerScreen<?> container) || !ClientArtisanState.owns("slot_lock")) {
-			return;
-		}
-		int left = ((ContainerScreenAccessor) container).toolmastery$leftPos();
-		int top = ((ContainerScreenAccessor) container).toolmastery$topPos();
-		for (Slot slot : container.getMenu().slots) {
-			if (slot.container instanceof Inventory && ClientArtisanState.slotLocked(slot.getContainerSlot())) {
-				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 4, top + slot.y + 4,
-					SkillTreeStyle.GOLD);
-			}
-		}
 	}
 
 	@Nullable
@@ -200,7 +326,7 @@ public final class ArtisanScreenHooks {
 		return screen.getMenu() instanceof ChestMenu || screen.getMenu() instanceof ShulkerBoxMenu;
 	}
 
-	static void send(ArtisanActionPayload payload) {
-		ClientPlayNetworking.send(payload);
+	static void send(ArtisanActionPayload.Action action) {
+		ClientPlayNetworking.send(ArtisanActionPayload.of(action));
 	}
 }
