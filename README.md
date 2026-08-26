@@ -177,22 +177,23 @@ The first class that is not tied to a tool: it levels from **movement**, so its 
 ### Artisan nodes (Path of Order)
 Where Pickaxe and Axe are about *getting* resources, the Artisan is about *keeping them in order* — inventory and storage quality of life, earned instead of installed. Named Artisan rather than Crafter because the class barely crafts, and Minecraft already ships a block called the Crafter.
 
-The buttons live in a column just outside the left edge of the inventory and container windows — the inside is where Inventory Profiles Next, Quark and Sophisticated Storage all put theirs. Nothing appears until the node behind it is unlocked.
+The controls are a row of slot-sized symbol buttons in the **top-right corner** of the inventory and of every container window, just outside the frame — the inside is where Inventory Profiles Next, Quark and Sophisticated Storage all put theirs. Hover one and it says what it is. Nothing appears until the node behind it is unlocked, and the row is laid out fresh every frame off the window’s live position, so opening the recipe book slides it along with the window instead of stranding it.
 
 | Node | Tier | Effect |
 |---|---|---|
 | **Sorter's Hand** I–II | 1 / 2 | A Sort button on your backpack, then on chests, barrels and shulker boxes too |
-| **Seeker's Eye** I–III | 1 / 2 / 3 | A search field: your inventory and the open container → every container within 8 blocks → 16 blocks with per-container bearings, reading shulker boxes stored inside them |
+| **Seeker's Eye** I–II | 1 / 2 | Ctrl+F for slots: type in the magnifier field and every matching slot turns yellow — your inventory, then the open container too, with the query remembered from one chest to the next |
 | **Steady Grid** | 1 | The 3×3 grid keeps its contents when you close a crafting table and hands them back next time |
 | **Deft Hands** | 2 | A hotbar stack that runs out refills itself from your backpack |
 | **Locked Slots** | 3 | Alt-click any slot to pin it — sorting, auto-refill, Quick Stack and Restock all step around it |
 | **Tidy Storage** | 3 | A container is tidied again every time you close it, so one you sorted stays sorted |
 | **Artisan's Order** | 3 | Pick the sort rule: category, name or count |
 | **Quartermaster's Call** | 4 | Tops up the stacks you already carry from containers within 8 blocks — never hands you something new |
-| **The Ledger** | 4 | One searchable page listing everything in reach, with counts and bearings. Read-only: an index, not a remote inventory |
 | **Hand of Order** | capstone | Terraria's *Quick Stack to Nearby Chests* — see below |
 
-**Hand of Order.** Press the button and every item you are carrying flies to the nearby container that already holds its kind. The rule that makes it safe is that half: an item is only ever deposited into a container that **already contains that item type**, so Quick Stack joins the organisation you built and never invents one. Anything with no home stays on you.
+**Hand of Order.** Press the button and every item in your backpack flies to the nearby container that already keeps that kind of thing. The rule that makes it safe is that half: an item is only ever deposited into a container that **already knows its kind**, so Quick Stack joins the organisation you built and never invents one. Anything with no home stays on you.
+
+- **What counts as the same kind:** the last word of the item’s registry name. `oak_planks`, `birch_planks` and a modded `ebony_planks` are all *planks*; `iron_ingot` and `ruby_ingot` are both *ingot*; a name with no underscore (`stone`, `cobblestone`) is its own kind. Exact matches are offered every container first and only the leftovers go looking for a same-kind chest, so cobblestone still lands in the cobblestone chest even when a nearer one holds stone. Item **tags** would have been the obvious choice and are the wrong one: vanilla’s item tags mostly describe behaviour (`#wolf_food`, `#piglin_loved`, `#breaks_decorated_pots`), which would file a golden apple with gold ingots. Names are a convention every mod already follows, so items from a mod that is not installed yet cost nothing.
 
 - **Reach:** 8 blocks, loaded chunks only, at most 32 containers, nearest first.
 - **Fill order:** partial stacks are topped up before empty slots are used, so a chest with three half-stacks of cobblestone ends with full stacks rather than five scattered piles.
