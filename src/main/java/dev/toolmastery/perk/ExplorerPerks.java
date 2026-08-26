@@ -15,6 +15,7 @@ public final class ExplorerPerks {
 	public static final String SEA_LEGS = "sea_legs";
 	public static final String TIRELESS = "tireless";
 	public static final String CLEAR_SIGHT = "clear_sight";
+	public static final String NIGHT_EYES = "night_eyes";
 	public static final String REMEMBER = "remember";
 	public static final String TRAILBLAZER = "trailblazer";
 	public static final String SOFT_LANDING = "soft_landing";
@@ -67,5 +68,37 @@ public final class ExplorerPerks {
 			case 2 -> 1.0F;
 			default -> 0.0F;
 		};
+	}
+
+	// ---------- Night Eyes ----------
+
+	/**
+	 * The brightness Night Eyes holds the lightmap at, on the same 0..1 scale as
+	 * the video setting — where 0 is Moody and 1 is the Bright end of the
+	 * slider. Above 1 because that is the whole promise of the node: a lift the
+	 * options screen cannot give you.
+	 *
+	 * <p>The shader reads this as {@code mix(colour, liftedColour, brightness)},
+	 * and {@code liftedColour} equals {@code colour} wherever the picture is
+	 * already bright — so going past 1 extrapolates in dark pixels and does
+	 * nothing at all in daylight. Night stays night; the corners stop being a
+	 * flat black wall.
+	 */
+	public static final float NIGHT_EYES_BRIGHTNESS = 1.25F;
+
+	/**
+	 * The floor Night Eyes puts under ambient light: a very dark blue, so a
+	 * pitch-black cave reads as deep blue rather than as nothing at all.
+	 *
+	 * <p>Ambient is added to every pixel before the sky and block light, which
+	 * is why it has to stay this small — anything higher would wash out daylight
+	 * as well, and this node is not a torch.
+	 */
+	public static final float NIGHT_EYES_AMBIENT_RED = 0.035F;
+	public static final float NIGHT_EYES_AMBIENT_GREEN = 0.040F;
+	public static final float NIGHT_EYES_AMBIENT_BLUE = 0.060F;
+
+	public static boolean seesInTheDark(Player player) {
+		return owns(player, NIGHT_EYES);
 	}
 }
