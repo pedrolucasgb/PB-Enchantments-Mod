@@ -21,7 +21,6 @@ public final class ExplorerPerks {
 	public static final String SOFT_LANDING = "soft_landing";
 	public static final String WAYPOINT = "waypoint";
 	public static final String ENDLESS_HORIZON = "endless_horizon";
-	public static final String WORLDS_MEMORY = "worlds_memory";
 
 	private ExplorerPerks() {
 	}

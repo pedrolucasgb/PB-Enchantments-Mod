@@ -20,6 +20,8 @@ public final class EnchanterPerks {
 	public static final String INNER_FOCUS = "inner_focus";
 	public static final String ARCANE_INSIGHT = "arcane_insight";
 	public static final String SCHOLAR = "scholar";
+	public static final String ANVIL_ADEPT = "anvil_adept";
+	public static final String ANCIENT_KNOWLEDGE = "ancient_knowledge";
 
 	/** Set by the client entrypoint; null on a dedicated server. */
 	@Nullable
