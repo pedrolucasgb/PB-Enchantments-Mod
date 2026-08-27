@@ -1,5 +1,6 @@
 package dev.toolmastery.mixin;
 
+import dev.toolmastery.enchant.AncientKnowledge;
 import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.network.EnchantPreviewPayload;
@@ -34,6 +35,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +60,18 @@ public abstract class EnchantmentMenuMixin {
 	@Unique
 	private Player toolmastery$player;
 
+	/**
+	 * The slot the offer being built belongs to, and how many bookshelves the
+	 * table had when the offers were priced. Ancient Knowledge needs both, and
+	 * neither reaches the roll itself — {@code selectEnchantment} is handed only
+	 * a level and a candidate list.
+	 */
+	@Unique
+	private int toolmastery$slot;
+
+	@Unique
+	private int toolmastery$bookshelves;
+
 	@Shadow
 	@Final
 	private Container enchantSlots;
@@ -77,6 +91,13 @@ public abstract class EnchantmentMenuMixin {
 		this.toolmastery$player = inventory.player;
 	}
 
+	/** Remembers which slot is being rolled; {@code selectEnchantment} is never told. */
+	@Inject(method = "getEnchantmentList", at = @At("HEAD"))
+	private void toolmastery$rememberSlot(RegistryAccess registryAccess, ItemStack stack, int slot, int cost,
+	                                      CallbackInfoReturnable<List<EnchantmentInstance>> cir) {
+		this.toolmastery$slot = slot;
+	}
+
 	@Redirect(method = "getEnchantmentList", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;selectEnchantment(Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/item/ItemStack;ILjava/util/stream/Stream;)Ljava/util/List;"))
 	private List<EnchantmentInstance> toolmastery$gatedSelect(RandomSource random, ItemStack stack, int cost,
@@ -85,18 +106,27 @@ public abstract class EnchantmentMenuMixin {
 			return EnchantmentHelper.selectEnchantment(random, stack, cost, candidates);
 		}
 
-		// 1. Locked Tool Mastery enchantments never enter the roll.
-		Stream<Holder<Enchantment>> unlocked = candidates.filter(holder -> {
+		// 1. Locked Tool Mastery enchantments never enter the roll. Collected
+		//    rather than streamed on, because Ancient Knowledge needs a second
+		//    pass over the same pool and a stream is spent once.
+		List<Holder<Enchantment>> pool = candidates.filter(holder -> {
 			ResourceKey<Enchantment> ours = toolmastery$matchOurs(holder);
 			return ours == null || SkillService.maxEnchantLevelOwned(serverPlayer, ours) > 0;
-		});
+		}).toList();
 
-		List<EnchantmentInstance> rolled = EnchantmentHelper.selectEnchantment(random, stack, cost, unlocked);
+		// 2. The Archmage's lottery, or vanilla's weighted draw. The check
+		//    consumes a number off the seeded random either way, so the offer
+		//    stays reproducible and the Arcane Insight preview keeps matching.
+		List<EnchantmentInstance> rolled =
+			AncientKnowledge.perfectRollDue(serverPlayer, toolmastery$slot, toolmastery$bookshelves, random)
+				? AncientKnowledge.perfectRoll(random, stack, pool)
+				: EnchantmentHelper.selectEnchantment(random, stack, cost, pool.stream());
 
-		// 2. Clamp our levels to what the skill tree has unlocked, and vanilla
-		//    Fortune to III unless Ancient Fortune has lifted the ceiling. The
-		//    Fortune data file raises max_level to 4 for everybody, because a
-		//    data pack cannot be per-player; this is what makes it a reward.
+		// 3. Clamp our levels to what the skill tree has unlocked, vanilla
+		//    Fortune to III unless Ancient Fortune has lifted the ceiling, and
+		//    everything to its own maximum. The Fortune data file raises
+		//    max_level to 4 for everybody, because a data pack cannot be
+		//    per-player; this is what makes it a reward.
 		List<EnchantmentInstance> result = new ArrayList<>(rolled.size());
 		for (EnchantmentInstance instance : rolled) {
 			if (instance.enchantment().is(Enchantments.FORTUNE) && instance.level() > 3
@@ -104,17 +134,33 @@ public abstract class EnchantmentMenuMixin {
 				result.add(new EnchantmentInstance(instance.enchantment(), 3));
 				continue;
 			}
+			int allowed = instance.enchantment().value().getMaxLevel();
 			ResourceKey<Enchantment> ours = toolmastery$matchOurs(instance.enchantment());
 			if (ours != null) {
 				int owned = SkillService.maxEnchantLevelOwned(serverPlayer, ours);
-				if (owned > 0 && instance.level() > owned) {
-					result.add(new EnchantmentInstance(instance.enchantment(), owned));
-					continue;
+				if (owned > 0) {
+					allowed = Math.min(allowed, owned);
 				}
 			}
-			result.add(instance);
+			result.add(instance.level() > allowed
+				? new EnchantmentInstance(instance.enchantment(), allowed)
+				: instance);
 		}
 		return result;
+	}
+
+	/**
+	 * Ancient Knowledge: the three offers become 35, 40 and 45 at a fully
+	 * powered table. Redirected at the pricing call rather than patched
+	 * afterwards, so the clue enchantments, the Arcane Insight preview and the
+	 * enchantment that is finally applied all read the same number.
+	 */
+	@Redirect(method = "lambda$slotsChanged$0", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getEnchantmentCost(Lnet/minecraft/util/RandomSource;IILnet/minecraft/world/item/ItemStack;)I"))
+	private int toolmastery$ancientOffer(RandomSource random, int slot, int bookshelves, ItemStack stack) {
+		this.toolmastery$bookshelves = bookshelves;
+		int vanilla = EnchantmentHelper.getEnchantmentCost(random, slot, bookshelves, stack);
+		return AncientKnowledge.costFor(toolmastery$player, slot, bookshelves, vanilla);
 	}
 
 	@Unique

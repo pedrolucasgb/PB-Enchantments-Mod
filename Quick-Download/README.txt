@@ -67,10 +67,11 @@ WHAT IS NEW IN 0.3.0
                     blocks of any fall are free
     Waypoint      - sneak + right-click a compass to bind a spot; the
                     needle points there from then on
-    Capstone, pick one: ENDLESS HORIZON (a quarter of your fireworks are
-    not consumed and Slipstream doubles) or WORLD'S MEMORY (once a day,
-    right-click a compass for the bearing to the nearest structure of a
-    kind you have already found).
+    Night Eyes    - a small brightness lift above what the video settings
+                    allow: dark corners read deep blue instead of black,
+                    daylight is untouched, and a warden still blinds you
+    Capstone: ENDLESS HORIZON - a quarter of the fireworks you burn while
+    flying are not consumed, and your Slipstream carryover doubles.
 
 - ARTISAN (Path of Order) - storage and inventory quality of life, earned
   instead of installed. Its buttons are small symbols in the top-right
@@ -100,8 +101,19 @@ WHAT IS NEW IN 0.3.0
     pinned slots are never touched, and furnaces, hoppers and ender chests
     are never filled.
 
-- NOT BUILT YET, shown starred and orange in the tree: Master's Batch
-  and the rival capstone Craft from Storage.
+- ENCHANTER additions
+    Anvil Adept       - every anvil job costs 30% fewer levels, and the
+                        anvil never answers "Too Expensive!" again
+    Capstone: ANCIENT KNOWLEDGE - at a full table (15 bookshelves) the
+    three offers ask for 35, 40 and 45 instead of stopping at 30. That is
+    what finally puts Sharpness V and Efficiency V - impossible at a
+    vanilla table - back in the draw. Nothing ever goes above an
+    enchantment's own maximum. At the 45 offer there is a CHANCE, not a
+    promise, of a perfect item: every enchantment the item can carry, each
+    at its maximum, in a set that fits together.
+
+- NOT BUILT YET, shown starred and orange in the tree: the two Axe
+  finishers, Everbloom and Bountiful Grove.
 WHAT IS NEW IN 0.2.0
 --------------------
 - LIBRARIANS SELL TOOL MASTERY BOOKS (new): from apprentice onwards a
