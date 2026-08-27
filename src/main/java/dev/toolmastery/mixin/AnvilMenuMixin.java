@@ -2,16 +2,17 @@ package dev.toolmastery.mixin;
 
 import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.track.EnchantTracker;
+import net.minecraft.core.Holder;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.world.item.enchantment.Enchantments;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,45 +20,39 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * The anvil: the Arcanist gate, and the Anvil Adept perk.
+ * The anvil, on three counts.
  *
- * <p><b>The gate.</b> Only a real merge counts: renaming or repairing with raw
- * material leaves the sacrifice slot without enchantments, and those takes are
- * ignored. Injected at HEAD because onTake is where vanilla clears the inputs —
- * a tick later they are already gone. The inputs are read off the player's open
- * menu because inputSlots lives on ItemCombinerMenu, and a {@code @Shadow} only
- * reaches fields declared in the target class itself.
+ * <p><b>The Arcanist gate.</b> Only a real merge counts: renaming or repairing
+ * with raw material leaves the sacrifice slot without enchantments, and those
+ * takes are ignored. Injected at HEAD because onTake is where vanilla clears
+ * the inputs — a tick later they are already gone. The inputs are read off the
+ * player's open menu because inputSlots lives on ItemCombinerMenu, and a
+ * {@code @Shadow} only reaches fields declared in the target class itself.
  *
- * <p><b>Anvil Adept</b> takes the two teeth out of the anvil. The
- * <em>"Too Expensive!"</em> wall is a hard stop at 40 levels that no amount of
- * XP gets you past — the anvil simply refuses — and it is what makes a
- * well-loved tool eventually unrepairable. And every combine costs 30% fewer
- * levels, applied to the final figure so the discount is the one the player
- * reads on the label and the one {@code onTake} actually charges.
+ * <p><b>Anvil Adept I and II</b> (Enchanter tiers 3 and 4). The price is
+ * rewritten at the one point vanilla computes it — the {@code Mth.clamp} that
+ * folds the prior work penalty into the bill — so everything downstream reads
+ * the discounted number: the "too expensive" wall, the level check in
+ * {@code mayPickup}, and the levels {@code onTake} actually deducts. Anvil
+ * Adept II then redirects vanilla's creative check on that wall, which is what
+ * keeps the result item in the slot at a capped 40 levels instead of blanking
+ * it.
  *
- * <p>Neither is done by rewriting vanilla's arithmetic. The wall is a single
- * {@code hasInfiniteMaterials} branch, so the perk answers that question
- * instead — the same trick Inner Focus uses on the lapis check — and the
- * discount lands at the very end of {@code createResult}, after the last thing
- * vanilla does to the price.
+ * <p><b>Greater Mending</b> (Enchanter tier 5). The Mending data file raises
+ * max_level to 2 for everybody, because a data pack cannot be per-player;
+ * clamping {@code getMaxLevel} back to 1 here for anyone who has not bought the
+ * capstone is what makes it a reward. The anvil is the only place Mending II
+ * can be made — Mending is treasure, so it never rolls at a table.
  */
 @Mixin(AnvilMenu.class)
 public class AnvilMenuMixin {
-	/** What a combine costs an Anvil Adept, as a fraction of vanilla. */
-	@Unique
-	private static final float ADEPT_DISCOUNT = 0.7F;
-
-	@Shadow
-	@Final
-	private DataSlot cost;
-
 	@Unique
 	private Player toolmastery$player;
 
 	@Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V",
 		at = @At("RETURN"))
 	private void toolmastery$capturePlayer(int containerId, Inventory inventory, ContainerLevelAccess access,
-			CallbackInfo ci) {
+	                                       CallbackInfo ci) {
 		this.toolmastery$player = inventory.player;
 	}
 
@@ -72,31 +67,51 @@ public class AnvilMenuMixin {
 		}
 	}
 
-	/**
-	 * Anvil Adept: no "Too Expensive!". Ordinal 1 is the branch that throws the
-	 * result away once the price reaches 40 — creative players are exempt from
-	 * it, and this makes an Adept exempt the same way. The other
-	 * {@code hasInfiniteMaterials} call in this method guards material cost and
-	 * is left alone.
-	 */
+	/** Anvil Adept: the whole bill, discounted and then capped, in one place. */
 	@Redirect(method = "createResult", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/world/entity/player/Player;hasInfiniteMaterials()Z", ordinal = 1))
-	private boolean toolmastery$adeptIgnoresTheWall(Player player) {
-		return player.hasInfiniteMaterials() || EnchanterPerks.owns(player, EnchanterPerks.ANVIL_ADEPT);
+		target = "Lnet/minecraft/util/Mth;clamp(JJJ)J"))
+	private long toolmastery$anvilAdeptPrice(long value, long min, long max) {
+		long vanilla = Mth.clamp(value, min, max);
+		if (toolmastery$player == null) {
+			return vanilla;
+		}
+		return EnchanterPerks.anvilCost(toolmastery$player, (int) Math.min(vanilla, Integer.MAX_VALUE));
 	}
 
 	/**
-	 * Anvil Adept: 30% off, applied last so nothing downstream re-inflates it.
-	 * A priced job never falls to zero — a free anvil would make the Arcanist
-	 * gate that counts combines self-completing.
+	 * Anvil Adept II: the "too expensive" wall only stands for players who have
+	 * not bought it. Ordinal 1 is the wall's own creative check — ordinal 0
+	 * guards whether an over-max enchantment survives the merge, which stays
+	 * vanilla.
 	 */
-	@Inject(method = "createResult", at = @At("TAIL"))
-	private void toolmastery$adeptDiscount(CallbackInfo ci) {
-		int full = cost.get();
-		if (full <= 0 || toolmastery$player == null
-			|| !EnchanterPerks.owns(toolmastery$player, EnchanterPerks.ANVIL_ADEPT)) {
-			return;
+	@Redirect(method = "createResult", at = @At(value = "INVOKE", ordinal = 1,
+		target = "Lnet/minecraft/world/entity/player/Player;hasInfiniteMaterials()Z"))
+	private boolean toolmastery$anvilMasterIgnoresTheWall(Player player) {
+		return player.hasInfiniteMaterials() || EnchanterPerks.owns(player, EnchanterPerks.ANVIL_MASTER);
+	}
+
+	/** Greater Mending: Mending stops at I unless the capstone lifted the ceiling. */
+	@Redirect(method = "createResult", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/item/enchantment/Enchantment;getMaxLevel()I"))
+	private int toolmastery$mendingCeiling(Enchantment enchantment) {
+		int max = enchantment.getMaxLevel();
+		if (max <= 1 || toolmastery$player == null || !toolmastery$isMending(enchantment)) {
+			return max;
 		}
-		cost.set(Math.max(1, Math.round(full * ADEPT_DISCOUNT)));
+		return EnchanterPerks.owns(toolmastery$player, EnchanterPerks.GREATER_MENDING) ? max : 1;
+	}
+
+	/**
+	 * The merge loop hands the redirect an {@code Enchantment}, not its holder,
+	 * so the identity check goes through the registry rather than a
+	 * {@code Holder#is}.
+	 */
+	@Unique
+	private boolean toolmastery$isMending(Enchantment enchantment) {
+		Holder.Reference<Enchantment> mending = toolmastery$player.level().registryAccess()
+			.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+			.get(Enchantments.MENDING)
+			.orElse(null);
+		return mending != null && mending.value() == enchantment;
 	}
 }

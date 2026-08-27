@@ -1,6 +1,7 @@
 package dev.toolmastery.perk;
 
 import dev.toolmastery.enchant.ModEnchantments;
+import dev.toolmastery.skill.SkillTrees;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,6 +25,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * through — nothing that drops without a required tool ever fails it — and the
  * enchantment turns into a shovel.
  *
+ * <p>The Pickaxe capstone {@code enduring_edge} halves what the whole swing
+ * costs the tool — see {@link #chargeHalf}.
+ *
  * <p>Extras also have to be about as hard as what you actually swung at, so
  * clipping a stone block next to obsidian does not hand you the obsidian. The
  * comparison is in break <em>time for this player</em>, not raw hardness: a
@@ -34,6 +38,9 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public final class AreaBreak {
 	private static final ThreadLocal<Boolean> BREAKING = ThreadLocal.withInitial(() -> false);
+
+	/** Pickaxe tier 5: the whole Dig Range swing costs half the durability. */
+	private static final String ENDURING_EDGE = "enduring_edge";
 
 	/**
 	 * How much longer than the broken block an extra block may take, in ticks.
@@ -74,6 +81,12 @@ public final class AreaBreak {
 			return;
 		}
 
+		boolean sparing = PerkAccess.owns(serverPlayer, SkillTrees.PICKAXE, ENDURING_EDGE);
+		int damageBefore = pickaxe.getDamageValue();
+		// The block that started the swing counts, and vanilla has already
+		// charged the tool for it before this event ever fires.
+		int broken = 1;
+
 		BREAKING.set(true);
 		try {
 			for (BlockPos target : targets(serverPlayer, pos, rangeLevel)) {
@@ -85,10 +98,41 @@ public final class AreaBreak {
 					|| ticksToBreak(serverLevel, target, targetState, serverPlayer) > budgetTicks) {
 					continue;
 				}
-				serverPlayer.gameMode.destroyBlock(target);
+				if (serverPlayer.gameMode.destroyBlock(target)) {
+					broken++;
+				}
 			}
 		} finally {
 			BREAKING.set(false);
+			if (sparing) {
+				chargeHalf(serverPlayer, pickaxe, damageBefore, broken);
+			}
+		}
+	}
+
+	/**
+	 * Enduring Edge: the whole swing costs {@code ceil(blocks / 2)} durability
+	 * instead of one point per block — 1 per 2 at Dig Range I, 3 per 5 at II,
+	 * 5 per 9 at III.
+	 *
+	 * <p>It refunds rather than skips the damage, because the extras are broken
+	 * through {@code destroyBlock} and every hook down that path is entitled to
+	 * wear the tool. {@code damageBefore} is read after vanilla charged for the
+	 * block that started the swing, so one point of the budget is already
+	 * spent; what is left is the allowance for the extras.
+	 *
+	 * <p>Never charges more than actually was spent, so Unbreaking still helps —
+	 * whichever of the two saves more wins, they do not stack into a refund.
+	 */
+	private static void chargeHalf(ServerPlayer player, ItemStack pickaxe, int damageBefore, int broken) {
+		if (player.getMainHandItem() != pickaxe || !pickaxe.isDamageableItem()) {
+			return; // the tool was swapped, broke, or never wore in the first place
+		}
+		int damageAfter = pickaxe.getDamageValue();
+		int allowance = (broken + 1) / 2 - 1;
+		int charged = Math.min(damageAfter, damageBefore + allowance);
+		if (charged < damageAfter) {
+			pickaxe.setDamageValue(Math.max(0, charged));
 		}
 	}
 

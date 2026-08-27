@@ -70,6 +70,8 @@ WHAT IS NEW IN 0.3.0
     Night Eyes    - a small brightness lift above what the video settings
                     allow: dark corners read deep blue instead of black,
                     daylight is untouched, and a warden still blinds you
+    Pufferfish Lungs - permanent Water Breathing. Your breath meter never
+                    moves again, in any water, in any dimension
     Capstone: ENDLESS HORIZON - a quarter of the fireworks you burn while
     flying are not consumed, and your Slipstream carryover doubles.
 
@@ -102,8 +104,16 @@ WHAT IS NEW IN 0.3.0
     are never filled.
 
 - ENCHANTER additions
-    Anvil Adept       - every anvil job costs 30% fewer levels, and the
-                        anvil never answers "Too Expensive!" again
+    Anvil Adept I     - every anvil job costs 30% fewer levels. The cut
+                        lands before the anvil calls a job too expensive,
+                        so a 55-level merge drops to 39 and works again
+    Anvil Adept II    - the anvil never answers "Too Expensive!" again,
+                        and no job ever costs more than 40 levels
+    Greater Mending   - lifts vanilla Mending from I to II. Two Mending
+                        books merge into Mending II on YOUR anvil, and it
+                        mends twice the durability per point of XP
+    Reaper's Wisdom   - a mob killed with a Looting weapon gives +25% XP
+                        per Looting level, on top of Scholar
     Capstone: ANCIENT KNOWLEDGE - at a full table (15 bookshelves) the
     three offers ask for 35, 40 and 45 instead of stopping at 30. That is
     what finally puts Sharpness V and Efficiency V - impossible at a
@@ -112,8 +122,14 @@ WHAT IS NEW IN 0.3.0
     promise, of a perfect item: every enchantment the item can carry, each
     at its maximum, in a set that fits together.
 
-- NOT BUILT YET, shown starred and orange in the tree: the two Axe
-  finishers, Everbloom and Bountiful Grove.
+- PICKAXE gains a second finisher: ENDURING EDGE - a Dig Range swing
+  costs the pickaxe half the durability, rounded up. 1 point per 2 blocks
+  at rank I, 3 per 5 at rank II, 5 per 9 at rank III.
+
+- NOT BUILT YET, shown starred and orange in the tree: four Axe tier-4
+  ideas (Kindling, Woodcarver, Sap Tapper, Patina Hand), four Artisan
+  tier-4 ideas (Crate Labels, Shulker Sight, Blueprints, Salvage) and the
+  two Axe finishers, Everbloom and Bountiful Grove.
 WHAT IS NEW IN 0.2.0
 --------------------
 - LIBRARIANS SELL TOOL MASTERY BOOKS (new): from apprentice onwards a
