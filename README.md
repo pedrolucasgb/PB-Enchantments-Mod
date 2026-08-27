@@ -134,6 +134,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Deep Haste** | — | Permanent Haste I below Y = 0 |
 | **Obsidian Breaker** | — | Obsidian and crying obsidian break 50% faster |
 | **Ancient Fortune** | capstone | Lifts your ceiling on vanilla Fortune from III to IV — your enchanting table can offer Fortune IV, nobody else's can |
+| **Enduring Edge** | capstone | A Dig Range swing costs the pickaxe half the durability, rounded up: 1 per 2 blocks at I, 3 per 5 at II, 5 per 9 at III |
 
 ### Axe passives (Path of the Grove)
 | Node | Tier | Effect |
@@ -145,6 +146,8 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Double Axe** I–II | 3 / 4 | 10% / 20% chance for a log to drop twice — every log of a Logic fell rolls on its own |
 | **Shield Breaker** | 3 | Axes disable a blocking shield 2s longer and push 2 more damage through it |
 
+**Tier 4, not built yet.** Four sides of the axe that have nothing to do with what it can hit: *Kindling* (logs come out as charcoal straight from the swing), *Woodcarver* (right-click cycles a wooden block through its stair, slab and fence forms in place), *Sap Tapper* (a stripped log weeps resin while the tree stands) and *Patina Hand* (sneak-scrape to age copper a stage instead of only scouring it back).
+
 **Tier 5, not built yet.** Two finishers ship starred and orange so the shape of the tier is visible before it is playable: *Everbloom* (a tree you fell replants itself and grows back where it stood) and *Bountiful Grove* (felled logs yield more than they should, scaling with how much of the tree you took in one go).
 
 ### Enchanter nodes (Path of the Arcane)
@@ -154,10 +157,16 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Scholar** I–III | 1 / 2 / 4 | +20% / +40% / +60% XP from every source (orbs, bottles, smelting, breeding) |
 | **Inner Focus** | 3 | Enchanting no longer requires nor consumes lapis lazuli |
 | **Indestructible** | 3 | Enchantment: the item never breaks (see the enchantment table above) |
-| **Anvil Adept** | 3 | Every anvil job costs 30% fewer levels, and *"Too Expensive!"* stops applying to you |
+| **Anvil Adept** I–II | 3 / 4 | I takes 30% off every anvil job; II removes *"Too Expensive!"* and caps any job at 40 levels |
 | **Ancient Knowledge** | capstone | The three table offers become 35 / 40 / 45 — and the top one sometimes rolls a perfect item |
+| **Greater Mending** | capstone | Lifts vanilla Mending from I to II — two Mending books merge into Mending II on *your* anvil, and it mends double per point of XP |
+| **Reaper’s Wisdom** | capstone | A mob killed with a Looting weapon gives +25% XP per Looting level, stacking on top of Scholar |
 
-**Anvil Adept.** Two things, and neither rewrites vanilla’s arithmetic. *"Too Expensive!"* is a hard stop at 40 levels that no amount of XP gets past — the anvil simply refuses, and it is what eventually makes a well-loved tool unrepairable. In the bytecode that wall is one `hasInfiniteMaterials` branch, so the perk answers that question instead, exactly as Inner Focus does for the lapis check. The 30% discount then lands at the very end of `createResult`, after the last thing vanilla does to the price, so the number on the label is the number `onTake` charges. A priced job never falls below one level — a free anvil would make the Arcanist gate that counts combines complete itself.
+**Anvil Adept, in two ranks.** The bill is rewritten at the one point vanilla computes it — the `Mth.clamp` that folds the prior-work penalty in — so everything downstream reads the same number: the too-expensive wall, the level check in `mayPickup`, and the levels `onTake` actually deducts.
+
+Rank **I** takes 30% off, rounded up, and it lands *before* the anvil decides a job is too expensive, so a 55-level merge comes down to 39 and becomes possible again — that is most of what the rank is for. Rank **II** removes the wall outright and caps any job at 40 levels. *"Too Expensive!"* is a hard stop no amount of XP gets past; in the bytecode it is one `hasInfiniteMaterials` branch, so the perk answers that question instead, exactly as Inner Focus does for the lapis check. The screen needed the same answer separately — the server keeps the item takeable, but `AnvilScreen` decides on its own that any bill of 40 or more prints red.
+
+**Greater Mending.** The Mending data file raises `max_level` to 2 for everybody, because a data pack cannot be per-player — the same trick as Ancient Fortune. What makes it a reward is the clamp back to 1 at the anvil for anyone without the node. The anvil is the only place Mending II can be made at all, since Mending is treasure and never rolls at a table.
 
 **Ancient Knowledge.** Vanilla tops out at 30, and 30 is the reason a whole shelf of enchantments is folklore rather than gameplay: **Sharpness V** needs an enchanting level of 45 before it will even enter the draw, **Efficiency V** needs 41, and a 30-level offer on a diamond sword lands around 36 after the enchantability roll. Those are not rare at a vanilla table — they are *impossible*, and every one you have ever seen came off an anvil. At a fully powered table (15 bookshelves) this capstone makes the three offers ask for **35, 40 and 45**, which puts them back in the draw and drags a longer list in with them, because vanilla keeps rolling for extra enchantments as long as the level holds up.
 
@@ -180,6 +189,7 @@ The first class that is not tied to a tool: it levels from **movement**, so its 
 | **Soft Landing** | 4 | Elytra wall-crash damage halved, and the first 3 blocks of any fall are free |
 | **Waypoint Stone** | 4 | Sneak + right-click with a compass binds the spot you are standing on; the needle points there from then on |
 | **Endless Horizon** | capstone | A quarter of the fireworks you burn flying are not consumed, and Slipstream carryover doubles |
+| **Pufferfish Lungs** | capstone | Permanent Water Breathing — your breath meter never moves again, in any water, in any dimension |
 
 **Slipstream is the momentum reading, not the refund one.** It lengthens the rocket's own life rather than re-applying a decaying slice of its velocity, so the acceleration curve, the collision handling and the client prediction all stay vanilla's — the extra distance is real, the physics is not reimplemented. The refund idea ships too, priced apart, as the Endless Horizon capstone, which is now the tier on its own.
 

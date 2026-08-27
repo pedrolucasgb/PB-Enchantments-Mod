@@ -115,9 +115,11 @@ public final class SkillTrees {
 			SkillNode.chained("rich_vein_2", 3, 10, "rich_vein_1", SkillType.ENCHANTMENT).icon(Items.DEEPSLATE_DIAMOND_ORE)
 				.costing(mat(Items.DIAMOND, 8), mat(Items.EMERALD_BLOCK, 1))
 				.enchantFor(35),
-			// Tier 5 — capstone
+			// Tier 5 — two finishers, buyable together
 			SkillNode.of("ancient_fortune", 4, 20, SkillType.PASSIVE).icon(Items.ANCIENT_DEBRIS)
-				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.EMERALD, 32), mat(Items.AMETHYST_SHARD, 16))
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.EMERALD, 32), mat(Items.AMETHYST_SHARD, 16)),
+			SkillNode.of("enduring_edge", 4, 20, SkillType.PASSIVE).icon(Items.NETHERITE_SCRAP)
+				.costing(mat(Items.NETHERITE_SCRAP, 4), mat(Items.OBSIDIAN, 32), mat(Items.AMETHYST_SHARD, 16))
 		)
 	);
 
@@ -193,6 +195,16 @@ public final class SkillTrees {
 			SkillNode.chained("environment", 3, 8, "logic_3", SkillType.ENCHANTMENT).icon(Items.BONE_MEAL)
 				.costing(mat(ItemTags.SAPLINGS, 64), mat(Items.BONE_MEAL, 32))
 				.enchantFor(25),
+			// Four sides of the axe that have nothing to do with what it can hit:
+			// fuel, building, sap and copper. All still to be built.
+			SkillNode.of("kindling", 3, 8, SkillType.PASSIVE).icon(Items.CHARCOAL)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.CHARCOAL, 32)).future(),
+			SkillNode.of("woodcarver", 3, 9, SkillType.PASSIVE).icon(Items.OAK_STAIRS)
+				.costing(mat(ItemTags.LOGS, 64), mat(Items.IRON_INGOT, 16)).future(),
+			SkillNode.of("sap_tapper", 3, 9, SkillType.PASSIVE).icon(Items.RESIN_CLUMP)
+				.costing(mat(Items.STRIPPED_OAK_LOG, 32), mat(Items.GLASS_BOTTLE, 8)).future(),
+			SkillNode.of("patina_hand", 3, 7, SkillType.PASSIVE).icon(Items.COPPER_INGOT)
+				.costing(mat(Items.COPPER_INGOT, 32), mat(Items.HONEYCOMB, 8)).future(),
 			// Tier 5 — two finishers, both still to be built
 			SkillNode.of("everbloom", 4, 20, SkillType.PASSIVE).icon(Items.OAK_SAPLING)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(ItemTags.SAPLINGS, 64)).future(),
@@ -259,14 +271,20 @@ public final class SkillTrees {
 			SkillNode.of("indestructible", 2, 10, SkillType.ENCHANTMENT).icon(Items.PHANTOM_MEMBRANE)
 				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.LAPIS_LAZULI, 32))
 				.enchantFor(40),
-			SkillNode.of("anvil_adept", 2, 7, SkillType.PASSIVE).icon(Items.ANVIL)
+			SkillNode.of("anvil_adept_1", 2, 7, SkillType.PASSIVE).icon(Items.ANVIL)
 				.costing(mat(Items.IRON_BLOCK, 4), mat(Items.EMERALD, 8)),
 			// Tier 4
 			SkillNode.chained("scholar_3", 3, 8, "scholar_2", SkillType.PASSIVE).icon(Items.EXPERIENCE_BOTTLE)
 				.costing(mat(Items.BOOK, 32), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD, 8)),
-			// Tier 5 — capstone
+			SkillNode.chained("anvil_adept_2", 3, 12, "anvil_adept_1", SkillType.PASSIVE).icon(Items.CHIPPED_ANVIL)
+				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.DIAMOND, 8), mat(Items.EMERALD, 16)),
+			// Tier 5 — three finishers, buyable together
 			SkillNode.of("ancient_knowledge", 4, 20, SkillType.PASSIVE).icon(Items.ENCHANTED_BOOK)
-				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD_BLOCK, 4))
+				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD_BLOCK, 4)),
+			SkillNode.of("greater_mending", 4, 20, SkillType.PASSIVE).icon(Items.EXPERIENCE_BOTTLE)
+				.costing(mat(Items.EXPERIENCE_BOTTLE, 32), mat(Items.EMERALD_BLOCK, 2), mat(Items.NETHERITE_INGOT, 1)),
+			SkillNode.of("reapers_wisdom", 4, 20, SkillType.PASSIVE).icon(Items.SCULK_CATALYST)
+				.costing(mat(Items.SCULK_CATALYST, 1), mat(Items.ECHO_SHARD, 4), mat(Items.EMERALD_BLOCK, 2))
 		)
 	);
 
@@ -358,7 +376,9 @@ public final class SkillTrees {
 				.costing(mat(Items.AMETHYST_SHARD, 8), mat(Items.ECHO_SHARD, 1), mat(Items.GOLD_INGOT, 4)),
 			// Tier 5 — capstone (pick one)
 			SkillNode.of("endless_horizon", 4, 20, SkillType.PASSIVE).icon(Items.FIREWORK_ROCKET)
-				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.FIREWORK_ROCKET, 64), mat(Items.PHANTOM_MEMBRANE, 16))
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.FIREWORK_ROCKET, 64), mat(Items.PHANTOM_MEMBRANE, 16)),
+			SkillNode.of("pufferfish_lungs", 4, 20, SkillType.PASSIVE).icon(Items.PUFFERFISH)
+				.costing(mat(Items.PUFFERFISH, 16), mat(Items.HEART_OF_THE_SEA, 1), mat(Items.PRISMARINE_CRYSTALS, 32))
 		)
 	);
 
@@ -436,6 +456,15 @@ public final class SkillTrees {
 			// Tier 4
 			SkillNode.of("restock_nearby", 3, 10, SkillType.PASSIVE).icon(Items.HOPPER)
 				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.DIAMOND, 8)),
+			// The rest of the quartermaster's kit, still to be built.
+			SkillNode.of("container_labels", 3, 7, SkillType.PASSIVE).icon(Items.NAME_TAG)
+				.costing(mat(Items.NAME_TAG, 4), mat(Items.PAPER, 32)).future(),
+			SkillNode.of("shulker_sight", 3, 10, SkillType.PASSIVE).icon(Items.SHULKER_BOX)
+				.costing(mat(Items.SHULKER_SHELL, 4), mat(Items.ENDER_PEARL, 8)).future(),
+			SkillNode.of("blueprints", 3, 8, SkillType.PASSIVE).icon(Items.KNOWLEDGE_BOOK)
+				.costing(mat(Items.BOOK, 16), mat(Items.GOLD_INGOT, 16)).future(),
+			SkillNode.of("salvage", 3, 9, SkillType.PASSIVE).icon(Items.IRON_NUGGET)
+				.costing(mat(Items.IRON_INGOT, 32), mat(Items.GRINDSTONE, 1)).future(),
 			// Tier 5 — capstone
 			SkillNode.of("hand_of_order", 4, 20, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CHEST, 64))

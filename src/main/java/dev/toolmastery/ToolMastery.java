@@ -2,6 +2,7 @@ package dev.toolmastery;
 
 import dev.toolmastery.advancement.ModAdvancements;
 import dev.toolmastery.command.MasteryCommand;
+import dev.toolmastery.perk.AquaLungs;
 import dev.toolmastery.perk.AreaBreak;
 import dev.toolmastery.perk.AxeHarvest;
 import dev.toolmastery.perk.DeepHaste;
@@ -129,6 +130,7 @@ public class ToolMastery implements ModInitializer {
 					dev.toolmastery.track.FarmingTracker.scanSaplingChecklist(player);
 					dev.toolmastery.track.EnchantTracker.scanBookChecklist(player);
 					DeepHaste.tick(player);
+					AquaLungs.tick(player);
 					// Explorer: distance off the vanilla statistics, places off
 					// where the player is standing.
 					MovementTracker.tick(player);

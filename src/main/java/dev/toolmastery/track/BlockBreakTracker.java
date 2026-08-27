@@ -1,17 +1,21 @@
 package dev.toolmastery.track;
 
+import dev.toolmastery.ToolMastery;
 import dev.toolmastery.progress.TreeProgress;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -25,6 +29,14 @@ public final class BlockBreakTracker {
 	public static final int ORE_BITS = 0b111_1111_1111;
 	public static final int OVERWORLD_WOOD_BITS = 0b1_1111_1111;
 	public static final int NETHER_WOOD_BITS = 0b11;
+
+	/**
+	 * Every biome that grows emerald ore. Vanilla's {@code #is_mountain} is not
+	 * that list: it leaves out the groves and the windswept hills, which is where
+	 * most players meet their first emerald, so the gate sat at 0/1 for them.
+	 */
+	private static final TagKey<Biome> EMERALD_MOUNTAIN = TagKey.create(Registries.BIOME,
+		Identifier.fromNamespaceAndPath(ToolMastery.MOD_ID, "emerald_mountain"));
 
 	private BlockBreakTracker() {
 	}
@@ -62,6 +74,13 @@ public final class BlockBreakTracker {
 		} else if (state.is(BlockTags.IRON_ORES)) {
 			progress.addCount("mine_iron", 1);
 			oreBit = 2;
+		} else if (state.is(Blocks.NETHER_GOLD_ORE)) {
+			// Caught before the tag: #gold_ores counts the Nether's gold as gold,
+			// so leaving this to the branch below spent bit 3 on it and left bit 9
+			// unreachable — the checklist could never pass ten. It still feeds the
+			// gold counter, as it did when the tag swallowed it.
+			progress.addCount("mine_gold", 1);
+			oreBit = 9;
 		} else if (state.is(BlockTags.GOLD_ORES)) {
 			progress.addCount("mine_gold", 1);
 			oreBit = 3;
@@ -78,13 +97,11 @@ public final class BlockBreakTracker {
 			oreBit = 6;
 		} else if (state.is(Blocks.EMERALD_ORE) || state.is(Blocks.DEEPSLATE_EMERALD_ORE)) {
 			oreBit = 7;
-			if (level.getBiome(pos).is(BiomeTags.IS_MOUNTAIN)) {
+			if (level.getBiome(pos).is(EMERALD_MOUNTAIN)) {
 				progress.addCount("mine_mountain_emerald", 1);
 			}
 		} else if (state.is(Blocks.NETHER_QUARTZ_ORE)) {
 			oreBit = 8;
-		} else if (state.is(Blocks.NETHER_GOLD_ORE)) {
-			oreBit = 9;
 		} else if (state.is(Blocks.ANCIENT_DEBRIS)) {
 			progress.addCount("mine_ancient_debris", 1);
 			oreBit = 10;
