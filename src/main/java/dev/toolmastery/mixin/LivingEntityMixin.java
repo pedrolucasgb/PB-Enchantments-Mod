@@ -1,15 +1,22 @@
 package dev.toolmastery.mixin;
 
+import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.perk.ExplorerPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Two unrelated features that both hang off {@code LivingEntity}.
+ * Three unrelated features that all hang off {@code LivingEntity}.
  *
  * <p><b>Shield Breaker</b> (Axe tree) — axes punch through a raised shield:
  * +2s on the shield cooldown the axe already inflicts, and +2 damage the shield
@@ -29,6 +36,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * <p><b>Soft Landing and Clear Sight</b> (Explorer tree) — see the individual
  * methods.
+ *
+ * <p><b>Reaper's Wisdom</b> (Enchanter tree) — mob XP scales with the Looting
+ * on the weapon that landed the kill.
  */
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
@@ -96,6 +106,39 @@ public class LivingEntityMixin {
 			return amount * 0.5F;
 		}
 		return amount;
+	}
+
+	// ---------- Enchanter: Reaper's Wisdom ----------
+
+	/**
+	 * Reaper's Wisdom: a mob killed with a Looting weapon gives more XP —
+	 * +25% per level, so Looting III is +75%. Looting already decides how much
+	 * of a mob you take away; this makes it decide how much you learn too, and
+	 * gives the Enchanter a reason to care about a weapon enchantment.
+	 *
+	 * <p>Rounded up, so a 1-point kill still benefits, and the Scholar bonus
+	 * applies afterwards on the way into the player's bar — the two multiply.
+	 */
+	@Inject(method = "getExperienceReward", at = @At("RETURN"), cancellable = true)
+	private void toolmastery$reapersWisdom(ServerLevel level, Entity killer, CallbackInfoReturnable<Integer> cir) {
+		int reward = cir.getReturnValue();
+		if (reward <= 0 || !(killer instanceof ServerPlayer player)
+			|| !EnchanterPerks.owns(player, EnchanterPerks.REAPERS_WISDOM)) {
+			return;
+		}
+		int looting = toolmastery$lootingLevel(level, player);
+		if (looting > 0) {
+			cir.setReturnValue(reward + Math.max(1, reward * looting / 4));
+		}
+	}
+
+	@Unique
+	private static int toolmastery$lootingLevel(ServerLevel level, ServerPlayer player) {
+		Holder<Enchantment> looting = level.registryAccess()
+			.lookupOrThrow(Registries.ENCHANTMENT)
+			.get(Enchantments.LOOTING)
+			.orElse(null);
+		return looting == null ? 0 : EnchantmentHelper.getEnchantmentLevel(looting, player);
 	}
 
 	/**
