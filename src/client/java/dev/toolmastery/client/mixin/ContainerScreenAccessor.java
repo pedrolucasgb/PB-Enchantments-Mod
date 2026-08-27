@@ -5,12 +5,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
- * The two numbers every container screen keeps to itself: where its window sits
- * on screen. The Artisan buttons hang off the left edge of that window and the
- * pinned-slot markers are drawn relative to it, so both need the origin.
+ * The numbers every container screen keeps to itself: where its window sits
+ * on screen and how big it is. The Artisan button row is anchored to the top-
+ * right corner of that window and the slot overlays are drawn relative to its
+ * origin, so both need these.
  *
  * <p>An accessor rather than an injector on purpose — nothing here changes
- * behaviour, it only reads two protected ints.
+ * behaviour, it only reads a handful of protected ints.
  */
 @Mixin(AbstractContainerScreen.class)
 public interface ContainerScreenAccessor {
@@ -20,7 +21,11 @@ public interface ContainerScreenAccessor {
 	@Accessor("topPos")
 	int toolmastery$topPos();
 
-	/** Width of the window itself, which is where the search panel starts. */
+	/** Width of the window itself: the button row is right-aligned to its far edge. */
 	@Accessor("imageWidth")
 	int toolmastery$imageWidth();
+
+	/** Height of the window, for the rare screen too tall to leave room above it. */
+	@Accessor("imageHeight")
+	int toolmastery$imageHeight();
 }

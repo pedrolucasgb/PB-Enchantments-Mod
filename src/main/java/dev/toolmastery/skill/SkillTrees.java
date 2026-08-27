@@ -336,7 +336,7 @@ public final class SkillTrees {
 				.costing(mat(Items.OAK_PLANKS, 32), mat(Items.STRING, 16)),
 			// Tier 2
 			SkillNode.of("night_eyes", 1, 5, SkillType.PASSIVE).icon(Items.GLOWSTONE_DUST)
-				.costing(mat(Items.GLOWSTONE_DUST, 16), mat(Items.GOLDEN_CARROT, 8)).future(),
+				.costing(mat(Items.GLOWSTONE_DUST, 16), mat(Items.GOLDEN_CARROT, 8)),
 			SkillNode.of("clear_sight_1", 1, 5, SkillType.PASSIVE).icon(Items.PRISMARINE_SHARD)
 				.costing(mat(Items.PRISMARINE_SHARD, 16), mat(Items.GLASS, 4)),
 			SkillNode.chained("tireless_2", 1, 6, "tireless_1", SkillType.PASSIVE).icon(Items.RABBIT_FOOT)
@@ -437,8 +437,6 @@ public final class SkillTrees {
 			SkillNode.of("deft_hands", 1, 5, SkillType.PASSIVE).icon(Items.IRON_INGOT)
 				.costing(mat(Items.IRON_INGOT, 16), mat(Items.OAK_PLANKS, 16)),
 			// Tier 3
-			SkillNode.chained("chest_search_3", 2, 9, "chest_search_2", SkillType.PASSIVE).icon(Items.GOLD_INGOT)
-				.costing(mat(Items.IRON_INGOT, 32), mat(Items.GOLD_INGOT, 8)),
 			SkillNode.of("slot_lock", 2, 7, SkillType.PASSIVE).icon(Items.OBSIDIAN)
 				.costing(mat(Items.IRON_INGOT, 8), mat(Items.OBSIDIAN, 4)),
 			SkillNode.chained("tidy_chests", 2, 8, "sorters_hand_2", SkillType.PASSIVE).icon(Items.BARREL)
@@ -448,8 +446,6 @@ public final class SkillTrees {
 			// Tier 4
 			SkillNode.of("restock_nearby", 3, 10, SkillType.PASSIVE).icon(Items.HOPPER)
 				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.DIAMOND, 8)),
-			SkillNode.chained("storage_ledger", 3, 10, "chest_search_3", SkillType.PASSIVE).icon(Items.WRITABLE_BOOK)
-				.costing(mat(Items.DIAMOND, 8), mat(Items.PAPER, 32)),
 			SkillNode.of("bulk_craft", 3, 8, SkillType.PASSIVE).icon(Items.CRAFTER)
 				.costing(mat(Items.DIAMOND, 8), mat(Items.IRON_INGOT, 64)).future(),
 			// Tier 5 — capstone (pick one)
