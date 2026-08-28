@@ -34,7 +34,7 @@ import java.util.List;
  * @param materials     items consumed on unlock, alongside the XP
  * @param enchantCost   XP levels per direct enchant; 0 when the node has none
  * @param requires      node id that must be unlocked first, or null
- * @param exclusiveWith node id that locks this one when unlocked (capstone choice), or null
+ * @param exclusiveWith node ids that lock this one when any of them is owned (capstone choice); empty for most nodes
  * @param type          what kind of unlock this grants
  * @param implemented   false while the effect ships in a later update — not unlockable yet
  * @param icon          item drawn on the node tile, or null to fall back on {@link #iconStack()}
@@ -48,7 +48,7 @@ public record SkillNode(
 	List<MaterialCost> materials,
 	int enchantCost,
 	@Nullable String requires,
-	@Nullable String exclusiveWith,
+	List<String> exclusiveWith,
 	SkillType type,
 	boolean implemented,
 	@Nullable Item icon,
@@ -57,18 +57,40 @@ public record SkillNode(
 ) {
 	public SkillNode {
 		materials = List.copyOf(materials);
+		exclusiveWith = List.copyOf(exclusiveWith);
 	}
 
 	public static SkillNode of(String id, int tier, int unlockCost, SkillType type) {
-		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, null, type, true, null, false, false);
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, List.of(), type, true, null, false, false);
 	}
 
 	public static SkillNode chained(String id, int tier, int unlockCost, String requires, SkillType type) {
-		return new SkillNode(id, tier, unlockCost, List.of(), 0, requires, null, type, true, null, false, false);
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, requires, List.of(), type, true, null, false, false);
 	}
 
-	public static SkillNode capstone(String id, int tier, int unlockCost, String exclusiveWith, SkillType type) {
-		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, exclusiveWith, type, true, null, false, false);
+	/**
+	 * One of a pick-one group: buying any node named here puts this one out of
+	 * reach. Every member of the group names the others, so a three-way choice
+	 * is three calls rather than a special case.
+	 */
+	public static SkillNode capstone(String id, int tier, int unlockCost, SkillType type, String... exclusiveWith) {
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, List.of(exclusiveWith), type, true, null, false, false);
+	}
+
+	/**
+	 * The node in this one's pick-one group that the player already bought, or
+	 * null when the choice is still open. One method so that every caller —
+	 * the server's purchase check, the debug grants, the tree's completion
+	 * count and the screen's greying — asks the question the same way.
+	 */
+	@Nullable
+	public String blockedBy(java.util.function.Predicate<String> owned) {
+		for (String other : exclusiveWith) {
+			if (owned.test(other)) {
+				return other;
+			}
+		}
+		return null;
 	}
 
 	/** The material half of the unlock price. */

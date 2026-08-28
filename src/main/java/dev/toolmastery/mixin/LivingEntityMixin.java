@@ -1,6 +1,7 @@
 package dev.toolmastery.mixin;
 
 import dev.toolmastery.enchant.EnchanterPerks;
+import dev.toolmastery.perk.ArmorPerks;
 import dev.toolmastery.perk.CombatPerks;
 import dev.toolmastery.perk.ExplorerPerks;
 import dev.toolmastery.skill.SkillService;
@@ -15,6 +16,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -23,7 +25,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -71,6 +75,12 @@ public class LivingEntityMixin {
 	@Unique
 	private static final int TOOLMASTERY$SOFT_LANDING_FREE_BLOCKS = 3;
 
+	/**
+	 * Bulwark III, the defender's half: a shield that carries it is never
+	 * disabled outright. Asked here rather than at the call site because
+	 * {@code getSecondsToDisableBlocking} is a property of the <em>attacker</em>
+	 * — see {@code PlayerMixin} for the half that knows who is blocking.
+	 */
 	@Inject(method = "getSecondsToDisableBlocking", at = @At("RETURN"), cancellable = true)
 	private void toolmastery$shieldBreakerDuration(CallbackInfoReturnable<Float> cir) {
 		float seconds = cir.getReturnValue();
@@ -155,10 +165,23 @@ public class LivingEntityMixin {
 	 * fighting them for the same slot.
 	 */
 	@Inject(method = "getComfortableFallDistance", at = @At("RETURN"), cancellable = true)
-	private void toolmastery$softLandingFallGrace(float base, CallbackInfoReturnable<Integer> cir) {
-		if ((Object) this instanceof Player player
-			&& ExplorerPerks.owns(player, ExplorerPerks.SOFT_LANDING)) {
-			cir.setReturnValue(cir.getReturnValue() + TOOLMASTERY$SOFT_LANDING_FREE_BLOCKS);
+	private void toolmastery$fallGrace(float base, CallbackInfoReturnable<Integer> cir) {
+		if (!((Object) this instanceof Player player)) {
+			return;
+		}
+		int free = 0;
+		if (ExplorerPerks.owns(player, ExplorerPerks.SOFT_LANDING)) {
+			free += TOOLMASTERY$SOFT_LANDING_FREE_BLOCKS;
+		}
+		// Overlapping with Soft Landing on purpose, and additively rather than
+		// as a max: issue #28 asked for the two to stack to something sane, and
+		// nine free blocks for a player who bought both classes is exactly that
+		// — generous, still short of the fall that actually kills you.
+		if (ArmorPerks.hasKineticPlating(player)) {
+			free += ArmorPerks.KINETIC_FREE_BLOCKS;
+		}
+		if (free > 0) {
+			cir.setReturnValue(cir.getReturnValue() + free);
 		}
 	}
 
@@ -168,12 +191,87 @@ public class LivingEntityMixin {
 	 * misjudged canopy, not against arrows.
 	 */
 	@ModifyVariable(method = "hurtServer", at = @At("HEAD"), argsOnly = true)
-	private float toolmastery$softLandingKinetic(float amount, ServerLevel level, DamageSource source) {
-		if (source.is(DamageTypes.FLY_INTO_WALL) && (Object) this instanceof Player player
-			&& ExplorerPerks.owns(player, ExplorerPerks.SOFT_LANDING)) {
-			return amount * 0.5F;
+	private float toolmastery$scaleIncomingDamage(float amount, ServerLevel level, DamageSource source) {
+		LivingEntity self = (LivingEntity) (Object) this;
+		if (self instanceof Player player) {
+			if (source.is(DamageTypes.FLY_INTO_WALL)
+				&& ExplorerPerks.owns(player, ExplorerPerks.SOFT_LANDING)) {
+				amount *= 0.5F;
+			}
+			if (source.is(DamageTypes.FALL) && ArmorPerks.hasKineticPlating(player)) {
+				amount *= ArmorPerks.KINETIC_REMAINDER;
+			}
 		}
-		return amount;
+		return amount * toolmastery$guardiansAura(level, self);
+	}
+
+	/**
+	 * Guardian's Aura: a player or a tamed animal standing within six blocks of
+	 * someone who bought the node takes 10% less of everything.
+	 *
+	 * <p>It does not stack with itself — two Guardians are still 10%, not 19% —
+	 * because a party of four would otherwise be a different game. The scan is
+	 * the cheapest thing that answers it: nearby players only, and only for an
+	 * entity that could be an ally in the first place.
+	 */
+	@Unique
+	private float toolmastery$guardiansAura(ServerLevel level, LivingEntity victim) {
+		if (!ArmorPerks.isProtectableAlly(victim)) {
+			return 1.0F;
+		}
+		for (Player nearby : level.players()) {
+			if (nearby != victim
+				&& nearby.distanceToSqr(victim) <= ArmorPerks.GUARDIAN_RANGE * ArmorPerks.GUARDIAN_RANGE
+				&& ArmorPerks.owns(nearby, ArmorPerks.GUARDIANS_AURA)) {
+				return 1.0F - ArmorPerks.GUARDIAN_SHARE;
+			}
+		}
+		return 1.0F;
+	}
+
+	/**
+	 * Steady Stance and Warden's Weight, both on the one place vanilla applies
+	 * knockback. A mob's shove is quartered; blocking with Warden's Weight
+	 * cancels it outright.
+	 */
+	@ModifyVariable(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V",
+		at = @At("HEAD"), argsOnly = true)
+	private float toolmastery$resistKnockback(float strength, double x, double y, double z, DamageSource source) {
+		if (strength <= 0.0F || !((Object) this instanceof Player player)) {
+			return strength;
+		}
+		Entity attacker = source.getEntity();
+		boolean fromMob = attacker instanceof LivingEntity && !(attacker instanceof Player);
+		return strength * ArmorPerks.knockbackFactor(player, fromMob);
+	}
+
+	/**
+	 * Shield Wall I: the shield is up the moment you raise it. Vanilla makes
+	 * you hold it for five ticks first, and those five ticks are the whole
+	 * reason blocking feels late.
+	 */
+	@Redirect(method = "getItemBlockingWith", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/item/component/BlocksAttacks;blockDelayTicks()I"))
+	private int toolmastery$shieldWallDelay(BlocksAttacks component) {
+		if ((Object) this instanceof Player player && ArmorPerks.rank(player, ArmorPerks.SHIELD_WALL) >= 1) {
+			return 0;
+		}
+		return component.blockDelayTicks();
+	}
+
+	/**
+	 * Shield Wall II: a wider arc. The angle handed to the component is how far
+	 * off-centre the hit came from, and reporting a smaller one is what makes
+	 * the cone wider — the component's own thresholds stay untouched, so a
+	 * shield with unusual data still behaves like itself.
+	 */
+	@ModifyArg(method = "applyItemBlocking", index = 2, at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/item/component/BlocksAttacks;resolveBlockedDamage(Lnet/minecraft/world/damagesource/DamageSource;FD)F"))
+	private double toolmastery$shieldWallArc(double angle) {
+		if ((Object) this instanceof Player player && ArmorPerks.rank(player, ArmorPerks.SHIELD_WALL) >= 2) {
+			return angle * ArmorPerks.SHIELD_WALL_ARC;
+		}
+		return angle;
 	}
 
 	// ---------- Enchanter: Reaper's Wisdom ----------

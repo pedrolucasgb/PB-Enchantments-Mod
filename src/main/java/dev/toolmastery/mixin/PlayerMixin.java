@@ -1,6 +1,9 @@
 package dev.toolmastery.mixin;
 
 import dev.toolmastery.enchant.EnchanterPerks;
+import dev.toolmastery.enchant.ModEnchantments;
+import dev.toolmastery.perk.ArmorPerks;
+import dev.toolmastery.perk.ArmorUpkeep;
 import dev.toolmastery.perk.ItemAuthority;
 import dev.toolmastery.perk.MiningSpeed;
 import dev.toolmastery.perk.PerkAccess;
@@ -154,12 +157,38 @@ public abstract class PlayerMixin {
 	 * Scholar passive adds +20% per rank (rounded up, so even 1-point orbs
 	 * benefit). Level deductions (negative amounts) are untouched.
 	 */
+	/**
+	 * Bulwark III, the defender's half: the axe swing that would disable this
+	 * player's shield simply does not. Redirected at the call site rather than
+	 * on the method itself because the method belongs to the attacker and the
+	 * enchantment belongs to the shield — here, {@code this} is the one holding
+	 * it.
+	 */
+	@Redirect(method = "blockUsingItem", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/entity/LivingEntity;getSecondsToDisableBlocking()F"))
+	private float toolmastery$bulwarkRefusesTheDisable(net.minecraft.world.entity.LivingEntity attacker) {
+		float seconds = attacker.getSecondsToDisableBlocking();
+		Player self = (Player) (Object) this;
+		if (seconds > 0.0F && ArmorPerks.enchantLevel(self.getItemBlockingWith(), ModEnchantments.BULWARK)
+			>= ArmorPerks.BULWARK_UNDISABLED) {
+			return 0.0F;
+		}
+		return seconds;
+	}
+
 	@ModifyVariable(method = "giveExperiencePoints", at = @At("HEAD"), argsOnly = true)
 	private int toolmastery$scholarXpBonus(int amount) {
 		if (!((Object) this instanceof ServerPlayer serverPlayer) || amount <= 0) {
 			return amount;
 		}
 		SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "collect_xp", amount);
+		// Living Armor takes the experience before Scholar can scale it: the
+		// points went into the armour, so there is nothing left to boost. One
+		// injector rather than two, because two @ModifyVariable handlers on the
+		// same argument would run in an order nobody declared.
+		if (ArmorUpkeep.livingArmorAbsorbs(serverPlayer, amount)) {
+			return 0;
+		}
 		int scholar = EnchanterPerks.rankedLevel(serverPlayer, EnchanterPerks.SCHOLAR);
 		if (scholar > 0) {
 			amount += Math.max(1, amount * scholar / 5);

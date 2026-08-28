@@ -1,6 +1,7 @@
 package dev.toolmastery.mixin;
 
 import dev.toolmastery.enchant.EnchanterPerks;
+import dev.toolmastery.perk.ArmorPerks;
 import dev.toolmastery.perk.CombatPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTree;
@@ -112,7 +113,8 @@ public class AnvilMenuMixin {
 	 * The three vanilla ceilings the mod raises for everybody in its data pack
 	 * and clamps back here for anyone without the node that earned them.
 	 *
-	 * <p>Mending II, Fortune IV and Looting IV are all the same trick and now
+	 * <p>Mending II, Fortune IV, Looting IV and Protection V are all the same
+ * trick and now
 	 * all live in the same table. Fortune used to be gated at the enchanting
 	 * table only, which left two Fortune III books on an anvil as a way round
 	 * the capstone entirely — that hole closes here.
@@ -148,7 +150,12 @@ public class AnvilMenuMixin {
 		}
 		int looting = toolmastery$gatedCeiling(enchantment, Enchantments.LOOTING,
 			"sword", CombatPerks.SPOILS_OF_WAR, 3);
-		return looting >= 0 ? looting : max;
+		if (looting >= 0) {
+			return looting;
+		}
+		int protection = toolmastery$gatedCeiling(enchantment, Enchantments.PROTECTION,
+			"armor", ArmorPerks.AEGIS, 4);
+		return protection >= 0 ? protection : max;
 	}
 
 	/**
