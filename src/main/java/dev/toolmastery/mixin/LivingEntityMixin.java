@@ -4,6 +4,7 @@ import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.perk.ExplorerPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
+import dev.toolmastery.track.ArmorTracker;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Three unrelated features that all hang off {@code LivingEntity}.
+ * Four unrelated features that all hang off {@code LivingEntity}.
  *
  * <p><b>Shield Breaker</b> (Axe tree) — axes punch through a raised shield:
  * +2s on the shield cooldown the axe already inflicts, and +2 damage the shield
@@ -39,6 +40,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * <p><b>Reaper's Wisdom</b> (Enchanter tree) — mob XP scales with the Looting
  * on the weapon that landed the kill.
+ *
+ * <p><b>Shield gate tracking</b> (Armor tree) — how much a raised shield really
+ * soaked, taken here because a fully blocked hit never reaches the damage
+ * event at all.
  */
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
@@ -62,13 +67,27 @@ public class LivingEntityMixin {
 		}
 	}
 
+	/**
+	 * Both sides of a blocked hit, in one injector because two of them at RETURN
+	 * do not both run: the first to call setReturnValue returns there and then.
+	 * Shield Breaker shaves the attacker's share off first, and what is left is
+	 * what the defender's shield really stopped — which is the number the
+	 * Armor tree's shield gates are scored on.
+	 */
 	@Inject(method = "applyItemBlocking", at = @At("RETURN"), cancellable = true)
-	private void toolmastery$shieldBreakerDamage(ServerLevel level, DamageSource source, float amount,
-	                                             CallbackInfoReturnable<Float> cir) {
+	private void toolmastery$blockedHit(ServerLevel level, DamageSource source, float amount,
+	                                     CallbackInfoReturnable<Float> cir) {
 		float blocked = cir.getReturnValue();
-		if (blocked > 0.0F && source.getDirectEntity() instanceof ServerPlayer attacker
+		if (blocked <= 0.0F) {
+			return;
+		}
+		if (source.getDirectEntity() instanceof ServerPlayer attacker
 			&& toolmastery$hasShieldBreaker(attacker)) {
-			cir.setReturnValue(Math.max(0.0F, blocked - TOOLMASTERY$EXTRA_DAMAGE));
+			blocked = Math.max(0.0F, blocked - TOOLMASTERY$EXTRA_DAMAGE);
+			cir.setReturnValue(blocked);
+		}
+		if ((Object) this instanceof ServerPlayer defender) {
+			ArmorTracker.onShieldBlock(defender, blocked);
 		}
 	}
 

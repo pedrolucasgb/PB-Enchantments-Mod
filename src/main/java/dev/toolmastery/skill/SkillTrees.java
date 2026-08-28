@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 /**
  * Static definitions of every skill tree — the design document in code.
- * Pickaxe, Axe, Enchanter, Explorer and Artisan are playable; Sword, Bow, Rod
- * and Armor are still coming.
+ * Pickaxe, Axe, Enchanter, Explorer, Artisan and Armor are playable; Sword, Bow
+ * and Rod are still coming.
  *
  * <p>Every node carries two prices. {@code of/chained/capstone} sets the XP half
  * of the <b>unlock</b>, {@code .costing(...)} its materials, and
@@ -471,12 +471,134 @@ public final class SkillTrees {
 		)
 	);
 
+	// ---------- Armor — Path of the Bulwark ----------
+
+	/**
+	 * The one class that cannot level from <em>doing</em> something: wearing
+	 * armour is not an action. It levels from <b>damage survived</b> — what the
+	 * set absorbed, what the shield stopped, what the player walked away from —
+	 * which is also what makes it the only tree that advances while you play
+	 * every other one.
+	 *
+	 * <p>Only <b>Flashpoint</b> has an effect behind it so far. The rest of the
+	 * tree ships the way the Artisan's tier 4 did: visible, priced, and marked
+	 * as coming, so the shape of the class is legible before it is finished.
+	 */
+	public static final SkillTree ARMOR = new SkillTree(
+		"armor",
+		Items.DIAMOND_CHESTPLATE,
+		List.of(
+			// Tier 1 — Padded
+			new SkillTier(5, List.of(
+				new GateRequirement("absorb_damage", 500),
+				new GateRequirement("craft_iron_armor", 4),
+				new GateRequirement("block_damage", 100)
+			)),
+			// Tier 2 — Ironclad
+			new SkillTier(10, List.of(
+				new GateRequirement("absorb_damage", 2000),
+				new GateRequirement("survive_falls", 50),
+				new GateRequirement("wear_diamond_minutes", 20)
+			)),
+			// Tier 3 — Warden of the Gate
+			new SkillTier(15, List.of(
+				new GateRequirement("survive_fire_seconds", 30),
+				new GateRequirement("block_hits", 100),
+				new GateRequirement("low_health_kills", 50)
+			)),
+			// Tier 4 — Netherite Wall
+			new SkillTier(20, List.of(
+				new GateRequirement("own_netherite_set", 1),
+				new GateRequirement("absorb_damage", 10000),
+				new GateRequirement("survive_wither_skull", 1)
+			)),
+			// Tier 5 — Unbreaking Line
+			new SkillTier(30, List.of(
+				new GateRequirement("armor_checklist", 6),
+				new GateRequirement("absorb_damage", 25000)
+			))
+		),
+		List.of(
+			// Tier 1 — kit management
+			SkillNode.of("padded_lining_1", 0, 3, SkillType.PASSIVE).icon(Items.LEATHER)
+				.costing(mat(Items.LEATHER, 16), mat(Items.IRON_INGOT, 4)).future(),
+			SkillNode.of("set_sense", 0, 3, SkillType.PASSIVE).icon(Items.SPYGLASS)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.GLASS, 4)).future(),
+			SkillNode.of("shield_wall_1", 0, 4, SkillType.PASSIVE).icon(Items.SHIELD)
+				.costing(mat(Items.SHIELD, 1), mat(Items.IRON_INGOT, 8)).future(),
+			SkillNode.of("steady_stance", 0, 4, SkillType.PASSIVE).icon(Items.IRON_BOOTS)
+				.costing(mat(Items.IRON_INGOT, 12), mat(Items.LEATHER, 16)).future(),
+			// Tier 2 — the environment
+			SkillNode.of("flashpoint", 1, 6, SkillType.PASSIVE).icon(Items.LAVA_BUCKET)
+				.costing(mat(Items.MAGMA_CREAM, 8), mat(Items.OBSIDIAN, 4)),
+			SkillNode.of("thermal_weave_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.MAGMA_CREAM)
+				.costing(mat(Items.MAGMA_CREAM, 8), mat(Items.BLAZE_POWDER, 4))
+				.enchantFor(20).future(),
+			SkillNode.of("sure_footing", 1, 5, SkillType.PASSIVE).icon(Items.SOUL_SAND)
+				.costing(mat(Items.SOUL_SAND, 16), mat(Items.HONEYCOMB, 8)).future(),
+			SkillNode.of("second_skin", 1, 6, SkillType.PASSIVE).icon(Items.PHANTOM_MEMBRANE)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 8), mat(Items.GOLD_INGOT, 8)).future(),
+			SkillNode.of("ablative_plating_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.TNT)
+				.costing(mat(Items.GUNPOWDER, 16), mat(Items.IRON_INGOT, 16))
+				.enchantFor(20).future(),
+			SkillNode.chained("padded_lining_2", 1, 5, "padded_lining_1", SkillType.PASSIVE).icon(Items.RABBIT_HIDE)
+				.costing(mat(Items.LEATHER, 32), mat(Items.IRON_INGOT, 16)).future(),
+			// Tier 3 — standing your ground
+			SkillNode.of("bulwark_1", 2, 7, SkillType.ENCHANTMENT).icon(Items.SHIELD)
+				.costing(mat(Items.IRON_INGOT, 16), mat(Items.OAK_PLANKS, 32))
+				.enchantFor(20).future(),
+			SkillNode.of("thorned_plate_1", 2, 7, SkillType.ENCHANTMENT).icon(Items.CACTUS)
+				.costing(mat(Items.CACTUS, 16), mat(Items.IRON_INGOT, 16))
+				.enchantFor(20).future(),
+			SkillNode.of("last_stand", 2, 9, SkillType.PASSIVE).icon(Items.GOLDEN_APPLE)
+				.costing(mat(Items.GOLD_INGOT, 16), mat(Items.GHAST_TEAR, 2)).future(),
+			SkillNode.of("repair_rites", 2, 8, SkillType.PASSIVE).icon(Items.ANVIL)
+				.costing(mat(Items.IRON_BLOCK, 2), mat(Items.AMETHYST_SHARD, 8)).future(),
+			SkillNode.chained("thermal_weave_2", 2, 8, "thermal_weave_1", SkillType.ENCHANTMENT).icon(Items.MAGMA_BLOCK)
+				.costing(mat(Items.MAGMA_CREAM, 16), mat(Items.BLAZE_ROD, 8))
+				.enchantFor(35).future(),
+			SkillNode.chained("shield_wall_2", 2, 7, "shield_wall_1", SkillType.PASSIVE).icon(Items.IRON_BLOCK)
+				.costing(mat(Items.IRON_BLOCK, 2), mat(Items.SHIELD, 1)).future(),
+			SkillNode.chained("ablative_plating_2", 2, 8, "ablative_plating_1", SkillType.ENCHANTMENT).icon(Items.GUNPOWDER)
+				.costing(mat(Items.GUNPOWDER, 32), mat(Items.DIAMOND, 4))
+				.enchantFor(35).future(),
+			SkillNode.chained("padded_lining_3", 2, 8, "padded_lining_2", SkillType.PASSIVE).icon(Items.DIAMOND_CHESTPLATE)
+				.costing(mat(Items.LEATHER, 64), mat(Items.DIAMOND, 4)).future(),
+			// Tier 4 — the set as a whole
+			SkillNode.of("guardians_aura", 3, 10, SkillType.PASSIVE).icon(Items.BEACON)
+				.costing(mat(Items.DIAMOND, 8), mat(Items.GOLD_BLOCK, 1)).future(),
+			SkillNode.of("kinetic_plating", 3, 10, SkillType.ENCHANTMENT).icon(Items.SLIME_BLOCK)
+				.costing(mat(Items.SLIME_BLOCK, 4), mat(Items.PHANTOM_MEMBRANE, 16))
+				.enchantFor(35).future(),
+			SkillNode.of("wardens_weight", 3, 10, SkillType.PASSIVE).icon(Items.NETHERITE_INGOT)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.OBSIDIAN, 16)).future(),
+			SkillNode.of("nightplate", 3, 8, SkillType.PASSIVE).icon(Items.GOLDEN_CHESTPLATE)
+				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.LEATHER, 32)).future(),
+			SkillNode.chained("bulwark_2", 3, 10, "bulwark_1", SkillType.ENCHANTMENT).icon(Items.NETHERITE_SCRAP)
+				.costing(mat(Items.DIAMOND, 8), mat(Items.IRON_BLOCK, 2))
+				.enchantFor(35).future(),
+			SkillNode.chained("thorned_plate_2", 3, 9, "thorned_plate_1", SkillType.ENCHANTMENT).icon(Items.SWEET_BERRIES)
+				.costing(mat(Items.CACTUS, 32), mat(Items.DIAMOND, 4))
+				.enchantFor(35).future(),
+			// Tier 5 — capstones (pick one)
+			SkillNode.of("aegis", 4, 20, SkillType.PASSIVE).icon(Items.NETHERITE_CHESTPLATE)
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.DIAMOND_BLOCK, 1), mat(Items.EMERALD, 32)).future(),
+			SkillNode.of("immortal_line", 4, 20, SkillType.PASSIVE).icon(Items.TOTEM_OF_UNDYING)
+				.costing(mat(Items.TOTEM_OF_UNDYING, 1), mat(Items.NETHERITE_INGOT, 1), mat(Items.GHAST_TEAR, 8)).future(),
+			SkillNode.of("living_armor", 4, 20, SkillType.PASSIVE).icon(Items.EXPERIENCE_BOTTLE)
+				.costing(mat(Items.EXPERIENCE_BOTTLE, 32), mat(Items.NETHERITE_INGOT, 1), mat(Items.AMETHYST_SHARD, 16)).future(),
+			SkillNode.chained("bulwark_3", 4, 14, "bulwark_2", SkillType.ENCHANTMENT).icon(Items.NETHERITE_INGOT)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.DIAMOND, 8))
+				.enchantFor(50).future()
+		)
+	);
+
 	/**
 	 * Every playable tree, in the order the skill screen tabs them. Adding a
 	 * class is one entry here plus its {@code SkillTree} above — the GUI, the
 	 * commands, the advancements and the state packet all read this list.
 	 */
-	public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN);
+	public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, ARMOR);
 
 	/**
 	 * Classes the design calls for but that have no tree yet. They show up as
@@ -488,8 +610,7 @@ public final class SkillTrees {
 	public static final List<PlannedTree> PLANNED = List.of(
 		new PlannedTree("Sword", Items.DIAMOND_SWORD),
 		new PlannedTree("Bow", Items.BOW),
-		new PlannedTree("Rod", Items.FISHING_ROD),
-		new PlannedTree("Armor", Items.DIAMOND_CHESTPLATE)
+		new PlannedTree("Rod", Items.FISHING_ROD)
 	);
 
 	public static final Map<String, SkillTree> ALL = ORDER.stream()
