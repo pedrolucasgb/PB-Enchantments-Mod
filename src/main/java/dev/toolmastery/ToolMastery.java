@@ -8,6 +8,7 @@ import dev.toolmastery.perk.CombatDrops;
 import dev.toolmastery.perk.CombatPerks;
 import dev.toolmastery.perk.AxeHarvest;
 import dev.toolmastery.perk.DeepHaste;
+import dev.toolmastery.perk.Flashpoint;
 import dev.toolmastery.perk.ItemAuthority;
 import dev.toolmastery.perk.MinersMagnet;
 import dev.toolmastery.perk.Remember;
@@ -21,6 +22,7 @@ import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import dev.toolmastery.storage.DeftHands;
 import dev.toolmastery.storage.SteadyGrid;
+import dev.toolmastery.track.ArmorTracker;
 import dev.toolmastery.track.BiomeTracker;
 import dev.toolmastery.track.BlockBreakTracker;
 import dev.toolmastery.track.CombatTracker;
@@ -95,10 +97,15 @@ public class ToolMastery implements ModInitializer {
 			if (entity instanceof ServerPlayer player) {
 				Remember.onDeath(player);
 			}
-			// Sword: a kill is the class's block-break. The tracker runs first,
-			// while the crit that ended it is still the last one remembered.
-			if (source.getEntity() instanceof ServerPlayer killer && entity instanceof LivingEntity victim
-				&& killer != entity) {
+			if (source.getEntity() instanceof ServerPlayer killer && killer != entity
+				&& entity instanceof LivingEntity victim) {
+				if (!(entity instanceof ServerPlayer)) {
+					// Armor: the tier 3 gate only wants the mobs you killed while hurt.
+					ArmorTracker.onMobKill(killer);
+				}
+				// Sword: a kill is the class's block-break. The tracker runs
+				// first, while the crit that ended it is still the last one
+				// remembered.
 				CombatTracker.onKill(killer, victim);
 				CombatPerks.onKill(killer, victim);
 				CombatPerks.warlordsWake(killer, victim);
@@ -106,6 +113,12 @@ public class ToolMastery implements ModInitializer {
 			}
 		});
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> Remember.onRespawn(newPlayer));
+
+		// Armor levels from what happens to you, so both halves of a hit are
+		// read: ALLOW_DAMAGE is where Flashpoint drops the lava, AFTER_DAMAGE
+		// is where the difference between raw and applied becomes the gate.
+		ServerLivingEntityEvents.ALLOW_DAMAGE.register(Flashpoint::allowDamage);
+		ServerLivingEntityEvents.AFTER_DAMAGE.register(ArmorTracker::onDamage);
 
 		// Anything held per player outside the save goes back where it belongs
 		// when they leave: a sprint ramp is worth nothing, a stashed crafting
@@ -115,6 +128,7 @@ public class ToolMastery implements ModInitializer {
 			Trailblazer.forget(player);
 			CombatPerks.forget(player);
 			DeftHands.forget(player);
+			Flashpoint.forget(player);
 			StorageTracker.forget(player);
 			SteadyGrid.release(player);
 		});
@@ -135,6 +149,9 @@ public class ToolMastery implements ModInitializer {
 				// Every tick too: a braced spear reaches as far as the spear in
 				// hand, and a Hunter's Mark has to go out on time.
 				CombatPerks.tick(player);
+				// Every tick as well: a ten-second window has to close on the
+				// tick it runs out, not up to a second late.
+				Flashpoint.tick(player);
 			}
 
 			// Slow checks (once a second): position-based gates.
@@ -158,6 +175,8 @@ public class ToolMastery implements ModInitializer {
 					MovementTracker.tick(player);
 					BiomeTracker.tick(player);
 					CombatTracker.tick(player);
+					// Armor: the gates measured in time worn and time on fire.
+					ArmorTracker.tick(player);
 				}
 			}
 		});

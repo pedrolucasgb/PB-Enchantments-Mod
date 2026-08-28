@@ -103,7 +103,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ---
 
-## Implemented so far (Pickaxe, Axe, Enchanter, Explorer, Artisan & Sword)
+## Implemented so far (Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword & Armor)
 
 ### Core systems
 - ✅ Per-player skill progress (tiers, nodes, counters) persisted via data attachments
@@ -277,6 +277,27 @@ Its scope is deliberately narrow. It changes *what Smite considers undead*, on y
 |---|---|---|
 | `pvp_perks` | `false` | Let the mobs-only nodes fire at players too |
 | `nostalgy_pvp` | `true` | Nostalgy's shortened cooldown pays full damage against players. Off makes those hits pay vanilla-cooldown damage instead |
+### Armor nodes (Path of the Bulwark)
+The one class that cannot level from *doing* something, because wearing armour is not an action. It levels from **damage survived**: the gate counters read what your set absorbed, what your shield stopped and what you walked away from — which is also what makes it the only tree that advances while you play every other one.
+
+The tree ships **whole and mostly unbuilt**, the way the Artisan's tier 4 did: every node is visible and priced, and all but one are marked as coming. One node has an effect behind it today.
+
+| Node | Tier | Effect |
+|---|---|---|
+| **Flashpoint** | 2 | ✅ Touching lava gives you **10 seconds of immunity to it** |
+| Padded Lining I–III, Set Sense, Shield Wall I–II, Steady Stance | 1–3 | Kit management — durability, a real armour readout, instant blocking, knockback |
+| Thermal Weave I–II, Sure Footing, Second Skin, Ablative Plating I–II | 2–3 | The environment — fire, footing, near-broken pieces, explosions |
+| Bulwark I–III, Thorned Plate I–II, Last Stand, Repair Rites | 3–5 | Standing your ground — the shield line is the direct answer to the Axe's Shield Breaker |
+| Guardian's Aura, Kinetic Plating, Warden's Weight, Nightplate | 4 | The set as a whole, including the mod's first cooperative node |
+| Aegis / Immortal Line / Living Armor | capstone | Protection V, a one-heart save every ten minutes, or XP that repairs the whole set |
+
+**Flashpoint.** The window opens on the first point of lava damage and runs for ten seconds whatever you do with them. It **only arms again once you have stopped burning**, which is the whole design: lava sets you alight for fifteen seconds, so you cannot be off the fire before the window you just spent has closed. Jumping back in does not extend it, and hopping out for a tick does not refill it. Reach water — or wait the fire out — and the next dip is a fresh ten seconds.
+
+It suppresses **lava damage only**. You still burn the whole time, at the usual point a second, so the node buys a swim to the shore rather than a bath: ten seconds of lava is 80 points of damage, ten seconds of the fire it lit is 10. Items you drop, and anything you are riding, are not covered.
+
+It also sidesteps the shared-item problem below by construction: it is a passive on the player, not an enchantment on the gear, so there is nothing to lend.
+
+**Gates.** Damage absorbed is the difference between raw and applied damage, counted only while all four slots are filled — a helmet on its own does not creep the counter forward. Shield blocking is measured where the shield actually soaks the hit rather than from the damage event, because a fully blocked hit deals no damage at all. Falls count off the *base* damage, so a fall softened by Feather Falling is still a fall you walked away from.
 
 ### Enchanting table integration
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
@@ -364,7 +385,7 @@ nothing about *displaying* the class does.
 
 ## Roadmap
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the four future classes (Sword, Bow, Rod, Armor).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), the rest of the Armor tree ([#28](../../issues/28)), and the three future classes (Sword, Bow, Rod).
 
 ## License
 
