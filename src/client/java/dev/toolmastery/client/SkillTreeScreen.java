@@ -17,9 +17,11 @@ import dev.toolmastery.skill.SkillTree;
 import dev.toolmastery.skill.SkillTrees;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -29,7 +31,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,6 +60,23 @@ public class SkillTreeScreen extends Screen {
 	private static final int TITLE_BAR = 16;
 	private static final int COLUMN_GAP = 6;
 
+	/**
+	 * A tier column never shrinks below this. Up to five tiers every tree fits
+	 * the window and this never binds; the seven-tier trees — Sword and Armor —
+	 * would have to squeeze a node tile down to unreadable to fit, so they
+	 * scroll sideways instead.
+	 */
+	private static final int MIN_COLUMN_WIDTH = 92;
+
+	private static final int MAX_COLUMN_WIDTH = 112;
+
+	/** Height of the horizontal scrollbar, and the room reserved under the tree for it. */
+	private static final int SCROLLBAR_HEIGHT = 4;
+	private static final int SCROLLBAR_ROOM = 8;
+
+	/** Pixels one notch of the wheel moves the tree. */
+	private static final int SCROLL_STEP = 24;
+
 	/** How far a wrapped gate line is indented under its checkbox. */
 	private static final int GATE_INDENT = 8;
 
@@ -79,6 +100,26 @@ public class SkillTreeScreen extends Screen {
 	private int treeTop;
 	private int treeBottom;
 	private int columnWidth;
+
+	/**
+	 * How far the tree is scrolled sideways, in pixels, and the most it can be.
+	 * Kept across rebuilds so buying a node does not throw the player back to
+	 * tier 1, and clamped on every layout in case the window got wider.
+	 */
+	private int scrollX;
+	private int maxScrollX;
+	private boolean draggingScrollbar;
+
+	/**
+	 * The tier headers and node tiles, with the x each would sit at unscrolled.
+	 * They are {@code addWidget} rather than {@code addRenderableWidget} so this
+	 * screen can draw them itself inside a scissor — otherwise a column scrolled
+	 * half out of view would paint over the details panel.
+	 */
+	private record Positioned(AbstractWidget widget, int baseX) {
+	}
+
+	private final List<Positioned> treeWidgets = new ArrayList<>();
 
 	/** Node id to the widget drawing it, so the connectors know where to run. */
 	private final Map<String, SkillNodeWidget> nodeWidgets = new LinkedHashMap<>();
@@ -122,6 +163,7 @@ public class SkillTreeScreen extends Screen {
 	private void rebuild() {
 		clearWidgets();
 		nodeWidgets.clear();
+		treeWidgets.clear();
 
 		panelWidth = width >= 400 ? 152 : 134;
 		panelX = width - panelWidth - MARGIN;
@@ -132,6 +174,11 @@ public class SkillTreeScreen extends Screen {
 
 		SkillTree tree = SkillTrees.byId(treeId);
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
+		// The bar takes its room out of the tree rather than out of the window,
+		// so a five-tier tree is laid out exactly as it always was.
+		if (tree != null && overflowOf(tree) > 0) {
+			treeBottom -= SCROLLBAR_ROOM;
+		}
 		if (tree != null) {
 			buildTree(tree, state);
 			buildActionButtons(tree, state);
@@ -201,10 +248,26 @@ public class SkillTreeScreen extends Screen {
 		return total <= treeRight;
 	}
 
+	/** The width one tier column wants, before anyone asks whether they all fit. */
+	private int columnWidthFor(SkillTree tree) {
+		int columns = tree.tiers().size();
+		int fit = (treeRight - MARGIN - (columns - 1) * COLUMN_GAP) / columns;
+		return Math.clamp(fit, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH);
+	}
+
+	/** Pixels of tree that do not fit the viewport, and so have to be scrolled to. */
+	private int overflowOf(SkillTree tree) {
+		int columns = tree.tiers().size();
+		int content = columns * columnWidthFor(tree) + (columns - 1) * COLUMN_GAP;
+		return Math.max(0, content - (treeRight - MARGIN));
+	}
+
 	/** One column per tier: a header, then the tier's nodes stacked under it. */
 	private void buildTree(SkillTree tree, @Nullable SkillStatePayload.TreeState state) {
 		int columns = tree.tiers().size();
-		columnWidth = Math.min(112, (treeRight - MARGIN - (columns - 1) * COLUMN_GAP) / columns);
+		columnWidth = columnWidthFor(tree);
+		maxScrollX = overflowOf(tree);
+		scrollX = Math.clamp(scrollX, 0, maxScrollX);
 		int unlocked = state == null ? 0 : state.unlockedTiers();
 
 		int tallest = 1;
@@ -224,7 +287,8 @@ public class SkillTreeScreen extends Screen {
 				headerState, index -> select(null, index));
 			header.selected(selectedTier == tier);
 			header.setTooltip(Tooltip.create(tierTooltip(tree, tier, state)));
-			addRenderableWidget(header);
+			addWidget(header);
+			treeWidgets.add(new Positioned(header, x));
 
 			int y = nodesTop;
 			for (SkillNode node : tree.nodesInTier(tier)) {
@@ -233,11 +297,109 @@ public class SkillTreeScreen extends Screen {
 					picked -> select(picked.id(), -1));
 				widget.selected(node.id().equals(selectedNode));
 				widget.setTooltip(Tooltip.create(nodeTooltip(node, nodeState, state)));
-				addRenderableWidget(widget);
+				addWidget(widget);
+				treeWidgets.add(new Positioned(widget, x));
 				nodeWidgets.put(node.id(), widget);
 				y += pitch;
 			}
 		}
+		applyScroll();
+	}
+
+	/**
+	 * Puts every tree widget where the current scroll says it belongs, and
+	 * hides the ones that have left the viewport.
+	 *
+	 * <p>The hiding is not cosmetic — the scissor stops a scrolled-out column
+	 * being <em>drawn</em> over the details panel, but not from being clicked
+	 * through it. {@code visible} is what vanilla's widgets check before they
+	 * take a click, so this is the one flag that closes both.
+	 */
+	private void applyScroll() {
+		for (Positioned positioned : treeWidgets) {
+			AbstractWidget widget = positioned.widget();
+			int x = positioned.baseX() - scrollX;
+			widget.setX(x);
+			widget.visible = x + widget.getWidth() > MARGIN - 3 && x < treeRight + 3;
+		}
+	}
+
+	private void scrollTo(int target) {
+		int clamped = Math.clamp(target, 0, maxScrollX);
+		if (clamped != scrollX) {
+			scrollX = clamped;
+			applyScroll();
+		}
+	}
+
+	private boolean overTree(double mouseX, double mouseY) {
+		return mouseX >= MARGIN - 3 && mouseX <= treeRight + 3
+			&& mouseY >= treeTop - 3 && mouseY <= treeBottom + SCROLLBAR_ROOM;
+	}
+
+	private int scrollbarTop() {
+		return treeBottom + 4;
+	}
+
+	/** Width of the scrollbar thumb: the share of the tree that is on screen. */
+	private int thumbWidth() {
+		int track = treeRight - MARGIN;
+		int content = track + maxScrollX;
+		return Math.max(16, track * track / Math.max(1, content));
+	}
+
+	private int thumbX() {
+		int travel = treeRight - MARGIN - thumbWidth();
+		return MARGIN + (maxScrollX == 0 ? 0 : travel * scrollX / maxScrollX);
+	}
+
+	/** Drags the thumb so its centre lands under the cursor. */
+	private void dragScrollbarTo(double mouseX) {
+		int travel = treeRight - MARGIN - thumbWidth();
+		if (travel <= 0) {
+			return;
+		}
+		double offset = mouseX - MARGIN - thumbWidth() / 2.0;
+		scrollTo((int) Math.round(offset * maxScrollX / travel));
+	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+		// Either axis scrolls it: a plain wheel is all most people have, and a
+		// tree that only moves sideways for a trackpad would be a trap.
+		if (maxScrollX > 0 && overTree(mouseX, mouseY)) {
+			double notches = deltaX != 0 ? deltaX : deltaY;
+			scrollTo(scrollX - (int) Math.round(notches * SCROLL_STEP));
+			return true;
+		}
+		return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
+	}
+
+	@Override
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (maxScrollX > 0 && event.y() >= scrollbarTop() - 2
+			&& event.y() <= scrollbarTop() + SCROLLBAR_HEIGHT + 2
+			&& event.x() >= MARGIN && event.x() <= treeRight) {
+			draggingScrollbar = true;
+			dragScrollbarTo(event.x());
+			return true;
+		}
+		return super.mouseClicked(event, doubleClick);
+	}
+
+	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+		if (draggingScrollbar) {
+			dragScrollbarTo(event.x());
+			return true;
+		}
+		return super.mouseDragged(event, dragX, dragY);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		draggingScrollbar = false;
+		return super.mouseReleased(event);
 	}
 
 	/** The colour a node wears in the tree, and the reason behind it. */
@@ -251,7 +413,7 @@ public class SkillTreeScreen extends Screen {
 		if (state == null) {
 			return NodeState.LOCKED;
 		}
-		if (node.exclusiveWith() != null && state.purchased().contains(node.exclusiveWith())) {
+		if (node.blockedBy(state.purchased()::contains) != null) {
 			return NodeState.BLOCKED;
 		}
 		if (node.tier() >= state.unlockedTiers()
@@ -450,9 +612,10 @@ public class SkillTreeScreen extends Screen {
 			return Component.translatable("screen.toolmastery.unlock_needs_node",
 				SkillNode.displayName(node.requires()));
 		}
-		if (node.exclusiveWith() != null && state.purchased().contains(node.exclusiveWith())) {
+		String blocker = node.blockedBy(state.purchased()::contains);
+		if (blocker != null) {
 			return Component.translatable("screen.toolmastery.unlock_blocked_by",
-				SkillNode.displayName(node.exclusiveWith()));
+				SkillNode.displayName(blocker));
 		}
 		// The end of a tree: everything else in it, first. Asked of the synced
 		// snapshot with the same method the server uses, so the button greys out
@@ -496,12 +659,13 @@ public class SkillTreeScreen extends Screen {
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
 
 		drawTitleBar(graphics, tree);
-		drawTreeCanvas(graphics, tree, state);
+		drawTreeCanvas(graphics, tree, state, mouseX, mouseY, delta);
+		drawScrollbar(graphics);
 		SkillTreeStyle.panel(graphics, panelX, TITLE_BAR + 3, panelWidth, height - TITLE_BAR - 7,
 			SkillTreeStyle.PANEL, SkillTreeStyle.BORDER);
 
-		// Widgets (tabs, tier headers, node tiles, buttons) draw over the frame;
-		// the details text goes on last, clipped to its panel.
+		// Widgets (tabs, buttons) draw over the frame; the details text goes on
+		// last, clipped to its panel.
 		super.extractRenderState(graphics, mouseX, mouseY, delta);
 
 		drawDetails(graphics);
@@ -521,20 +685,47 @@ public class SkillTreeScreen extends Screen {
 
 	/** The tree background: the column strips, then the prerequisite wiring. */
 	private void drawTreeCanvas(GuiGraphicsExtractor graphics, @Nullable SkillTree tree,
-			@Nullable SkillStatePayload.TreeState state) {
+			@Nullable SkillStatePayload.TreeState state, int mouseX, int mouseY, float delta) {
 		if (tree == null) {
 			return;
 		}
 		SkillTreeStyle.panel(graphics, MARGIN - 3, treeTop - 3, treeRight - MARGIN + 6,
 			treeBottom - treeTop + 6, SkillTreeStyle.PANEL_DEEP, SkillTreeStyle.BORDER);
 
+		// Everything inside the frame is scrolled and clipped to it: the column
+		// strips, the wiring, and the tiles themselves. The tree widgets are
+		// drawn here rather than with the rest because this is the only place
+		// the scissor is up — a column halfway off the edge has to be cut, not
+		// painted across the details panel.
+		graphics.enableScissor(MARGIN - 3, treeTop - 3, treeRight + 3, treeBottom + 3);
 		int unlocked = state == null ? 0 : state.unlockedTiers();
 		for (int tier = 0; tier < tree.tiers().size(); tier++) {
-			int x = MARGIN + tier * (columnWidth + COLUMN_GAP);
+			int x = MARGIN + tier * (columnWidth + COLUMN_GAP) - scrollX;
 			graphics.fill(x - 2, treeTop - 1, x + columnWidth + 2, treeBottom + 1,
 				tier < unlocked ? SkillTreeStyle.COLUMN_OPEN : SkillTreeStyle.COLUMN_LOCKED);
 		}
 		drawConnectors(graphics, state);
+		for (Positioned positioned : treeWidgets) {
+			positioned.widget().extractRenderState(graphics, mouseX, mouseY, delta);
+		}
+		graphics.disableScissor();
+	}
+
+	/**
+	 * The horizontal scrollbar, drawn only when there is something off screen —
+	 * which today means the seven-tier trees, and any tree at all in a narrow
+	 * window. The thumb is as wide a share of the track as the viewport is of
+	 * the tree, so its size says how much you are not seeing.
+	 */
+	private void drawScrollbar(GuiGraphicsExtractor graphics) {
+		if (maxScrollX <= 0) {
+			return;
+		}
+		int top = scrollbarTop();
+		graphics.fill(MARGIN, top, treeRight, top + SCROLLBAR_HEIGHT, SkillTreeStyle.PANEL_DEEP);
+		int thumb = thumbX();
+		graphics.fill(thumb, top, thumb + thumbWidth(), top + SCROLLBAR_HEIGHT,
+			draggingScrollbar ? SkillTreeStyle.GOLD : SkillTreeStyle.BORDER_LIT);
 	}
 
 	/**
@@ -681,9 +872,9 @@ public class SkillTreeScreen extends Screen {
 				Component.translatable("screen.toolmastery.requires", SkillNode.displayName(node.requires())),
 				x, y, has ? SkillTreeStyle.GREEN : SkillTreeStyle.BAD, 11);
 		}
-		if (node.exclusiveWith() != null) {
+		for (String exclusive : node.exclusiveWith()) {
 			y = wrappedText(graphics,
-				Component.translatable("screen.toolmastery.exclusive", SkillNode.displayName(node.exclusiveWith())),
+				Component.translatable("screen.toolmastery.exclusive", SkillNode.displayName(exclusive)),
 				x, y, SkillTreeStyle.DIM, 11);
 		}
 		y += 4;

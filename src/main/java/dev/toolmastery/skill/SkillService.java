@@ -95,8 +95,9 @@ public final class SkillService {
 		if (node.requires() != null && !progress.owns(node.requires())) {
 			return fail("mastery.toolmastery.unlock.fail.requires", SkillNode.displayName(node.requires()));
 		}
-		if (node.exclusiveWith() != null && progress.owns(node.exclusiveWith())) {
-			return fail("mastery.toolmastery.unlock.fail.exclusive", SkillNode.displayName(node.exclusiveWith()));
+		String blocker = node.blockedBy(progress::owns);
+		if (blocker != null) {
+			return fail("mastery.toolmastery.unlock.fail.exclusive", SkillNode.displayName(blocker));
 		}
 		if (node.requiresAll()) {
 			int missing = tree.missingForCompletion(progress.purchased, node.id());
@@ -199,7 +200,7 @@ public final class SkillService {
 				if (!node.implemented()) {
 					continue; // same rule as unlockNode: nothing to grant yet
 				}
-				if (node.exclusiveWith() != null && progress.owns(node.exclusiveWith())) {
+				if (node.blockedBy(progress::owns) != null) {
 					continue; // a capstone choice stays a choice, even in debug
 				}
 				progress.purchased.add(node.id());
@@ -267,8 +268,7 @@ public final class SkillService {
 			if (node.tier() != index) {
 				continue;
 			}
-			if (!node.implemented()
-				|| (node.exclusiveWith() != null && progress.owns(node.exclusiveWith()))) {
+			if (!node.implemented() || node.blockedBy(progress::owns) != null) {
 				skipped++;
 				continue;
 			}

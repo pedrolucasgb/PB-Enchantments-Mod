@@ -625,9 +625,9 @@ public final class SkillTrees {
 			SkillNode.chained("nostalgy_4", 6, 20, "nostalgy_3", SkillType.ENCHANTMENT).icon(Items.CLOCK)
 				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.ECHO_SHARD, 8))
 				.enchantFor(70),
-			SkillNode.capstone("spoils_of_war", 6, 20, "warlords_wake", SkillType.PASSIVE).icon(Items.EMERALD_BLOCK)
+			SkillNode.capstone("spoils_of_war", 6, 20, SkillType.PASSIVE, "warlords_wake").icon(Items.EMERALD_BLOCK)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 16)),
-			SkillNode.capstone("warlords_wake", 6, 20, "spoils_of_war", SkillType.PASSIVE).icon(Items.WIND_CHARGE)
+			SkillNode.capstone("warlords_wake", 6, 20, SkillType.PASSIVE, "spoils_of_war").icon(Items.WIND_CHARGE)
 				.costing(mat(Items.BREEZE_ROD, 8), mat(Items.NETHERITE_INGOT, 1)).pve(),
 			SkillNode.of("death_eyes", 6, 30, SkillType.PASSIVE).icon(Items.WITHER_SKELETON_SKULL)
 				.costing(mat(Items.NETHER_STAR, 1), mat(Items.WITHER_SKELETON_SKULL, 3), mat(Items.ECHO_SHARD, 8))
@@ -644,9 +644,13 @@ public final class SkillTrees {
 	 * which is also what makes it the only tree that advances while you play
 	 * every other one.
 	 *
-	 * <p>Only <b>Flashpoint</b> has an effect behind it so far. The rest of the
-	 * tree ships the way the Artisan's tier 4 did: visible, priced, and marked
-	 * as coming, so the shape of the class is legible before it is finished.
+	 * <p>Seven tiers, like the Sword, and for the same reason: the defensive
+	 * kit splits into more distinct steps than five columns can hold without
+	 * two unrelated ideas sharing a tier. Tiers 4 and 6 — Bastion and Aegis
+	 * Bearer — are the two the five-tier sketch in issue #28 did not have.
+	 *
+	 * <p>The tier 7 capstones are a genuine pick-one of three, which is what
+	 * made {@link SkillNode#exclusiveWith()} a list rather than a single id.
 	 */
 	public static final SkillTree ARMOR = new SkillTree(
 		"armor",
@@ -670,90 +674,108 @@ public final class SkillTrees {
 				new GateRequirement("block_hits", 100),
 				new GateRequirement("low_health_kills", 50)
 			)),
-			// Tier 4 — Netherite Wall
+			// Tier 4 — Bastion
 			new SkillTier(20, List.of(
+				new GateRequirement("absorb_damage", 6000),
+				new GateRequirement("block_damage", 1000),
+				new GateRequirement("survive_explosions", 25)
+			)),
+			// Tier 5 — Netherite Wall
+			new SkillTier(25, List.of(
 				new GateRequirement("own_netherite_set", 1),
 				new GateRequirement("absorb_damage", 10000),
 				new GateRequirement("survive_wither_skull", 1)
 			)),
-			// Tier 5 — Unbreaking Line
+			// Tier 6 — Aegis Bearer
 			new SkillTier(30, List.of(
+				new GateRequirement("absorb_damage", 18000),
+				new GateRequirement("block_hits", 500),
+				new GateRequirement("wear_netherite_minutes", 60)
+			)),
+			// Tier 7 — Unbreaking Line
+			new SkillTier(40, List.of(
 				new GateRequirement("armor_checklist", 6),
-				new GateRequirement("absorb_damage", 25000)
+				new GateRequirement("absorb_damage", 40000),
+				new GateRequirement("block_damage", 5000)
 			))
 		),
 		List.of(
 			// Tier 1 — kit management
 			SkillNode.of("padded_lining_1", 0, 3, SkillType.PASSIVE).icon(Items.LEATHER)
-				.costing(mat(Items.LEATHER, 16), mat(Items.IRON_INGOT, 4)).future(),
+				.costing(mat(Items.LEATHER, 16), mat(Items.IRON_INGOT, 4)),
 			SkillNode.of("set_sense", 0, 3, SkillType.PASSIVE).icon(Items.SPYGLASS)
-				.costing(mat(Items.IRON_INGOT, 8), mat(Items.GLASS, 4)).future(),
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.GLASS, 4)),
 			SkillNode.of("shield_wall_1", 0, 4, SkillType.PASSIVE).icon(Items.SHIELD)
-				.costing(mat(Items.SHIELD, 1), mat(Items.IRON_INGOT, 8)).future(),
+				.costing(mat(Items.SHIELD, 1), mat(Items.IRON_INGOT, 8)),
 			SkillNode.of("steady_stance", 0, 4, SkillType.PASSIVE).icon(Items.IRON_BOOTS)
-				.costing(mat(Items.IRON_INGOT, 12), mat(Items.LEATHER, 16)).future(),
+				.costing(mat(Items.IRON_INGOT, 12), mat(Items.LEATHER, 16)),
 			// Tier 2 — the environment
 			SkillNode.of("flashpoint", 1, 6, SkillType.PASSIVE).icon(Items.LAVA_BUCKET)
 				.costing(mat(Items.MAGMA_CREAM, 8), mat(Items.OBSIDIAN, 4)),
 			SkillNode.of("thermal_weave_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.MAGMA_CREAM)
 				.costing(mat(Items.MAGMA_CREAM, 8), mat(Items.BLAZE_POWDER, 4))
-				.enchantFor(20).future(),
+				.enchantFor(20),
 			SkillNode.of("sure_footing", 1, 5, SkillType.PASSIVE).icon(Items.SOUL_SAND)
-				.costing(mat(Items.SOUL_SAND, 16), mat(Items.HONEYCOMB, 8)).future(),
-			SkillNode.of("second_skin", 1, 6, SkillType.PASSIVE).icon(Items.PHANTOM_MEMBRANE)
-				.costing(mat(Items.PHANTOM_MEMBRANE, 8), mat(Items.GOLD_INGOT, 8)).future(),
-			SkillNode.of("ablative_plating_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.TNT)
-				.costing(mat(Items.GUNPOWDER, 16), mat(Items.IRON_INGOT, 16))
-				.enchantFor(20).future(),
+				.costing(mat(Items.SOUL_SAND, 16), mat(Items.HONEYCOMB, 8)),
 			SkillNode.chained("padded_lining_2", 1, 5, "padded_lining_1", SkillType.PASSIVE).icon(Items.RABBIT_HIDE)
-				.costing(mat(Items.LEATHER, 32), mat(Items.IRON_INGOT, 16)).future(),
-			// Tier 3 — standing your ground
-			SkillNode.of("bulwark_1", 2, 7, SkillType.ENCHANTMENT).icon(Items.SHIELD)
-				.costing(mat(Items.IRON_INGOT, 16), mat(Items.OAK_PLANKS, 32))
-				.enchantFor(20).future(),
-			SkillNode.of("thorned_plate_1", 2, 7, SkillType.ENCHANTMENT).icon(Items.CACTUS)
-				.costing(mat(Items.CACTUS, 16), mat(Items.IRON_INGOT, 16))
-				.enchantFor(20).future(),
-			SkillNode.of("last_stand", 2, 9, SkillType.PASSIVE).icon(Items.GOLDEN_APPLE)
-				.costing(mat(Items.GOLD_INGOT, 16), mat(Items.GHAST_TEAR, 2)).future(),
-			SkillNode.of("repair_rites", 2, 8, SkillType.PASSIVE).icon(Items.ANVIL)
-				.costing(mat(Items.IRON_BLOCK, 2), mat(Items.AMETHYST_SHARD, 8)).future(),
+				.costing(mat(Items.LEATHER, 32), mat(Items.IRON_INGOT, 16)),
+			// Tier 3 — the gear itself
+			SkillNode.of("second_skin", 2, 7, SkillType.PASSIVE).icon(Items.PHANTOM_MEMBRANE)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 8), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.of("ablative_plating_1", 2, 7, SkillType.ENCHANTMENT).icon(Items.TNT)
+				.costing(mat(Items.GUNPOWDER, 16), mat(Items.IRON_INGOT, 16))
+				.enchantFor(20),
+			SkillNode.chained("shield_wall_2", 2, 7, "shield_wall_1", SkillType.PASSIVE).icon(Items.IRON_BLOCK)
+				.costing(mat(Items.IRON_BLOCK, 2), mat(Items.SHIELD, 1)),
 			SkillNode.chained("thermal_weave_2", 2, 8, "thermal_weave_1", SkillType.ENCHANTMENT).icon(Items.MAGMA_BLOCK)
 				.costing(mat(Items.MAGMA_CREAM, 16), mat(Items.BLAZE_ROD, 8))
-				.enchantFor(35).future(),
-			SkillNode.chained("shield_wall_2", 2, 7, "shield_wall_1", SkillType.PASSIVE).icon(Items.IRON_BLOCK)
-				.costing(mat(Items.IRON_BLOCK, 2), mat(Items.SHIELD, 1)).future(),
-			SkillNode.chained("ablative_plating_2", 2, 8, "ablative_plating_1", SkillType.ENCHANTMENT).icon(Items.GUNPOWDER)
-				.costing(mat(Items.GUNPOWDER, 32), mat(Items.DIAMOND, 4))
-				.enchantFor(35).future(),
-			SkillNode.chained("padded_lining_3", 2, 8, "padded_lining_2", SkillType.PASSIVE).icon(Items.DIAMOND_CHESTPLATE)
-				.costing(mat(Items.LEATHER, 64), mat(Items.DIAMOND, 4)).future(),
-			// Tier 4 — the set as a whole
-			SkillNode.of("guardians_aura", 3, 10, SkillType.PASSIVE).icon(Items.BEACON)
-				.costing(mat(Items.DIAMOND, 8), mat(Items.GOLD_BLOCK, 1)).future(),
-			SkillNode.of("kinetic_plating", 3, 10, SkillType.ENCHANTMENT).icon(Items.SLIME_BLOCK)
+				.enchantFor(35),
+			// Tier 4 — standing your ground
+			SkillNode.of("bulwark_1", 3, 9, SkillType.ENCHANTMENT).icon(Items.SHIELD)
+				.costing(mat(Items.IRON_INGOT, 16), mat(Items.OAK_PLANKS, 32))
+				.enchantFor(20),
+			SkillNode.of("thorned_plate_1", 3, 9, SkillType.ENCHANTMENT).icon(Items.CACTUS)
+				.costing(mat(Items.CACTUS, 16), mat(Items.IRON_INGOT, 16))
+				.enchantFor(20),
+			SkillNode.of("last_stand", 3, 10, SkillType.PASSIVE).icon(Items.GOLDEN_APPLE)
+				.costing(mat(Items.GOLD_INGOT, 16), mat(Items.GHAST_TEAR, 2)),
+			SkillNode.chained("padded_lining_3", 3, 9, "padded_lining_2", SkillType.PASSIVE).icon(Items.DIAMOND_CHESTPLATE)
+				.costing(mat(Items.LEATHER, 64), mat(Items.DIAMOND, 4)),
+			// Tier 5 — the set as a whole
+			SkillNode.of("repair_rites", 4, 12, SkillType.PASSIVE).icon(Items.ANVIL)
+				.costing(mat(Items.IRON_BLOCK, 2), mat(Items.AMETHYST_SHARD, 8)),
+			SkillNode.of("kinetic_plating", 4, 12, SkillType.ENCHANTMENT).icon(Items.SLIME_BLOCK)
 				.costing(mat(Items.SLIME_BLOCK, 4), mat(Items.PHANTOM_MEMBRANE, 16))
-				.enchantFor(35).future(),
-			SkillNode.of("wardens_weight", 3, 10, SkillType.PASSIVE).icon(Items.NETHERITE_INGOT)
-				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.OBSIDIAN, 16)).future(),
-			SkillNode.of("nightplate", 3, 8, SkillType.PASSIVE).icon(Items.GOLDEN_CHESTPLATE)
-				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.LEATHER, 32)).future(),
-			SkillNode.chained("bulwark_2", 3, 10, "bulwark_1", SkillType.ENCHANTMENT).icon(Items.NETHERITE_SCRAP)
+				.enchantFor(35),
+			SkillNode.chained("ablative_plating_2", 4, 12, "ablative_plating_1", SkillType.ENCHANTMENT).icon(Items.GUNPOWDER)
+				.costing(mat(Items.GUNPOWDER, 32), mat(Items.DIAMOND, 4))
+				.enchantFor(35),
+			SkillNode.chained("bulwark_2", 4, 12, "bulwark_1", SkillType.ENCHANTMENT).icon(Items.NETHERITE_SCRAP)
 				.costing(mat(Items.DIAMOND, 8), mat(Items.IRON_BLOCK, 2))
-				.enchantFor(35).future(),
-			SkillNode.chained("thorned_plate_2", 3, 9, "thorned_plate_1", SkillType.ENCHANTMENT).icon(Items.SWEET_BERRIES)
+				.enchantFor(35),
+			// Tier 6 — the set as a whole, and the people beside you
+			SkillNode.of("guardians_aura", 5, 16, SkillType.PASSIVE).icon(Items.BEACON)
+				.costing(mat(Items.DIAMOND, 8), mat(Items.GOLD_BLOCK, 1)),
+			SkillNode.of("wardens_weight", 5, 14, SkillType.PASSIVE).icon(Items.NETHERITE_INGOT)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.OBSIDIAN, 16)),
+			SkillNode.of("nightplate", 5, 14, SkillType.PASSIVE).icon(Items.GOLDEN_CHESTPLATE)
+				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.LEATHER, 32)),
+			SkillNode.chained("thorned_plate_2", 5, 14, "thorned_plate_1", SkillType.ENCHANTMENT).icon(Items.SWEET_BERRIES)
 				.costing(mat(Items.CACTUS, 32), mat(Items.DIAMOND, 4))
-				.enchantFor(35).future(),
-			// Tier 5 — capstones (pick one)
-			SkillNode.of("aegis", 4, 20, SkillType.PASSIVE).icon(Items.NETHERITE_CHESTPLATE)
-				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.DIAMOND_BLOCK, 1), mat(Items.EMERALD, 32)).future(),
-			SkillNode.of("immortal_line", 4, 20, SkillType.PASSIVE).icon(Items.TOTEM_OF_UNDYING)
-				.costing(mat(Items.TOTEM_OF_UNDYING, 1), mat(Items.NETHERITE_INGOT, 1), mat(Items.GHAST_TEAR, 8)).future(),
-			SkillNode.of("living_armor", 4, 20, SkillType.PASSIVE).icon(Items.EXPERIENCE_BOTTLE)
-				.costing(mat(Items.EXPERIENCE_BOTTLE, 32), mat(Items.NETHERITE_INGOT, 1), mat(Items.AMETHYST_SHARD, 16)).future(),
-			SkillNode.chained("bulwark_3", 4, 14, "bulwark_2", SkillType.ENCHANTMENT).icon(Items.NETHERITE_INGOT)
+				.enchantFor(35),
+			SkillNode.chained("bulwark_3", 5, 16, "bulwark_2", SkillType.ENCHANTMENT).icon(Items.NETHERITE_INGOT)
 				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.DIAMOND, 8))
-				.enchantFor(50).future()
+				.enchantFor(50),
+			// Tier 7 — capstones (pick one of three)
+			SkillNode.capstone("aegis", 6, 20, SkillType.PASSIVE, "immortal_line", "living_armor")
+				.icon(Items.NETHERITE_CHESTPLATE)
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.DIAMOND_BLOCK, 1), mat(Items.EMERALD, 32)),
+			SkillNode.capstone("immortal_line", 6, 20, SkillType.PASSIVE, "aegis", "living_armor")
+				.icon(Items.TOTEM_OF_UNDYING)
+				.costing(mat(Items.TOTEM_OF_UNDYING, 1), mat(Items.NETHERITE_INGOT, 1), mat(Items.GHAST_TEAR, 8)),
+			SkillNode.capstone("living_armor", 6, 20, SkillType.PASSIVE, "aegis", "immortal_line")
+				.icon(Items.EXPERIENCE_BOTTLE)
+				.costing(mat(Items.EXPERIENCE_BOTTLE, 32), mat(Items.NETHERITE_INGOT, 1), mat(Items.AMETHYST_SHARD, 16))
 		)
 	);
 

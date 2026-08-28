@@ -4,6 +4,7 @@ import dev.toolmastery.enchant.AncientKnowledge;
 import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.network.EnchantPreviewPayload;
+import dev.toolmastery.perk.ArmorPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import dev.toolmastery.track.EnchantTracker;
@@ -149,6 +150,11 @@ public abstract class EnchantmentMenuMixin {
 			if (instance.enchantment().is(Enchantments.LOOTING) && instance.level() > 3
 					&& !SkillService.owns(serverPlayer, SkillTrees.SWORD, SPOILS_OF_WAR)) {
 				result.add(new EnchantmentInstance(instance.enchantment(), 3));
+				continue;
+			}
+			if (instance.enchantment().is(Enchantments.PROTECTION) && instance.level() > 4
+					&& !SkillService.owns(serverPlayer, SkillTrees.ARMOR, ArmorPerks.AEGIS)) {
+				result.add(new EnchantmentInstance(instance.enchantment(), 4));
 				continue;
 			}
 			int allowed = instance.enchantment().value().getMaxLevel();

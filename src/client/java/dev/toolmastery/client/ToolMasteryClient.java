@@ -30,6 +30,9 @@ public class ToolMasteryClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(EnchantPreviewPayload.TYPE, (payload, context) ->
 			EnchantPreviewState.accept(payload));
 
+		// Set Sense draws next to the armour bar it explains.
+		SetSenseHud.register();
+
 		// Lets common code (enchanting menu logic) check enchanter perk
 		// ownership on the client via the synced skill state.
 		EnchanterPerks.clientNodeChecker = nodeId -> {
