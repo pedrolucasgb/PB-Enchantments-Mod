@@ -19,6 +19,23 @@ public final class PlayerProgress {
 
 	private PlayerProgress(Map<String, TreeProgress> trees) {
 		trees.forEach((id, progress) -> this.trees.put(id, progress));
+		migrateShieldBreaker();
+	}
+
+	/**
+	 * Shield Breaker moved from the Axe tree to the Sword tree in 0.4.0, where a
+	 * pure PvP node belongs. A save that already bought it keeps it: the node id
+	 * is unchanged, only the tree it hangs in, so the fix is to move the
+	 * purchase across rather than to rename anything.
+	 *
+	 * <p>Cross-tree, so it cannot live in {@link TreeProgress}'s own rename map
+	 * — that one only ever sees a single tree.
+	 */
+	private void migrateShieldBreaker() {
+		TreeProgress axe = trees.get("axe");
+		if (axe != null && axe.purchased.remove("shield_breaker")) {
+			tree("sword").purchased.add("shield_breaker");
+		}
 	}
 
 	public TreeProgress tree(String treeId) {

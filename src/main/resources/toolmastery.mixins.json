@@ -3,11 +3,11 @@
 	"package": "dev.toolmastery.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"AxeItemMixin",
 		"AbstractBoatMixin",
 		"AnvilMenuMixin",
-		"ItemStackMixin",
+		"AxeItemMixin",
 		"BlockItemMixin",
+		"CombatRulesMixin",
 		"CraftingMenuMixin",
 		"EnchantmentMenuMixin",
 		"FireworkRocketEntityMixin",
@@ -15,12 +15,17 @@
 		"FurnaceResultSlotMixin",
 		"GrindstoneResultSlotMixin",
 		"ItemEntityMixin",
+		"ItemStackMixin",
 		"LivingEntityMixin",
+		"MaceItemMixin",
 		"MerchantResultSlotMixin",
 		"PlayerMixin",
 		"ResultSlotMixin",
 		"ServerPlayerMixin",
-		"SlotMixin"
+		"SlotMixin",
+		"SwordPlayerMixin",
+		"ThrownTridentMixin",
+		"TridentItemMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

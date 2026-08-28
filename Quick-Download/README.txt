@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.3.0
+Version 0.4.0
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,52 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.4.0
+--------------------
+- THE SWORD CLASS (Path of the Blade) - the combat tree, and the first one
+  that is SEVEN tiers instead of five. It covers every weapon that hits:
+  sword, trident, mace, axe-as-weapon and the new spear. It levels from
+  fighting - kills, damage dealt, the species you have faced, mace slams,
+  kills made at under three hearts.
+    Keen Edge      - swords hit harder the fuller the attack cooldown was
+    Combat Magnet  - drops and XP from your kills fly to you
+    Butcher's Cut  - mobs killed with a sword drop twice the food
+    Sweeping Arc   - the sweep hits harder and reaches further
+    Broad Swing    - axes sweep too, and accept vanilla Sweeping Edge
+    Second Wind    - every kill puts a point of saturation back
+    Hunter's Mark  - the mob you last hit is outlined, with its health shown
+    Executioner    - more damage against anything nearly dead
+    Tidecaller     - the trident comes back without Loyalty
+    Riposte        - a shield raised into the swing throws the hit back
+    Gravity Well   - a mace smash converts more of your fall
+    Phalanx        - a spear reaches further, and pricks what leans on you
+    Cleave         - an axe hit splashes onto the mob next door
+    Adrenaline     - a long fight ramps your damage up
+    Storm Bearer   - Channeling without waiting for a thunderstorm
+    Sundering Blow - ignores part of the target's armour
+    Bloodthirst    - kills in quick succession stack damage
+    Headhunter     - mob heads actually drop
+
+- NOSTALGY - a four-rank enchantment that shortens the attack cooldown
+  25%, 50%, 75% and finally removes it: 1.8 combat, back on a modern
+  client. It is the one node in the class built to be felt in PvP.
+
+- DEATH EYES - the end of the tree, and it only opens once every other
+  node in it is bought. You see every mob as one of the dead, so SMITE
+  applies in full to everything that is not a player.
+
+- MOBS ONLY. Armour penetration, execute damage and stacking damage per
+  kill are fine against a zombie and would rewrite PvP, so those nodes
+  simply do not fire at a player. The skill screen says so on the card.
+  config/toolmastery.json has the two switches if your server disagrees.
+
+- SHIELD BREAKER MOVED from the Axe tree to the Sword tree, where a PvP
+  node belongs. If you already bought it, you keep it - it moves with you.
+
+- LOOTING IV, the sword capstone, built like Fortune IV. Both are now
+  gated at the anvil as well as the enchanting table, which closes the
+  old hole where two Fortune III books reached IV without the capstone.
 
 WHAT IS NEW IN 0.3.0
 --------------------
@@ -188,7 +234,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.3.0.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.4.0.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
