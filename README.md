@@ -103,7 +103,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ---
 
-## Implemented so far (Pickaxe, Axe, Enchanter, Explorer, Artisan & Armor)
+## Implemented so far (Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword & Armor)
 
 ### Core systems
 - ✅ Per-player skill progress (tiers, nodes, counters) persisted via data attachments
@@ -125,6 +125,14 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
 | **Indestructible** | Enchanter, any damageable item | I | The item never breaks — damage stops one point short, like an Elytra. Spent, it works like an empty hand until repaired |
 | **Slipstream** | Explorer, Elytra | I–III | 10% / 25% / 50% of a firework's push carries over past the point where the boost would normally have died — same rocket, more distance |
+| **Keen Edge** | Sword | I–III | Up to +1 / +2 / +3 damage, scaled by how full the attack cooldown was. Measured against the *vanilla* cooldown, so Nostalgy cannot turn a timing reward into a flat bonus |
+| **Sweeping Arc** | Sword, axe with Broad Swing | I–II | The sweep lands at 50% / 100% of a full hit and reaches a block further. Adds to the vanilla sweep ratio, so it stacks with Sweeping Edge |
+| **Executioner** | Any weapon | I–III | +15 / 30 / 45% damage against a target below 30% health. **Mobs only** |
+| **Tidecaller** | Trident | I–II | The trident returns without Loyalty, and returns faster; II launches Riptide on dry land |
+| **Gravity Well** | Mace | I–II | The smash converts 25% / 50% more of your fall. **Mobs only** |
+| **Phalanx** | Spear | I–II | Reach +1 / +2 blocks, and a braced spear pricks anything standing against you. **Mobs only** |
+| **Nostalgy** | Sword | I–IV | The attack cooldown recovers 25 / 50 / 75% faster, and at IV is gone entirely — 1.8 combat. **Works in PvP**, deliberately |
+| **Sundering Blow** | Sword, axe, spear | I–II | Ignores 20% / 40% of the target's armour. **Mobs only** |
 
 ### Passive skills (pickaxe)
 | Node | Levels | Effect |
@@ -223,6 +231,52 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 - **Never touched:** armour, offhand, the crafting grid, pinned slots, and the hotbar.
 - **Server-authoritative.** Unlike every client-side storage mod, none of this can be done on the client: the tree state is the server's, so the client only expresses intent.
 
+### Sword nodes (Path of the Blade)
+The combat class, and the first tree that is **seven tiers** rather than five. It covers every weapon that hits — sword, trident, mace, axe-as-weapon and the 26.2 spear — because most of what makes a combat node interesting is weapon-agnostic, and four more tabs would not fit the strip. Seven tiers rather than five because the node list was long enough that a five-tier version handed out the class-defining nodes far too early.
+
+| Tier | Name | Nodes |
+|---|---|---|
+| 1 | Duelist | Keen Edge I, Combat Magnet, Butcher's Cut |
+| 2 | Skirmisher | Keen Edge II, Sweeping Arc I, Broad Swing, Second Wind, Hunter's Mark |
+| 3 | Warblade | Keen Edge III, Sweeping Arc II, Executioner I, Tidecaller I, Riposte |
+| 4 | Slayer | Executioner II, Gravity Well I, Phalanx I, Cleave, Nostalgy I |
+| 5 | Champion | Executioner III, Gravity Well II, Phalanx II, Tidecaller II, Adrenaline, Storm Bearer, Shield Breaker, Nostalgy II |
+| 6 | Warlord | Sundering Blow I–II, Bloodthirst, Headhunter, Nostalgy III |
+| 7 | Legend | Nostalgy IV, then **one** of Spoils of War / Warlord's Wake — and past both of them, Death Eyes |
+
+**The PvE-only rule.** Armour penetration, execute damage, stacking damage-per-kill and a shockwave on every kill are all fine against a zombie and all rewrite PvP into something nobody asked this mod to design. So the nodes that would are marked **mobs only**: when the target is a player the bonus does not scale down, it does not fire at all. One check, one place (`CombatPerks.appliesTo`), and the fact is on the node's own card in the skill screen so a PvP server does not have to find out in a fight. Executioner, Gravity Well, Phalanx, Cleave, Adrenaline, Sundering Blow, Bloodthirst, Headhunter, Warlord's Wake and Death Eyes are the list.
+
+**Nostalgy is the deliberate exception.** A 1.8 attack cooldown is the one node here meant to be felt in a duel, so it works against players. Two ranks of care went into it: Keen Edge is measured against the vanilla cooldown so the two do not multiply, and a cooldown cannot be made target-specific — so the server switch does not slow the swing down, it makes the swing pay vanilla damage against players.
+
+| Node | Tier | Effect |
+|---|---|---|
+| **Combat Magnet** | 1 | Drops and XP from mobs you kill fly to you. The third magnet, after the Miner's and the Logger's |
+| **Butcher's Cut** | 1 | A food-yielding mob killed with a sword drops twice the food |
+| **Broad Swing** | 2 | Axes sweep like swords, and accept vanilla **Sweeping Edge** at the table and the anvil |
+| **Second Wind** | 2 | Every kill puts a point of saturation back |
+| **Hunter's Mark** | 2 | The mob you last hit is outlined for five seconds, with its health on your action bar |
+| **Riposte** | 3 | A shield raised in the half-second before a hit throws a quarter of it back — the counter to Shield Breaker |
+| **Cleave** | 4 | An axe hit passes a third of itself to one mob beside the target. Mobs only |
+| **Adrenaline** | 5 | Eight seconds of unbroken fighting ramps to +15% damage, lingering three seconds. Mobs only |
+| **Storm Bearer** | 5 | Channeling without a thunderstorm, once per in-game day |
+| **Shield Breaker** | 5 | *Moved here from the Axe tree*, where a pure PvP node had no business sitting in a woodcutting class. Saves that already bought it keep it |
+| **Bloodthirst** | 6 | Each kill within five seconds of the last stacks +10% damage, to five stacks. Mobs only |
+| **Headhunter** | 6 | Mobs that can drop their heads do so far more often. Mobs only |
+| **Spoils of War** | 7 | Vanilla **Looting** reaches IV, at the table *and* the anvil |
+| **Warlord's Wake** | 7 | A killing blow releases a shockwave dealing half of it within four blocks. Mobs only |
+| **Death Eyes** | 7 | See below |
+
+**Death Eyes.** You see every mob as one of the dead, and so does your sword: **Smite** applies its full bonus to every living target that is not a player. It is the first node in the mod gated on finishing its own tree — every other node bought, one capstone chosen — rather than on a tier.
+
+Its scope is deliberately narrow. It changes *what Smite considers undead*, on your hits alone: not drops, not Bane of Arthropods, not zombie behaviour, not sunlight, and not what another player's weapon sees. Vanilla drives Smite off the `#minecraft:sensitive_to_smite` entity-type tag, and widening that tag in a data pack would hand the bonus to everyone on the server — so unlike Fortune IV and Looting IV, this one cannot be a data-pack trick with a clamp. The Smite bonus is recomputed on the damage path for the holder instead, and targets vanilla already counts as undead are skipped so nothing is paid twice.
+
+### Server config
+`config/toolmastery.json`, written on first run. Two switches, and only the Sword tree reads them — everything else in the mod plays the same in a solo world and on a server.
+
+| Key | Default | What it does |
+|---|---|---|
+| `pvp_perks` | `false` | Let the mobs-only nodes fire at players too |
+| `nostalgy_pvp` | `true` | Nostalgy's shortened cooldown pays full damage against players. Off makes those hits pay vanilla-cooldown damage instead |
 ### Armor nodes (Path of the Bulwark)
 The one class that cannot level from *doing* something, because wearing armour is not an action. It levels from **damage survived**: the gate counters read what your set absorbed, what your shield stopped and what you walked away from — which is also what makes it the only tree that advances while you play every other one.
 
@@ -248,7 +302,8 @@ It also sidesteps the shared-item problem below by construction: it is a passive
 ### Enchanting table integration
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
 - ✅ Rolls above your unlocked level are clamped down, never hidden
-- ✅ Vanilla **Fortune** is raised to a max of IV in the data pack, then clamped back to III at the table for anyone who has not bought Ancient Fortune — a data pack cannot be per-player, this is what makes the capstone a reward
+- ✅ Vanilla **Fortune** and **Looting** are raised to a max of IV in the data pack, then clamped back to III at the table *and the anvil* for anyone who has not bought Ancient Fortune / Spoils of War — a data pack cannot be per-player, this is what makes the capstones a reward. Mending II is the same trick, one tree over
+- ✅ **Sweeping Edge** is widened to axes in the data pack the same way, and refused at the table and the anvil to anyone without Broad Swing
 - ✅ Natural combinations with vanilla enchantments via the vanilla bonus mechanic
 
 ### Librarian book trades
@@ -279,7 +334,9 @@ A gear-rich player can hand a beginner a Dig Range III / Smelt III netherite pic
 
 Environmental modifiers still apply on top: a locked pickaxe swung underwater is as slow as bare hands underwater, not as fast as bare hands on dry land.
 
-**Not covered.** Vanilla enchantments have no unlock concept, so a plain Efficiency V pickaxe still transfers freely. Attack *speed* is left vanilla — only damage is suppressed — because it is read in many places including the client cooldown bar, and no weapon-tree enchantment exists yet to make the difference felt. Armour, bows and elytra are out of scope; the check is written generally enough that "inert" can mean something different per item class later.
+**Attack speed, now that a node depends on it.** Nostalgy is the mod's first enchantment that changes how *fast* you swing rather than how hard, so a lent Nostalgy IV sword would have handed a beginner 1.8 combat. It does not: every reader of the ladder asks `ItemAuthority.effectiveLevel`, which is 0 on an item its holder has not earned and clamped to their rank otherwise. The same is true of the trident, mace and spear nodes, each of which goes through a different damage path than the sword.
+
+**Not covered.** Vanilla enchantments have no unlock concept, so a plain Efficiency V pickaxe still transfers freely, and vanilla's own attack-speed attribute is untouched. Armour, bows and elytra are out of scope; the check is written generally enough that "inert" can mean something different per item class later.
 
 ### Safety & feel
 - ✅ Sneak disables all area effects (Dig Range, Rich Vein, Logic)
@@ -307,7 +364,8 @@ stripe under the icon, and `requires` draws the connector back to `smelt_3`. Add
 `node.toolmastery.smelt_4.desc` to `en_us.json` (and `node.toolmastery.smelt` once per family, for the
 name). `.future()` marks a node that is designed but not built yet: it shows up starred and orange and
 refuses to be unlocked. `.icon(...)` is optional — a node without one falls back to the first item of
-its price.
+its price. `.pve()` marks a node whose effect never applies to another player, which the card says out
+loud; `.endOfTree()` marks the one node that opens only once everything else in its tree is bought.
 
 **A new class** is a `SkillTree` and an entry in `SkillTrees.ORDER`:
 
@@ -319,16 +377,15 @@ public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXP
 
 That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
 the class from `SkillTrees.PLANNED` (the greyed "coming soon" tabs), add `tree.toolmastery.sword`,
-`tree.toolmastery.sword.short` and `tier.toolmastery.sword.1`-`.5` to `en_us.json`, and the five
-advancement JSONs under `data/toolmastery/advancement/sword/` if the tiers should show up in the **L**
-screen. Gate counters still need a tracker feeding them and perks still need their own code — but
+`tree.toolmastery.sword.short` and one `tier.toolmastery.sword.<n>` per tier to `en_us.json`, and one
+advancement JSON per tier under `data/toolmastery/advancement/sword/` if they should show up in the **L**
+screen. A tree is as many tiers as its list is long — the Sword tree is seven, and the GUI reads the
+count rather than assuming five. Gate counters still need a tracker feeding them and perks still need their own code — but
 nothing about *displaying* the class does.
 
 ## Roadmap
 
 See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), the rest of the Armor tree ([#28](../../issues/28)), and the three future classes (Sword, Bow, Rod).
-
-Known gap: the Fortune IV ceiling is gated at the enchanting table but not at the anvil, so combining two Fortune III books can still reach IV without the capstone.
 
 ## License
 
