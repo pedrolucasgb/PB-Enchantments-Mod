@@ -6,6 +6,7 @@ import dev.toolmastery.perk.AquaLungs;
 import dev.toolmastery.perk.AreaBreak;
 import dev.toolmastery.perk.AxeHarvest;
 import dev.toolmastery.perk.DeepHaste;
+import dev.toolmastery.perk.Flashpoint;
 import dev.toolmastery.perk.ItemAuthority;
 import dev.toolmastery.perk.MinersMagnet;
 import dev.toolmastery.perk.Remember;
@@ -18,6 +19,7 @@ import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import dev.toolmastery.storage.DeftHands;
 import dev.toolmastery.storage.SteadyGrid;
+import dev.toolmastery.track.ArmorTracker;
 import dev.toolmastery.track.BiomeTracker;
 import dev.toolmastery.track.BlockBreakTracker;
 import dev.toolmastery.track.MovementTracker;
@@ -86,9 +88,18 @@ public class ToolMastery implements ModInitializer {
 		ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
 			if (entity instanceof ServerPlayer player) {
 				Remember.onDeath(player);
+			} else if (source.getEntity() instanceof ServerPlayer killer) {
+				// Armor: the tier 3 gate only wants the kills you took while hurt.
+				ArmorTracker.onMobKill(killer);
 			}
 		});
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> Remember.onRespawn(newPlayer));
+
+		// Armor levels from what happens to you, so both halves of a hit are
+		// read: ALLOW_DAMAGE is where Flashpoint drops the lava, AFTER_DAMAGE
+		// is where the difference between raw and applied becomes the gate.
+		ServerLivingEntityEvents.ALLOW_DAMAGE.register(Flashpoint::allowDamage);
+		ServerLivingEntityEvents.AFTER_DAMAGE.register(ArmorTracker::onDamage);
 
 		// Anything held per player outside the save goes back where it belongs
 		// when they leave: a sprint ramp is worth nothing, a stashed crafting
@@ -97,6 +108,7 @@ public class ToolMastery implements ModInitializer {
 			ServerPlayer player = handler.getPlayer();
 			Trailblazer.forget(player);
 			DeftHands.forget(player);
+			Flashpoint.forget(player);
 			StorageTracker.forget(player);
 			SteadyGrid.release(player);
 		});
@@ -113,6 +125,9 @@ public class ToolMastery implements ModInitializer {
 				// one: a sprint that just broke, a hotbar stack that just ran out.
 				Trailblazer.tick(player);
 				DeftHands.tick(player);
+				// Every tick as well: a ten-second window has to close on the
+				// tick it runs out, not up to a second late.
+				Flashpoint.tick(player);
 			}
 
 			// Slow checks (once a second): position-based gates.
@@ -135,6 +150,8 @@ public class ToolMastery implements ModInitializer {
 					// where the player is standing.
 					MovementTracker.tick(player);
 					BiomeTracker.tick(player);
+					// Armor: the gates measured in time worn and time on fire.
+					ArmorTracker.tick(player);
 				}
 			}
 		});
