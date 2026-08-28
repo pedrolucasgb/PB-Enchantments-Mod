@@ -14,12 +14,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -57,6 +60,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(AnvilMenu.class)
 public class AnvilMenuMixin {
+	@Shadow
+	@Final
+	private DataSlot cost;
+
 	@Unique
 	private Player toolmastery$player;
 
@@ -148,18 +155,32 @@ public class AnvilMenuMixin {
 	 * Broad Swing, the anvil half: a Sweeping Edge book only takes on an axe for
 	 * someone who has bought the node. The tag says every axe can carry it,
 	 * because a data pack cannot ask who is standing at the anvil.
+	 *
+	 * <p>Judged on the finished result rather than by redirecting
+	 * {@code Enchantment.canEnchant}, which is where the obvious hook was:
+	 * Fabric API already redirects that exact call for its own
+	 * {@code ALLOW_ENCHANTING} event, and a second redirect on it makes theirs
+	 * fail its injection check and takes the whole game down at boot. An
+	 * unearned combination is refused the way vanilla refuses one — no result,
+	 * no price.
 	 */
-	@Redirect(method = "createResult", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/world/item/enchantment/Enchantment;canEnchant(Lnet/minecraft/world/item/ItemStack;)Z"))
-	private boolean toolmastery$broadSwingAtTheAnvil(Enchantment enchantment, ItemStack stack) {
-		if (!enchantment.canEnchant(stack)) {
-			return false;
+	@Inject(method = "createResult", at = @At("RETURN"))
+	private void toolmastery$broadSwingAtTheAnvil(CallbackInfo ci) {
+		AnvilMenu menu = (AnvilMenu) (Object) this;
+		ItemStack result = menu.getSlot(AnvilMenu.RESULT_SLOT).getItem();
+		if (result.isEmpty() || !result.is(ItemTags.AXES) || toolmastery$player == null) {
+			return;
 		}
-		if (!stack.is(ItemTags.AXES) || !toolmastery$is(enchantment, Enchantments.SWEEPING_EDGE)) {
-			return true;
+		Holder<Enchantment> sweeping = toolmastery$holder(Enchantments.SWEEPING_EDGE);
+		if (sweeping == null || EnchantmentHelper.getItemEnchantmentLevel(sweeping, result) <= 0) {
+			return;
 		}
-		return toolmastery$player instanceof ServerPlayer serverPlayer
-			&& SkillService.owns(serverPlayer, SkillTrees.SWORD, CombatPerks.BROAD_SWING);
+		if (toolmastery$player instanceof ServerPlayer serverPlayer
+			&& SkillService.owns(serverPlayer, SkillTrees.SWORD, CombatPerks.BROAD_SWING)) {
+			return;
+		}
+		menu.getSlot(AnvilMenu.RESULT_SLOT).set(ItemStack.EMPTY);
+		this.cost.set(0);
 	}
 
 	/**
@@ -169,10 +190,15 @@ public class AnvilMenuMixin {
 	 */
 	@Unique
 	private boolean toolmastery$is(Enchantment enchantment, ResourceKey<Enchantment> key) {
-		Holder.Reference<Enchantment> reference = toolmastery$player.level().registryAccess()
+		Holder.Reference<Enchantment> reference = toolmastery$holder(key);
+		return reference != null && reference.value() == enchantment;
+	}
+
+	@Unique
+	private Holder.Reference<Enchantment> toolmastery$holder(ResourceKey<Enchantment> key) {
+		return toolmastery$player.level().registryAccess()
 			.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
 			.get(key)
 			.orElse(null);
-		return reference != null && reference.value() == enchantment;
 	}
 }
