@@ -1,8 +1,12 @@
 package dev.toolmastery.mixin;
 
+import dev.toolmastery.perk.ArmorPerks;
 import dev.toolmastery.perk.Indestructible;
 import dev.toolmastery.perk.ItemAuthority;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,6 +47,29 @@ public class ItemStackMixin {
 			return 0;
 		}
 		return Indestructible.clampDamage(self, damage);
+	}
+
+	/**
+	 * Padded Lining and Second Skin, on the path armour wears out by. The slot
+	 * overload is the armour one specifically, so nothing here has to guess
+	 * whether a stack was being worn or swung.
+	 */
+	@ModifyVariable(
+		method = "hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V",
+		at = @At("HEAD"), argsOnly = true)
+	private int toolmastery$armourWearsSlower(int amount, int ignored, LivingEntity wearer, EquipmentSlot slot) {
+		return ArmorPerks.armourDurability(wearer, (ItemStack) (Object) this, amount);
+	}
+
+	/**
+	 * Bulwark, on the path a raised shield wears out by — the hand overload,
+	 * which is what a blocked hit uses.
+	 */
+	@ModifyVariable(
+		method = "hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/InteractionHand;)V",
+		at = @At("HEAD"), argsOnly = true)
+	private int toolmastery$shieldWearsSlower(int amount, int ignored, LivingEntity holder, InteractionHand hand) {
+		return ArmorPerks.shieldDurability(holder, (ItemStack) (Object) this, amount);
 	}
 
 	@Inject(method = "getDestroySpeed", at = @At("HEAD"), cancellable = true)

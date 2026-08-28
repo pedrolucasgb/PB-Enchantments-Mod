@@ -41,6 +41,17 @@ public final class ModEnchantments {
 	public static final ResourceKey<Enchantment> NOSTALGY = key("nostalgy");
 	public static final ResourceKey<Enchantment> SUNDERING_BLOW = key("sundering_blow");
 
+	// Armor — Path of the Bulwark. Thermal Weave, Ablative Plating and Thorned
+	// Plate carry their whole effect in the data file, using vanilla's own
+	// damage_protection and post_attack slots; Bulwark and Kinetic Plating are
+	// Java, because shield durability and a fall grace distance have no
+	// data-driven effect to hang off.
+	public static final ResourceKey<Enchantment> THERMAL_WEAVE = key("thermal_weave");
+	public static final ResourceKey<Enchantment> ABLATIVE_PLATING = key("ablative_plating");
+	public static final ResourceKey<Enchantment> THORNED_PLATE = key("thorned_plate");
+	public static final ResourceKey<Enchantment> BULWARK = key("bulwark");
+	public static final ResourceKey<Enchantment> KINETIC_PLATING = key("kinetic_plating");
+
 	/** Which skill node grants which enchantment level. */
 	public record Grant(ResourceKey<Enchantment> enchantment, int level) {
 	}
@@ -81,7 +92,17 @@ public final class ModEnchantments {
 		Map.entry("nostalgy_3", new Grant(NOSTALGY, 3)),
 		Map.entry("nostalgy_4", new Grant(NOSTALGY, 4)),
 		Map.entry("sundering_blow_1", new Grant(SUNDERING_BLOW, 1)),
-		Map.entry("sundering_blow_2", new Grant(SUNDERING_BLOW, 2))
+		Map.entry("sundering_blow_2", new Grant(SUNDERING_BLOW, 2)),
+		Map.entry("thermal_weave_1", new Grant(THERMAL_WEAVE, 1)),
+		Map.entry("thermal_weave_2", new Grant(THERMAL_WEAVE, 2)),
+		Map.entry("ablative_plating_1", new Grant(ABLATIVE_PLATING, 1)),
+		Map.entry("ablative_plating_2", new Grant(ABLATIVE_PLATING, 2)),
+		Map.entry("thorned_plate_1", new Grant(THORNED_PLATE, 1)),
+		Map.entry("thorned_plate_2", new Grant(THORNED_PLATE, 2)),
+		Map.entry("bulwark_1", new Grant(BULWARK, 1)),
+		Map.entry("bulwark_2", new Grant(BULWARK, 2)),
+		Map.entry("bulwark_3", new Grant(BULWARK, 3)),
+		Map.entry("kinetic_plating", new Grant(KINETIC_PLATING, 1))
 	);
 
 	/**
@@ -93,7 +114,8 @@ public final class ModEnchantments {
 	public static final Set<ResourceKey<Enchantment>> TABLE_POOL =
 		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE, SLIPSTREAM,
 			KEEN_EDGE, SWEEPING_ARC, EXECUTIONER, TIDECALLER, GRAVITY_WELL, PHALANX, NOSTALGY,
-			SUNDERING_BLOW);
+			SUNDERING_BLOW, THERMAL_WEAVE, ABLATIVE_PLATING, THORNED_PLATE, BULWARK,
+			KINETIC_PLATING);
 
 	/**
 	 * Every enchantment the tree hands out, derived from {@link #NODE_GRANTS}

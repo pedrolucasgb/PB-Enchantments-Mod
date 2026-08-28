@@ -1,16 +1,16 @@
 package dev.toolmastery.track;
 
+import dev.toolmastery.perk.ArmorPerks;
 import dev.toolmastery.progress.TreeProgress;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Feeds the Armor tree's gates. This is the one class that cannot level from
@@ -50,7 +50,7 @@ public final class ArmorTracker {
 		TreeProgress progress = SkillService.progress(player, SkillTrees.ARMOR);
 
 		int absorbed = Math.round(base - taken);
-		if (absorbed > 0 && !blocked && wearsFullSet(player)) {
+		if (absorbed > 0 && !blocked && ArmorPerks.wearsFullSet(player)) {
 			progress.addCount("absorb_damage", absorbed);
 		}
 		// Base damage, not applied damage: a fall softened by Feather Falling is
@@ -60,6 +60,9 @@ public final class ArmorTracker {
 		}
 		if (source.is(DamageTypes.WITHER_SKULL) && player.isAlive()) {
 			progress.counters.put("survive_wither_skull", 1);
+		}
+		if (source.is(DamageTypeTags.IS_EXPLOSION) && player.isAlive()) {
+			progress.addCount("survive_explosions", 1);
 		}
 	}
 
@@ -112,7 +115,7 @@ public final class ArmorTracker {
 			progress.addCount("survive_fire_seconds", 1);
 		}
 
-		String material = fullSetMaterial(player);
+		String material = ArmorPerks.fullSetMaterial(player);
 		if (material == null) {
 			return;
 		}
@@ -128,62 +131,10 @@ public final class ArmorTracker {
 			// The gate says "own"; wearing it is the version we can see, and
 			// nobody owns a netherite set they never put on.
 			progress.counters.put("own_netherite_set", 1);
+			int seconds = progress.count("wear_netherite_seconds") + 1;
+			progress.counters.put("wear_netherite_seconds", seconds);
+			progress.counters.put("wear_netherite_minutes", seconds / 60);
 		}
 	}
 
-	/** True when all four armour slots hold something, whatever it is. */
-	private static boolean wearsFullSet(ServerPlayer player) {
-		for (EquipmentSlot slot : new EquipmentSlot[]{
-			EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-			if (player.getItemBySlot(slot).isEmpty()) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/** The material of a full matching set, or null for a partial or mixed one. */
-	@Nullable
-	private static String fullSetMaterial(ServerPlayer player) {
-		String material = material(player.getItemBySlot(EquipmentSlot.HEAD));
-		if (material == null) {
-			return null;
-		}
-		for (EquipmentSlot slot : new EquipmentSlot[]{
-			EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-			if (!material.equals(material(player.getItemBySlot(slot)))) {
-				return null;
-			}
-		}
-		return material;
-	}
-
-	@Nullable
-	private static String material(ItemStack stack) {
-		if (stack.is(Items.LEATHER_HELMET) || stack.is(Items.LEATHER_CHESTPLATE)
-			|| stack.is(Items.LEATHER_LEGGINGS) || stack.is(Items.LEATHER_BOOTS)) {
-			return "leather";
-		}
-		if (stack.is(Items.CHAINMAIL_HELMET) || stack.is(Items.CHAINMAIL_CHESTPLATE)
-			|| stack.is(Items.CHAINMAIL_LEGGINGS) || stack.is(Items.CHAINMAIL_BOOTS)) {
-			return "chainmail";
-		}
-		if (stack.is(Items.IRON_HELMET) || stack.is(Items.IRON_CHESTPLATE)
-			|| stack.is(Items.IRON_LEGGINGS) || stack.is(Items.IRON_BOOTS)) {
-			return "iron";
-		}
-		if (stack.is(Items.GOLDEN_HELMET) || stack.is(Items.GOLDEN_CHESTPLATE)
-			|| stack.is(Items.GOLDEN_LEGGINGS) || stack.is(Items.GOLDEN_BOOTS)) {
-			return "gold";
-		}
-		if (stack.is(Items.DIAMOND_HELMET) || stack.is(Items.DIAMOND_CHESTPLATE)
-			|| stack.is(Items.DIAMOND_LEGGINGS) || stack.is(Items.DIAMOND_BOOTS)) {
-			return "diamond";
-		}
-		if (stack.is(Items.NETHERITE_HELMET) || stack.is(Items.NETHERITE_CHESTPLATE)
-			|| stack.is(Items.NETHERITE_LEGGINGS) || stack.is(Items.NETHERITE_BOOTS)) {
-			return "netherite";
-		}
-		return null;
-	}
 }

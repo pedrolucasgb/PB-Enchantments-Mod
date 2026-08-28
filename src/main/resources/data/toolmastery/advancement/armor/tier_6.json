@@ -2,13 +2,13 @@
 	"parent": "toolmastery:root",
 	"display": {
 		"icon": {
-			"id": "minecraft:iron_block"
+			"id": "minecraft:golden_apple"
 		},
 		"title": {
-			"translate": "advancements.toolmastery.armor.tier_4.title"
+			"translate": "advancements.toolmastery.armor.tier_6.title"
 		},
 		"description": {
-			"translate": "advancements.toolmastery.armor.tier_4.description"
+			"translate": "advancements.toolmastery.armor.tier_6.description"
 		},
 		"frame": "task",
 		"show_toast": true,
