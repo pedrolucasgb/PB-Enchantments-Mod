@@ -5,6 +5,7 @@ import dev.toolmastery.perk.CombatPerks;
 import dev.toolmastery.perk.ExplorerPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
+import dev.toolmastery.track.ArmorTracker;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
@@ -26,7 +27,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Three unrelated features that all hang off {@code LivingEntity}.
+ * Five features that all hang off {@code LivingEntity}, three of them
+ * sharing a single blocked hit.
  *
  * <p><b>Shield Breaker</b> (Sword tree, migrated out of the Axe tree) — axes
  * punch through a raised shield:
@@ -41,6 +43,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * <p><b>Reaper's Wisdom</b> (Enchanter tree) — mob XP scales with the Looting
  * on the weapon that landed the kill.
+ *
+ * <p><b>Shield gate tracking</b> (Armor tree) — how much a raised shield really
+ * soaked, taken here because a fully blocked hit never reaches the damage
+ * event at all.
+ *
+ * <p><b>Riposte</b> (Sword tree) — a shield raised into the swing throws a
+ * quarter of the hit back at whoever landed it.
  */
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
@@ -72,24 +81,41 @@ public class LivingEntityMixin {
 		}
 	}
 
+	/**
+	 * Everything a blocked hit owes, in one injector because two of them at
+	 * RETURN do not both run: the first to call setReturnValue returns there and
+	 * then, and the one behind it is dead code. Three features share this hit —
+	 * one from each of three trees, which is exactly why they have to be fused
+	 * rather than stacked.
+	 *
+	 * <p>Order matters. Shield Breaker shaves the attacker's share off first;
+	 * what is left is what the shield <em>really</em> stopped, and that is the
+	 * number both the Armor tree's gates and Riposte's payout are scored on. A
+	 * Riposte that paid out on the pre-Breaker figure would quietly undo the
+	 * node it is supposed to be the counter to.
+	 */
 	@Inject(method = "applyItemBlocking", at = @At("RETURN"), cancellable = true)
-	private void toolmastery$shieldBreakerDamage(ServerLevel level, DamageSource source, float amount,
-	                                             CallbackInfoReturnable<Float> cir) {
+	private void toolmastery$blockedHit(ServerLevel level, DamageSource source, float amount,
+	                                     CallbackInfoReturnable<Float> cir) {
 		float blocked = cir.getReturnValue();
-		if (blocked > 0.0F && source.getDirectEntity() instanceof ServerPlayer attacker
-			&& toolmastery$hasShieldBreaker(attacker)) {
-			cir.setReturnValue(Math.max(0.0F, blocked - TOOLMASTERY$EXTRA_DAMAGE));
+		if (blocked <= 0.0F) {
+			return;
 		}
-	}
-
-	@Unique
-	private static boolean toolmastery$hasShieldBreaker(ServerPlayer attacker) {
-		return attacker.getMainHandItem().is(ItemTags.AXES)
-			&& SkillService.owns(attacker, SkillTrees.SWORD, CombatPerks.SHIELD_BREAKER);
+		if (source.getDirectEntity() instanceof ServerPlayer attacker
+			&& toolmastery$hasShieldBreaker(attacker)) {
+			blocked = Math.max(0.0F, blocked - TOOLMASTERY$EXTRA_DAMAGE);
+			cir.setReturnValue(blocked);
+		}
+		if (!((Object) this instanceof ServerPlayer defender)) {
+			return;
+		}
+		ArmorTracker.onShieldBlock(defender, blocked);
+		toolmastery$riposte(level, source, defender, blocked);
 	}
 
 	/**
-	 * Riposte — a shield raised just before the hit throws a quarter of it back.
+	 * Riposte (Sword tree) — a shield raised just before the hit throws a
+	 * quarter of it back.
 	 *
 	 * <p>The window is the point. A shield held up all fight is vanilla
 	 * blocking; a shield raised into the swing is a parry, so the node only pays
@@ -101,19 +127,23 @@ public class LivingEntityMixin {
 	 * the axe that punches through a shield and the shield that punishes the
 	 * axe are the same class buying into both sides of one fight.
 	 */
-	@Inject(method = "applyItemBlocking", at = @At("RETURN"))
-	private void toolmastery$riposte(ServerLevel level, DamageSource source, float amount,
-	                                 CallbackInfoReturnable<Float> cir) {
-		if (cir.getReturnValue() <= 0.0F
-			|| !((Object) this instanceof ServerPlayer defender)
-			|| !CombatPerks.owns(defender, CombatPerks.RIPOSTE)
+	@Unique
+	private void toolmastery$riposte(ServerLevel level, DamageSource source, ServerPlayer defender,
+	                                 float blocked) {
+		if (blocked <= 0.0F || !CombatPerks.owns(defender, CombatPerks.RIPOSTE)
 			|| defender.getTicksUsingItem() > TOOLMASTERY$RIPOSTE_WINDOW) {
 			return;
 		}
 		if (source.getEntity() instanceof LivingEntity attacker && attacker != defender) {
 			attacker.hurtServer(level, defender.damageSources().thorns(defender),
-				cir.getReturnValue() * TOOLMASTERY$RIPOSTE_SHARE);
+				blocked * TOOLMASTERY$RIPOSTE_SHARE);
 		}
+	}
+
+	@Unique
+	private static boolean toolmastery$hasShieldBreaker(ServerPlayer attacker) {
+		return attacker.getMainHandItem().is(ItemTags.AXES)
+			&& SkillService.owns(attacker, SkillTrees.SWORD, CombatPerks.SHIELD_BREAKER);
 	}
 
 	// ---------- Explorer: Soft Landing and Clear Sight ----------

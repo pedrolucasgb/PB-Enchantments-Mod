@@ -52,6 +52,7 @@ public final class ItemGainTracker {
 		} else if (stack.is(Items.ENCHANTING_TABLE)) {
 			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "craft_enchanting_table", amount);
 		}
+		ArmorTracker.onCraft(serverPlayer, stack);
 		trackArtisanCraft(serverPlayer, stack, amount);
 	}
 
