@@ -2,7 +2,7 @@
 	"parent": "toolmastery:root",
 	"display": {
 		"icon": {
-			"id": "minecraft:diamond_chestplate"
+			"id": "minecraft:netherite_chestplate"
 		},
 		"title": {
 			"translate": "advancements.toolmastery.armor.tier_5.title"

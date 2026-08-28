@@ -4,7 +4,7 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Version **0.3.0** · internal mod id: `toolmastery` · package `dev.toolmastery`
+> Version **0.4.0** · internal mod id: `toolmastery` · package `dev.toolmastery`
 
 ---
 
@@ -280,24 +280,39 @@ Its scope is deliberately narrow. It changes *what Smite considers undead*, on y
 ### Armor nodes (Path of the Bulwark)
 The one class that cannot level from *doing* something, because wearing armour is not an action. It levels from **damage survived**: the gate counters read what your set absorbed, what your shield stopped and what you walked away from — which is also what makes it the only tree that advances while you play every other one.
 
-The tree ships **whole and mostly unbuilt**, the way the Artisan's tier 4 did: every node is visible and priced, and all but one are marked as coming. One node has an effect behind it today.
+Seven tiers, like the Sword, and for the same reason: the defensive kit splits into more distinct steps than five columns can hold without two unrelated ideas sharing a tier.
 
 | Node | Tier | Effect |
 |---|---|---|
-| **Flashpoint** | 2 | ✅ Touching lava gives you **10 seconds of immunity to it** |
-| Padded Lining I–III, Set Sense, Shield Wall I–II, Steady Stance | 1–3 | Kit management — durability, a real armour readout, instant blocking, knockback |
-| Thermal Weave I–II, Sure Footing, Second Skin, Ablative Plating I–II | 2–3 | The environment — fire, footing, near-broken pieces, explosions |
-| Bulwark I–III, Thorned Plate I–II, Last Stand, Repair Rites | 3–5 | Standing your ground — the shield line is the direct answer to the Axe's Shield Breaker |
-| Guardian's Aura, Kinetic Plating, Warden's Weight, Nightplate | 4 | The set as a whole, including the mod's first cooperative node |
-| Aegis / Immortal Line / Living Armor | capstone | Protection V, a one-heart save every ten minutes, or XP that repairs the whole set |
+| **Padded Lining** I–III | 1 / 2 / 4 | Armour takes 15 / 30 / 45% less durability damage |
+| **Set Sense** | 1 | Your real armour, toughness and damage reduction, drawn above the armour bar |
+| **Shield Wall** I–II | 1 / 3 | The shield is up the instant you raise it; II widens the arc it covers |
+| **Steady Stance** | 1 | 25% less knockback from mobs |
+| **Flashpoint** | 2 | Touching lava gives you 10 seconds of immunity to it |
+| **Thermal Weave** I–II | 2 / 3 | ~25 / 50% less fire and lava damage, *on top of* Fire Protection |
+| **Sure Footing** | 2 | Nothing underfoot slows you, plus half Depth Strider and half Soul Speed |
+| **Second Skin** | 3 | A piece never spends its last durability point, and warns you |
+| **Ablative Plating** I–II | 3 / 5 | Explosion damage −20 / −40%, and no creeper knockback at all |
+| **Bulwark** I–III | 4 / 5 / 6 | The shield takes 25 / 50 / 75% less durability; III means an axe cannot disable it |
+| **Thorned Plate** I–II | 4 / 6 | Thorns with no durability cost; II fires twice as often and twice as hard |
+| **Last Stand** | 4 | Below four hearts: Resistance I for five seconds, once every thirty |
+| **Repair Rites** | 5 | A point of durability a second, per piece, after ten seconds still and unhurt |
+| **Kinetic Plating** | 5 | Boots: the first six blocks of a fall are free and the rest is halved |
+| **Guardian's Aura** | 6 | Players and tamed animals within six blocks take 10% less damage |
+| **Warden's Weight** | 6 | Nothing knocks you back while blocking |
+| **Nightplate** | 6 | A full set of one material carries a bonus of its own |
+| **Aegis** / **Immortal Line** / **Living Armor** | capstone | Pick one of three — see below |
 
-**Flashpoint.** The window opens on the first point of lava damage and runs for ten seconds whatever you do with them. It **only arms again once you have stopped burning**, which is the whole design: lava sets you alight for fifteen seconds, so you cannot be off the fire before the window you just spent has closed. Jumping back in does not extend it, and hopping out for a tick does not refill it. Reach water — or wait the fire out — and the next dip is a fresh ten seconds.
+**Where the tree inserts itself into damage.** This was the cross-cutting worry in [#28](../../issues/28), and it is answered once rather than per node: every effect that reduces damage *by type* — Thermal Weave, Ablative Plating — is a real data-driven `damage_protection` enchantment, so it lands in vanilla's own protection sum and composes with Protection, Resistance and absorption instead of racing them. Only what vanilla has no data hook for is Java: durability, knockback, blocking, fall grace and the capstones. Neither is in `#minecraft:exclusive_set/armor`, so both genuinely stack on top of the vanilla protections rather than competing for the slot.
 
-It suppresses **lava damage only**. You still burn the whole time, at the usual point a second, so the node buys a swim to the shore rather than a bath: ten seconds of lava is 80 points of damage, ten seconds of the fire it lit is 10. Items you drop, and anything you are riding, are not covered.
+**Flashpoint.** The window opens on the first point of lava damage and runs for ten seconds whatever you do with them. It **only arms again once you have stopped burning** — lava lights you for fifteen seconds, so you cannot be off the fire before the window you just spent has closed. It suppresses lava damage only: you still burn, so it buys a swim to the shore and not a bath.
 
-It also sidesteps the shared-item problem below by construction: it is a passive on the player, not an enchantment on the gear, so there is nothing to lend.
+**The three capstones are a real pick-one.** Aegis lifts your ceiling on vanilla **Protection from IV to V** — raised in the data pack for everybody and clamped back to IV at the table *and* the anvil for anyone without the node, the same trick Ancient Fortune and Greater Mending use. Immortal Line turns a killing blow into one heart with a few seconds of Regeneration and Resistance, once every ten minutes, consuming no totem. Living Armor puts the experience you pick up into the whole set at once, from any source and with no Mending on the pieces. Buying one puts the other two out of reach, which is what made a node's exclusivity a *list* rather than a single id.
+
+**Shared items.** Nothing here changes the answer in the section below: the passives are on the player, not on the gear, and the five enchantments the tree hands out are ordinary enchantments that anyone can carry once they exist. The armour branch of the inert-item check is still owed.
 
 **Gates.** Damage absorbed is the difference between raw and applied damage, counted only while all four slots are filled — a helmet on its own does not creep the counter forward. Shield blocking is measured where the shield actually soaks the hit rather than from the damage event, because a fully blocked hit deals no damage at all. Falls count off the *base* damage, so a fall softened by Feather Falling is still a fall you walked away from.
+
 
 ### Enchanting table integration
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
@@ -384,6 +399,8 @@ count rather than assuming five. Gate counters still need a tracker feeding them
 nothing about *displaying* the class does.
 
 ## Roadmap
+
+**Seven-tier trees scroll.** A tier column never shrinks below a readable width, so the Sword and Armor trees are wider than the window and the tree pans sideways: the wheel over the tree, or the bar under it, whose thumb is as wide a share of the track as the viewport is of the tree. Five-tier trees are laid out exactly as they always were and show no bar at all.
 
 See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), the rest of the Armor tree ([#28](../../issues/28)), and the three future classes (Sword, Bow, Rod).
 

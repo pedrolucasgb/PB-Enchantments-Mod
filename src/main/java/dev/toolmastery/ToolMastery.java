@@ -3,6 +3,7 @@ package dev.toolmastery;
 import dev.toolmastery.advancement.ModAdvancements;
 import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AquaLungs;
+import dev.toolmastery.perk.ArmorUpkeep;
 import dev.toolmastery.perk.AreaBreak;
 import dev.toolmastery.perk.CombatDrops;
 import dev.toolmastery.perk.CombatPerks;
@@ -118,7 +119,16 @@ public class ToolMastery implements ModInitializer {
 		// read: ALLOW_DAMAGE is where Flashpoint drops the lava, AFTER_DAMAGE
 		// is where the difference between raw and applied becomes the gate.
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register(Flashpoint::allowDamage);
-		ServerLivingEntityEvents.AFTER_DAMAGE.register(ArmorTracker::onDamage);
+		ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, base, taken, blocked) -> {
+			ArmorTracker.onDamage(entity, source, base, taken, blocked);
+			if (entity instanceof ServerPlayer hurt) {
+				// Repair Rites wants calm, and any hit at all is not calm.
+				ArmorUpkeep.onDamaged(hurt);
+			}
+		});
+		// Immortal Line is the only thing in the mod that answers a death, so it
+		// is the only listener here: returning false calls the death off.
+		ServerLivingEntityEvents.ALLOW_DEATH.register(ArmorUpkeep::allowDeath);
 
 		// Anything held per player outside the save goes back where it belongs
 		// when they leave: a sprint ramp is worth nothing, a stashed crafting
@@ -129,6 +139,7 @@ public class ToolMastery implements ModInitializer {
 			CombatPerks.forget(player);
 			DeftHands.forget(player);
 			Flashpoint.forget(player);
+			ArmorUpkeep.forget(player);
 			StorageTracker.forget(player);
 			SteadyGrid.release(player);
 		});
@@ -152,6 +163,9 @@ public class ToolMastery implements ModInitializer {
 				// Every tick as well: a ten-second window has to close on the
 				// tick it runs out, not up to a second late.
 				Flashpoint.tick(player);
+				// Sure Footing's attributes and Last Stand's rescue: both react
+				// to a state that can change inside one tick.
+				ArmorUpkeep.tick(player);
 			}
 
 			// Slow checks (once a second): position-based gates.
@@ -177,6 +191,7 @@ public class ToolMastery implements ModInitializer {
 					CombatTracker.tick(player);
 					// Armor: the gates measured in time worn and time on fire.
 					ArmorTracker.tick(player);
+					ArmorUpkeep.slowTick(player);
 				}
 			}
 		});

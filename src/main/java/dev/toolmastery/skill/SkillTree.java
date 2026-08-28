@@ -106,7 +106,7 @@ public final class SkillTree {
 			if (node.id().equals(askingNodeId) || !node.implemented() || purchased.contains(node.id())) {
 				continue;
 			}
-			if (node.exclusiveWith() != null && purchased.contains(node.exclusiveWith())) {
+			if (node.blockedBy(purchased::contains) != null) {
 				continue; // passed over on purpose, not missing
 			}
 			missing++;
