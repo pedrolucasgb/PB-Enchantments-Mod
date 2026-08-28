@@ -43,6 +43,8 @@ public final class ItemGainTracker {
 			SkillService.addCount(serverPlayer, SkillTrees.PICKAXE, "craft_iron_pickaxe", amount);
 		} else if (stack.is(Items.IRON_AXE)) {
 			SkillService.addCount(serverPlayer, SkillTrees.AXE, "craft_iron_axe", amount);
+		} else if (stack.is(Items.IRON_SWORD)) {
+			SkillService.addCount(serverPlayer, SkillTrees.SWORD, "craft_iron_sword", amount);
 		} else if (stack.is(Items.BOOKSHELF)) {
 			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "craft_bookshelves", amount);
 		} else if (stack.is(Items.BOOK)) {

@@ -30,6 +30,17 @@ public final class ModEnchantments {
 	public static final ResourceKey<Enchantment> INDESTRUCTIBLE = key("indestructible");
 	public static final ResourceKey<Enchantment> SLIPSTREAM = key("slipstream");
 
+	// Sword — Path of the Blade. Eight of them, because the class covers every
+	// weapon that hits: sword, trident, mace, axe-as-weapon and spear.
+	public static final ResourceKey<Enchantment> KEEN_EDGE = key("keen_edge");
+	public static final ResourceKey<Enchantment> SWEEPING_ARC = key("sweeping_arc");
+	public static final ResourceKey<Enchantment> EXECUTIONER = key("executioner");
+	public static final ResourceKey<Enchantment> TIDECALLER = key("tidecaller");
+	public static final ResourceKey<Enchantment> GRAVITY_WELL = key("gravity_well");
+	public static final ResourceKey<Enchantment> PHALANX = key("phalanx");
+	public static final ResourceKey<Enchantment> NOSTALGY = key("nostalgy");
+	public static final ResourceKey<Enchantment> SUNDERING_BLOW = key("sundering_blow");
+
 	/** Which skill node grants which enchantment level. */
 	public record Grant(ResourceKey<Enchantment> enchantment, int level) {
 	}
@@ -50,7 +61,27 @@ public final class ModEnchantments {
 		Map.entry("indestructible", new Grant(INDESTRUCTIBLE, 1)),
 		Map.entry("slipstream_1", new Grant(SLIPSTREAM, 1)),
 		Map.entry("slipstream_2", new Grant(SLIPSTREAM, 2)),
-		Map.entry("slipstream_3", new Grant(SLIPSTREAM, 3))
+		Map.entry("slipstream_3", new Grant(SLIPSTREAM, 3)),
+		Map.entry("keen_edge_1", new Grant(KEEN_EDGE, 1)),
+		Map.entry("keen_edge_2", new Grant(KEEN_EDGE, 2)),
+		Map.entry("keen_edge_3", new Grant(KEEN_EDGE, 3)),
+		Map.entry("sweeping_arc_1", new Grant(SWEEPING_ARC, 1)),
+		Map.entry("sweeping_arc_2", new Grant(SWEEPING_ARC, 2)),
+		Map.entry("executioner_1", new Grant(EXECUTIONER, 1)),
+		Map.entry("executioner_2", new Grant(EXECUTIONER, 2)),
+		Map.entry("executioner_3", new Grant(EXECUTIONER, 3)),
+		Map.entry("tidecaller_1", new Grant(TIDECALLER, 1)),
+		Map.entry("tidecaller_2", new Grant(TIDECALLER, 2)),
+		Map.entry("gravity_well_1", new Grant(GRAVITY_WELL, 1)),
+		Map.entry("gravity_well_2", new Grant(GRAVITY_WELL, 2)),
+		Map.entry("phalanx_1", new Grant(PHALANX, 1)),
+		Map.entry("phalanx_2", new Grant(PHALANX, 2)),
+		Map.entry("nostalgy_1", new Grant(NOSTALGY, 1)),
+		Map.entry("nostalgy_2", new Grant(NOSTALGY, 2)),
+		Map.entry("nostalgy_3", new Grant(NOSTALGY, 3)),
+		Map.entry("nostalgy_4", new Grant(NOSTALGY, 4)),
+		Map.entry("sundering_blow_1", new Grant(SUNDERING_BLOW, 1)),
+		Map.entry("sundering_blow_2", new Grant(SUNDERING_BLOW, 2))
 	);
 
 	/**
@@ -60,7 +91,9 @@ public final class ModEnchantments {
 	 * screen promises.
 	 */
 	public static final Set<ResourceKey<Enchantment>> TABLE_POOL =
-		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE, SLIPSTREAM);
+		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE, SLIPSTREAM,
+			KEEN_EDGE, SWEEPING_ARC, EXECUTIONER, TIDECALLER, GRAVITY_WELL, PHALANX, NOSTALGY,
+			SUNDERING_BLOW);
 
 	/**
 	 * Every enchantment the tree hands out, derived from {@link #NODE_GRANTS}

@@ -1,6 +1,7 @@
 package dev.toolmastery.mixin;
 
 import dev.toolmastery.enchant.EnchanterPerks;
+import dev.toolmastery.perk.CombatPerks;
 import dev.toolmastery.perk.ExplorerPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
@@ -27,7 +28,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * Three unrelated features that all hang off {@code LivingEntity}.
  *
- * <p><b>Shield Breaker</b> (Axe tree) — axes punch through a raised shield:
+ * <p><b>Shield Breaker</b> (Sword tree, migrated out of the Axe tree) — axes
+ * punch through a raised shield:
  * +2s on the shield cooldown the axe already inflicts, and +2 damage the shield
  * fails to soak up. Both hooks are server-side: getSecondsToDisableBlocking is
  * asked of the attacker in Player#blockUsingItem, and applyItemBlocking returns
@@ -47,6 +49,14 @@ public class LivingEntityMixin {
 
 	@Unique
 	private static final float TOOLMASTERY$EXTRA_DAMAGE = 2.0F;
+
+	/** How long after raising a shield a block still counts as a parry. */
+	@Unique
+	private static final int TOOLMASTERY$RIPOSTE_WINDOW = 10;
+
+	/** How much of what the shield soaked up comes back at the attacker. */
+	@Unique
+	private static final float TOOLMASTERY$RIPOSTE_SHARE = 0.25F;
 
 	/** Blocks of any fall Soft Landing forgives on top of vanilla's own grace. */
 	@Unique
@@ -75,7 +85,35 @@ public class LivingEntityMixin {
 	@Unique
 	private static boolean toolmastery$hasShieldBreaker(ServerPlayer attacker) {
 		return attacker.getMainHandItem().is(ItemTags.AXES)
-			&& SkillService.owns(attacker, SkillTrees.AXE, "shield_breaker");
+			&& SkillService.owns(attacker, SkillTrees.SWORD, CombatPerks.SHIELD_BREAKER);
+	}
+
+	/**
+	 * Riposte — a shield raised just before the hit throws a quarter of it back.
+	 *
+	 * <p>The window is the point. A shield held up all fight is vanilla
+	 * blocking; a shield raised into the swing is a parry, so the node only pays
+	 * out while the block is younger than {@link #TOOLMASTERY$RIPOSTE_WINDOW}
+	 * ticks. {@code getTicksUsingItem} is how long the shield has been up, which
+	 * is exactly the age being asked about.
+	 *
+	 * <p>This is the deliberate counter to Shield Breaker two tiers below it:
+	 * the axe that punches through a shield and the shield that punishes the
+	 * axe are the same class buying into both sides of one fight.
+	 */
+	@Inject(method = "applyItemBlocking", at = @At("RETURN"))
+	private void toolmastery$riposte(ServerLevel level, DamageSource source, float amount,
+	                                 CallbackInfoReturnable<Float> cir) {
+		if (cir.getReturnValue() <= 0.0F
+			|| !((Object) this instanceof ServerPlayer defender)
+			|| !CombatPerks.owns(defender, CombatPerks.RIPOSTE)
+			|| defender.getTicksUsingItem() > TOOLMASTERY$RIPOSTE_WINDOW) {
+			return;
+		}
+		if (source.getEntity() instanceof LivingEntity attacker && attacker != defender) {
+			attacker.hurtServer(level, defender.damageSources().thorns(defender),
+				cir.getReturnValue() * TOOLMASTERY$RIPOSTE_SHARE);
+		}
 	}
 
 	// ---------- Explorer: Soft Landing and Clear Sight ----------

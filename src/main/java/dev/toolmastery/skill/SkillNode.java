@@ -38,6 +38,8 @@ import java.util.List;
  * @param type          what kind of unlock this grants
  * @param implemented   false while the effect ships in a later update — not unlockable yet
  * @param icon          item drawn on the node tile, or null to fall back on {@link #iconStack()}
+ * @param pveOnly       the effect never fires against another player
+ * @param requiresAll   only unlockable once every other node of the tree is owned
  */
 public record SkillNode(
 	String id,
@@ -49,46 +51,71 @@ public record SkillNode(
 	@Nullable String exclusiveWith,
 	SkillType type,
 	boolean implemented,
-	@Nullable Item icon
+	@Nullable Item icon,
+	boolean pveOnly,
+	boolean requiresAll
 ) {
 	public SkillNode {
 		materials = List.copyOf(materials);
 	}
 
 	public static SkillNode of(String id, int tier, int unlockCost, SkillType type) {
-		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, null, type, true, null);
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, null, type, true, null, false, false);
 	}
 
 	public static SkillNode chained(String id, int tier, int unlockCost, String requires, SkillType type) {
-		return new SkillNode(id, tier, unlockCost, List.of(), 0, requires, null, type, true, null);
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, requires, null, type, true, null, false, false);
 	}
 
 	public static SkillNode capstone(String id, int tier, int unlockCost, String exclusiveWith, SkillType type) {
-		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, exclusiveWith, type, true, null);
+		return new SkillNode(id, tier, unlockCost, List.of(), 0, null, exclusiveWith, type, true, null, false, false);
 	}
 
 	/** The material half of the unlock price. */
 	public SkillNode costing(MaterialCost... materials) {
 		return new SkillNode(id, tier, unlockCost, List.of(materials), enchantCost, requires, exclusiveWith,
-			type, implemented, icon);
+			type, implemented, icon, pveOnly, requiresAll);
 	}
 
 	/** Enables the repeatable Enchant action at the given price in XP levels. */
 	public SkillNode enchantFor(int levels) {
 		return new SkillNode(id, tier, unlockCost, materials, levels, requires, exclusiveWith,
-			type, implemented, icon);
+			type, implemented, icon, pveOnly, requiresAll);
 	}
 
 	/** Marks this node as coming in a future update: visible in the tree but locked. */
 	public SkillNode future() {
 		return new SkillNode(id, tier, unlockCost, materials, enchantCost, requires, exclusiveWith,
-			type, false, icon);
+			type, false, icon, pveOnly, requiresAll);
 	}
 
 	/** The item drawn on this node's tile in the skill screen. */
 	public SkillNode icon(Item icon) {
 		return new SkillNode(id, tier, unlockCost, materials, enchantCost, requires, exclusiveWith,
-			type, implemented, icon);
+			type, implemented, icon, pveOnly, requiresAll);
+	}
+
+	/**
+	 * Marks a node whose effect never applies to another player. The check is a
+	 * single one in {@code CombatPerks} rather than a condition per effect, and
+	 * the skill screen puts the fact on the card — a PvP server that installs
+	 * the mod should not have to find this out in a fight.
+	 */
+	public SkillNode pve() {
+		return new SkillNode(id, tier, unlockCost, materials, enchantCost, requires, exclusiveWith,
+			type, implemented, icon, true, requiresAll);
+	}
+
+	/**
+	 * Marks the one node in a tree that opens only once every other node in it
+	 * is owned — the end of the class rather than a choice inside it. Capstones
+	 * a player deliberately passed over (the losing half of an
+	 * {@code exclusiveWith} pair) do not count against it, or a pick-one choice
+	 * would make this unreachable forever.
+	 */
+	public SkillNode endOfTree() {
+		return new SkillNode(id, tier, unlockCost, materials, enchantCost, requires, exclusiveWith,
+			type, implemented, icon, pveOnly, true);
 	}
 
 	/**

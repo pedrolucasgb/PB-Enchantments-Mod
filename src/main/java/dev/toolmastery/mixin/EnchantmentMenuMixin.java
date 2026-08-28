@@ -14,6 +14,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.LivingEntity;
@@ -56,6 +57,14 @@ public abstract class EnchantmentMenuMixin {
 	/** The pickaxe passive that lifts vanilla Fortune from III to IV. */
 	@Unique
 	private static final String ANCIENT_FORTUNE = "ancient_fortune";
+
+	/** The sword capstone that lifts vanilla Looting from III to IV. */
+	@Unique
+	private static final String SPOILS_OF_WAR = "spoils_of_war";
+
+	/** The sword passive that lets an axe carry vanilla Sweeping Edge. */
+	@Unique
+	private static final String BROAD_SWING = "broad_swing";
 
 	@Unique
 	private Player toolmastery$player;
@@ -110,6 +119,9 @@ public abstract class EnchantmentMenuMixin {
 		//    rather than streamed on, because Ancient Knowledge needs a second
 		//    pass over the same pool and a stream is spent once.
 		List<Holder<Enchantment>> pool = candidates.filter(holder -> {
+			if (toolmastery$sweepingOnUnearnedAxe(serverPlayer, holder, stack)) {
+				return false;
+			}
 			ResourceKey<Enchantment> ours = toolmastery$matchOurs(holder);
 			return ours == null || SkillService.maxEnchantLevelOwned(serverPlayer, ours) > 0;
 		}).toList();
@@ -131,6 +143,11 @@ public abstract class EnchantmentMenuMixin {
 		for (EnchantmentInstance instance : rolled) {
 			if (instance.enchantment().is(Enchantments.FORTUNE) && instance.level() > 3
 					&& !SkillService.owns(serverPlayer, SkillTrees.PICKAXE, ANCIENT_FORTUNE)) {
+				result.add(new EnchantmentInstance(instance.enchantment(), 3));
+				continue;
+			}
+			if (instance.enchantment().is(Enchantments.LOOTING) && instance.level() > 3
+					&& !SkillService.owns(serverPlayer, SkillTrees.SWORD, SPOILS_OF_WAR)) {
 				result.add(new EnchantmentInstance(instance.enchantment(), 3));
 				continue;
 			}
@@ -161,6 +178,20 @@ public abstract class EnchantmentMenuMixin {
 		this.toolmastery$bookshelves = bookshelves;
 		int vanilla = EnchantmentHelper.getEnchantmentCost(random, slot, bookshelves, stack);
 		return AncientKnowledge.costFor(toolmastery$player, slot, bookshelves, vanilla);
+	}
+
+	/**
+	 * Broad Swing widens {@code #minecraft:enchantable/sweeping} to axes for
+	 * everybody, because a data pack cannot be per-player. This is the half that
+	 * makes it a reward: without the node, an axe is not offered Sweeping Edge,
+	 * and the table fills the slot with something else instead of leaving it
+	 * empty.
+	 */
+	@Unique
+	private static boolean toolmastery$sweepingOnUnearnedAxe(ServerPlayer player, Holder<Enchantment> holder,
+	                                                         ItemStack stack) {
+		return holder.is(Enchantments.SWEEPING_EDGE) && stack.is(ItemTags.AXES)
+			&& !SkillService.owns(player, SkillTrees.SWORD, BROAD_SWING);
 	}
 
 	@Unique
