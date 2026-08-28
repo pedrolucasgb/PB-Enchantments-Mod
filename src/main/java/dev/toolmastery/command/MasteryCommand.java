@@ -423,6 +423,7 @@ public final class MasteryCommand {
 		if (treeId == null) {
 			giveTierTools(player, SkillTrees.PICKAXE, net.minecraft.world.item.Items.DIAMOND_PICKAXE, "Pickaxe");
 			giveTierTools(player, SkillTrees.AXE, net.minecraft.world.item.Items.DIAMOND_AXE, "Axe");
+			giveTierTools(player, SkillTrees.SWORD, net.minecraft.world.item.Items.DIAMOND_SWORD, "Sword");
 			source.sendSystemMessage(Component.literal("Full kit delivered: one tool per tier of every tree.").withStyle(ChatFormatting.YELLOW));
 			return 1;
 		}
@@ -430,9 +431,7 @@ public final class MasteryCommand {
 		if (tree == null) {
 			return 0;
 		}
-		net.minecraft.world.item.Item item = treeId.equals("axe")
-			? net.minecraft.world.item.Items.DIAMOND_AXE
-			: net.minecraft.world.item.Items.DIAMOND_PICKAXE;
+		net.minecraft.world.item.Item item = kitItem(treeId, enchantName);
 		String label = treeId.substring(0, 1).toUpperCase() + treeId.substring(1);
 
 		if (enchantName == null) {
@@ -467,6 +466,31 @@ public final class MasteryCommand {
 		}
 		source.sendSystemMessage(Component.literal(prettyName(enchantName) + " kit delivered: levels I-" + roman(maxLevel) + ".").withStyle(ChatFormatting.YELLOW));
 		return 1;
+	}
+
+	/**
+	 * What to hand a tester for this kit. The tree decides the default — and the
+	 * Sword tree overrides it per enchantment, because the class covers four
+	 * weapons and a Gravity Well sword would be an unenchantable joke.
+	 */
+	private static net.minecraft.world.item.Item kitItem(String treeId, @Nullable String enchantName) {
+		if (enchantName != null) {
+			switch (enchantName) {
+				case "tidecaller":
+					return net.minecraft.world.item.Items.TRIDENT;
+				case "gravity_well":
+					return net.minecraft.world.item.Items.MACE;
+				case "phalanx":
+					return net.minecraft.world.item.Items.DIAMOND_SPEAR;
+				default:
+					break;
+			}
+		}
+		return switch (treeId) {
+			case "axe" -> net.minecraft.world.item.Items.DIAMOND_AXE;
+			case "sword" -> net.minecraft.world.item.Items.DIAMOND_SWORD;
+			default -> net.minecraft.world.item.Items.DIAMOND_PICKAXE;
+		};
 	}
 
 	/** Enchantment base names available in a tree, with their max level. */
