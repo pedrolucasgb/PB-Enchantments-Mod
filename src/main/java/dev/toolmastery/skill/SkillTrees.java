@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 /**
  * Static definitions of every skill tree — the design document in code.
- * Pickaxe, Axe, Enchanter, Explorer, Artisan and Armor are playable; Sword, Bow
- * and Rod are still coming.
+ * Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword and Armor are playable;
+ * Bow and Rod are still coming.
  *
  * <p>Every node carries two prices. {@code of/chained/capstone} sets the XP half
  * of the <b>unlock</b>, {@code .costing(...)} its materials, and
@@ -184,8 +184,6 @@ public final class SkillTrees {
 				.enchantFor(35),
 			SkillNode.of("double_axe_1", 2, 7, SkillType.PASSIVE).icon(Items.GOLDEN_AXE)
 				.costing(mat(ItemTags.LOGS, 32), mat(Items.DIAMOND, 4)),
-			SkillNode.of("shield_breaker", 2, 8, SkillType.PASSIVE).icon(Items.SHIELD)
-				.costing(mat(Items.SHIELD, 2), mat(Items.IRON_INGOT, 16)),
 			// Tier 4
 			SkillNode.chained("logic_3", 3, 12, "logic_2", SkillType.ENCHANTMENT).icon(Items.OAK_LEAVES)
 				.costing(mat(ItemTags.LOGS, 64), mat(Items.DIAMOND, 8))
@@ -471,6 +469,172 @@ public final class SkillTrees {
 		)
 	);
 
+	// ---------- Sword — Path of the Blade ----------
+	/**
+	 * The combat class, and the only tree that is seven tiers rather than five.
+	 * It covers every weapon that hits — sword, trident, mace, axe-as-weapon and
+	 * the 26.2 spear — because most of what makes a combat node interesting is
+	 * weapon-agnostic, and four more tabs would not fit the strip.
+	 *
+	 * <p>Two rules are specific to this tree. Nodes marked {@code .pve()} never
+	 * fire against another player: armour penetration, execute damage and
+	 * stacking damage-per-kill are all fine against a zombie and would rewrite
+	 * PvP. <b>Nostalgy</b> is the deliberate exception — a 1.8 attack cooldown
+	 * is the one node here meant to be felt in a duel. And {@code death_eyes} is
+	 * the mod's first {@code .endOfTree()} node: it opens only once the rest
+	 * of the tree is bought.
+	 */
+	public static final SkillTree SWORD = new SkillTree(
+		"sword",
+		Items.DIAMOND_SWORD,
+		List.of(
+			// Tier 1 — Duelist
+			new SkillTier(5, List.of(
+				new GateRequirement("kill_hostiles", 200),
+				new GateRequirement("craft_iron_sword", 1),
+				new GateRequirement("crit_kills", 50)
+			)),
+			// Tier 2 — Skirmisher
+			new SkillTier(10, List.of(
+				new GateRequirement("kill_hostiles", 500),
+				new GateRequirement("melee_damage", 5000),
+				new GateRequirement("mob_checklist", 5)
+			)),
+			// Tier 3 — Warblade
+			new SkillTier(15, List.of(
+				new GateRequirement("kill_hostiles", 1000),
+				new GateRequirement("own_trident", 1),
+				new GateRequirement("sweep_hits", 100)
+			)),
+			// Tier 4 — Slayer
+			new SkillTier(20, List.of(
+				new GateRequirement("kill_hostiles", 1600),
+				new GateRequirement("survive_raid", 1),
+				new GateRequirement("nether_kills", 100)
+			)),
+			// Tier 5 — Champion
+			new SkillTier(25, List.of(
+				new GateRequirement("kill_hostiles", 2400),
+				new GateRequirement("mace_slams", 50),
+				new GateRequirement("melee_damage", 25000)
+			)),
+			// Tier 6 — Warlord
+			new SkillTier(30, List.of(
+				new GateRequirement("kill_hostiles", 3500),
+				new GateRequirement("slay_boss", 1),
+				new GateRequirement("desperate_kills", 100)
+			)),
+			// Tier 7 — Legend
+			new SkillTier(40, List.of(
+				new GateRequirement("kill_hostiles", 5000),
+				new GateRequirement("mob_checklist", 30),
+				new GateRequirement("slay_dragon", 1)
+			))
+		),
+		List.of(
+			// Tier 1 — the basics of holding a weapon
+			SkillNode.of("keen_edge_1", 0, 4, SkillType.ENCHANTMENT).icon(Items.IRON_SWORD)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.FLINT, 8))
+				.enchantFor(20),
+			SkillNode.of("combat_magnet", 0, 5, SkillType.PASSIVE).icon(Items.HOPPER)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.HOPPER, 1)),
+			SkillNode.of("butchers_cut", 0, 4, SkillType.PASSIVE).icon(Items.COOKED_BEEF)
+				.costing(mat(Items.LEATHER, 16), mat(Items.COOKED_BEEF, 8)),
+			// Tier 2 — reach and information
+			SkillNode.chained("keen_edge_2", 1, 6, "keen_edge_1", SkillType.ENCHANTMENT).icon(Items.GOLDEN_SWORD)
+				.costing(mat(Items.IRON_INGOT, 16), mat(Items.BONE, 32))
+				.enchantFor(35),
+			SkillNode.of("sweeping_arc_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.STRING)
+				.costing(mat(Items.STRING, 32), mat(Items.IRON_INGOT, 8))
+				.enchantFor(20),
+			SkillNode.of("broad_swing", 1, 7, SkillType.PASSIVE).icon(Items.IRON_AXE)
+				.costing(mat(Items.IRON_AXE, 1), mat(Items.FLINT, 16)),
+			SkillNode.of("second_wind", 1, 5, SkillType.PASSIVE).icon(Items.BREAD)
+				.costing(mat(Items.COOKED_BEEF, 16), mat(Items.BREAD, 16)),
+			SkillNode.of("hunters_mark", 1, 5, SkillType.PASSIVE).icon(Items.SPYGLASS)
+				.costing(mat(Items.SPIDER_EYE, 8), mat(Items.GLOWSTONE_DUST, 16)),
+			// Tier 3 — finishing a fight
+			SkillNode.chained("keen_edge_3", 2, 9, "keen_edge_2", SkillType.ENCHANTMENT).icon(Items.DIAMOND_SWORD)
+				.costing(mat(Items.DIAMOND, 6), mat(Items.QUARTZ, 32))
+				.enchantFor(50),
+			SkillNode.chained("sweeping_arc_2", 2, 8, "sweeping_arc_1", SkillType.ENCHANTMENT).icon(Items.PHANTOM_MEMBRANE)
+				.costing(mat(Items.STRING, 64), mat(Items.GOLD_INGOT, 16))
+				.enchantFor(35),
+			SkillNode.of("executioner_1", 2, 8, SkillType.ENCHANTMENT).icon(Items.SKELETON_SKULL)
+				.costing(mat(Items.BONE, 32), mat(Items.ROTTEN_FLESH, 32))
+				.enchantFor(20).pve(),
+			SkillNode.of("tidecaller_1", 2, 9, SkillType.ENCHANTMENT).icon(Items.NAUTILUS_SHELL)
+				.costing(mat(Items.PRISMARINE_SHARD, 16), mat(Items.NAUTILUS_SHELL, 1))
+				.enchantFor(20),
+			SkillNode.of("riposte", 2, 8, SkillType.PASSIVE).icon(Items.SHIELD)
+				.costing(mat(Items.SHIELD, 2), mat(Items.IRON_INGOT, 16)),
+			// Tier 4 — weapon identity
+			SkillNode.chained("executioner_2", 3, 10, "executioner_1", SkillType.ENCHANTMENT).icon(Items.BONE_BLOCK)
+				.costing(mat(Items.BONE_BLOCK, 8), mat(Items.GOLD_INGOT, 16))
+				.enchantFor(35).pve(),
+			SkillNode.of("gravity_well_1", 3, 10, SkillType.ENCHANTMENT).icon(Items.MACE)
+				.costing(mat(Items.BREEZE_ROD, 2), mat(Items.IRON_INGOT, 32))
+				.enchantFor(20).pve(),
+			SkillNode.of("phalanx_1", 3, 10, SkillType.ENCHANTMENT).icon(Items.IRON_SPEAR)
+				.costing(mat(Items.IRON_SPEAR, 1), mat(Items.COPPER_INGOT, 32))
+				.enchantFor(20).pve(),
+			SkillNode.of("cleave", 3, 9, SkillType.PASSIVE).icon(Items.DIAMOND_AXE)
+				.costing(mat(Items.DIAMOND_AXE, 1), mat(Items.DIAMOND, 4)).pve(),
+			SkillNode.of("nostalgy_1", 3, 12, SkillType.ENCHANTMENT).icon(Items.CLOCK)
+				.costing(mat(Items.IRON_INGOT, 32), mat(Items.REDSTONE, 32))
+				.enchantFor(20),
+			// Tier 5 — the fight, not the hit
+			SkillNode.chained("executioner_3", 4, 14, "executioner_2", SkillType.ENCHANTMENT).icon(Items.WITHER_SKELETON_SKULL)
+				.costing(mat(Items.NETHERITE_SCRAP, 2), mat(Items.BONE_BLOCK, 16))
+				.enchantFor(50).pve(),
+			SkillNode.chained("gravity_well_2", 4, 12, "gravity_well_1", SkillType.ENCHANTMENT).icon(Items.HEAVY_CORE)
+				.costing(mat(Items.BREEZE_ROD, 4), mat(Items.OBSIDIAN, 16))
+				.enchantFor(35).pve(),
+			SkillNode.chained("phalanx_2", 4, 12, "phalanx_1", SkillType.ENCHANTMENT).icon(Items.DIAMOND_SPEAR)
+				.costing(mat(Items.DIAMOND, 4), mat(Items.COPPER_INGOT, 64))
+				.enchantFor(35).pve(),
+			SkillNode.chained("tidecaller_2", 4, 12, "tidecaller_1", SkillType.ENCHANTMENT).icon(Items.PRISMARINE_CRYSTALS)
+				.costing(mat(Items.PRISMARINE_CRYSTALS, 16), mat(Items.NAUTILUS_SHELL, 3))
+				.enchantFor(35),
+			SkillNode.of("adrenaline", 4, 12, SkillType.PASSIVE).icon(Items.BLAZE_POWDER)
+				.costing(mat(Items.BLAZE_POWDER, 16), mat(Items.SUGAR, 32)).pve(),
+			SkillNode.of("storm_bearer", 4, 12, SkillType.PASSIVE).icon(Items.TRIDENT)
+				.costing(mat(Items.COPPER_INGOT, 64), mat(Items.PRISMARINE_SHARD, 32)),
+			// Migrated out of the Axe tree, where a pure PvP node had no business
+			// sitting in a woodcutting class. The old id is honoured on load.
+			SkillNode.of("shield_breaker", 4, 8, SkillType.PASSIVE).icon(Items.SHIELD)
+				.costing(mat(Items.SHIELD, 2), mat(Items.IRON_INGOT, 16)),
+			SkillNode.chained("nostalgy_2", 4, 14, "nostalgy_1", SkillType.ENCHANTMENT).icon(Items.CLOCK)
+				.costing(mat(Items.GOLD_BLOCK, 2), mat(Items.REDSTONE_BLOCK, 4))
+				.enchantFor(35),
+			// Tier 6 — the arguable ones
+			SkillNode.of("sundering_blow_1", 5, 14, SkillType.ENCHANTMENT).icon(Items.NETHERITE_SCRAP)
+				.costing(mat(Items.NETHERITE_SCRAP, 1), mat(Items.DIAMOND, 8))
+				.enchantFor(20).pve(),
+			SkillNode.chained("sundering_blow_2", 5, 16, "sundering_blow_1", SkillType.ENCHANTMENT).icon(Items.NETHERITE_INGOT)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.OBSIDIAN, 16))
+				.enchantFor(35).pve(),
+			SkillNode.of("bloodthirst", 5, 16, SkillType.PASSIVE).icon(Items.GHAST_TEAR)
+				.costing(mat(Items.GHAST_TEAR, 4), mat(Items.GOLDEN_APPLE, 2)).pve(),
+			SkillNode.of("headhunter", 5, 14, SkillType.PASSIVE).icon(Items.ZOMBIE_HEAD)
+				.costing(mat(Items.BONE_BLOCK, 16), mat(Items.ROTTEN_FLESH, 64)).pve(),
+			SkillNode.chained("nostalgy_3", 5, 16, "nostalgy_2", SkillType.ENCHANTMENT).icon(Items.CLOCK)
+				.costing(mat(Items.DIAMOND_BLOCK, 1), mat(Items.AMETHYST_SHARD, 16))
+				.enchantFor(50),
+			// Tier 7 — the end of the class
+			SkillNode.chained("nostalgy_4", 6, 20, "nostalgy_3", SkillType.ENCHANTMENT).icon(Items.CLOCK)
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.ECHO_SHARD, 8))
+				.enchantFor(70),
+			SkillNode.capstone("spoils_of_war", 6, 20, "warlords_wake", SkillType.PASSIVE).icon(Items.EMERALD_BLOCK)
+				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 16)),
+			SkillNode.capstone("warlords_wake", 6, 20, "spoils_of_war", SkillType.PASSIVE).icon(Items.WIND_CHARGE)
+				.costing(mat(Items.BREEZE_ROD, 8), mat(Items.NETHERITE_INGOT, 1)).pve(),
+			SkillNode.of("death_eyes", 6, 30, SkillType.PASSIVE).icon(Items.WITHER_SKELETON_SKULL)
+				.costing(mat(Items.NETHER_STAR, 1), mat(Items.WITHER_SKELETON_SKULL, 3), mat(Items.ECHO_SHARD, 8))
+				.pve().endOfTree()
+		)
+	);
+
 	// ---------- Armor — Path of the Bulwark ----------
 
 	/**
@@ -598,7 +762,8 @@ public final class SkillTrees {
 	 * class is one entry here plus its {@code SkillTree} above — the GUI, the
 	 * commands, the advancements and the state packet all read this list.
 	 */
-	public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, ARMOR);
+	public static final List<SkillTree> ORDER =
+		List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR);
 
 	/**
 	 * Classes the design calls for but that have no tree yet. They show up as
@@ -608,7 +773,6 @@ public final class SkillTrees {
 	}
 
 	public static final List<PlannedTree> PLANNED = List.of(
-		new PlannedTree("Sword", Items.DIAMOND_SWORD),
 		new PlannedTree("Bow", Items.BOW),
 		new PlannedTree("Rod", Items.FISHING_ROD)
 	);

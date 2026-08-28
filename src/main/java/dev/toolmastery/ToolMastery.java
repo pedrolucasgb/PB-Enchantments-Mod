@@ -4,6 +4,8 @@ import dev.toolmastery.advancement.ModAdvancements;
 import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AquaLungs;
 import dev.toolmastery.perk.AreaBreak;
+import dev.toolmastery.perk.CombatDrops;
+import dev.toolmastery.perk.CombatPerks;
 import dev.toolmastery.perk.AxeHarvest;
 import dev.toolmastery.perk.DeepHaste;
 import dev.toolmastery.perk.Flashpoint;
@@ -13,6 +15,7 @@ import dev.toolmastery.perk.Remember;
 import dev.toolmastery.perk.TimberScheduler;
 import dev.toolmastery.perk.Trailblazer;
 import dev.toolmastery.perk.Waypoints;
+import dev.toolmastery.perk.ToolMasteryConfig;
 import dev.toolmastery.progress.ModAttachments;
 import dev.toolmastery.progress.TreeProgress;
 import dev.toolmastery.skill.SkillService;
@@ -22,6 +25,7 @@ import dev.toolmastery.storage.SteadyGrid;
 import dev.toolmastery.track.ArmorTracker;
 import dev.toolmastery.track.BiomeTracker;
 import dev.toolmastery.track.BlockBreakTracker;
+import dev.toolmastery.track.CombatTracker;
 import dev.toolmastery.track.MovementTracker;
 import dev.toolmastery.track.StorageTracker;
 import net.fabricmc.api.ModInitializer;
@@ -33,6 +37,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.InteractionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +51,9 @@ public class ToolMastery implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModAttachments.init();
+		// The sword tree is the first part of the mod whose balance depends on
+		// what kind of server it is running on. Two switches, read once.
+		ToolMasteryConfig.load();
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			MasteryCommand.register(dispatcher));
@@ -88,9 +96,20 @@ public class ToolMastery implements ModInitializer {
 		ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
 			if (entity instanceof ServerPlayer player) {
 				Remember.onDeath(player);
-			} else if (source.getEntity() instanceof ServerPlayer killer) {
-				// Armor: the tier 3 gate only wants the kills you took while hurt.
-				ArmorTracker.onMobKill(killer);
+			}
+			if (source.getEntity() instanceof ServerPlayer killer && killer != entity
+				&& entity instanceof LivingEntity victim) {
+				if (!(entity instanceof ServerPlayer)) {
+					// Armor: the tier 3 gate only wants the mobs you killed while hurt.
+					ArmorTracker.onMobKill(killer);
+				}
+				// Sword: a kill is the class's block-break. The tracker runs
+				// first, while the crit that ended it is still the last one
+				// remembered.
+				CombatTracker.onKill(killer, victim);
+				CombatPerks.onKill(killer, victim);
+				CombatPerks.warlordsWake(killer, victim);
+				CombatDrops.onKill(killer, victim);
 			}
 		});
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> Remember.onRespawn(newPlayer));
@@ -107,6 +126,7 @@ public class ToolMastery implements ModInitializer {
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
 			ServerPlayer player = handler.getPlayer();
 			Trailblazer.forget(player);
+			CombatPerks.forget(player);
 			DeftHands.forget(player);
 			Flashpoint.forget(player);
 			StorageTracker.forget(player);
@@ -117,14 +137,18 @@ public class ToolMastery implements ModInitializer {
 			dev.toolmastery.perk.SmeltHandler.tick(server);
 			// After Smelt, so the magnet pockets the smelted result rather than the raw ore.
 			MinersMagnet.tick(server);
-			// Last: it collects the drops the break events above have just spawned.
+			// Last: both collect the drops the events above have just spawned.
 			AxeHarvest.tick(server);
+			CombatDrops.tick(server);
 
 			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 				// Every tick, because both react to a state that changes within
 				// one: a sprint that just broke, a hotbar stack that just ran out.
 				Trailblazer.tick(player);
 				DeftHands.tick(player);
+				// Every tick too: a braced spear reaches as far as the spear in
+				// hand, and a Hunter's Mark has to go out on time.
+				CombatPerks.tick(player);
 				// Every tick as well: a ten-second window has to close on the
 				// tick it runs out, not up to a second late.
 				Flashpoint.tick(player);
@@ -150,6 +174,7 @@ public class ToolMastery implements ModInitializer {
 					// where the player is standing.
 					MovementTracker.tick(player);
 					BiomeTracker.tick(player);
+					CombatTracker.tick(player);
 					// Armor: the gates measured in time worn and time on fire.
 					ArmorTracker.tick(player);
 				}

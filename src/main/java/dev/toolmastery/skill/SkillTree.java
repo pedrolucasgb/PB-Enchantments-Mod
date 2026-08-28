@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A full class tree: ordered tiers plus its purchasable nodes.
@@ -85,5 +86,31 @@ public final class SkillTree {
 	@Nullable
 	public SkillNode node(String nodeId) {
 		return nodes.get(nodeId);
+	}
+
+	/**
+	 * How many nodes of this tree {@code purchased} is still short of owning
+	 * everything — the question a {@link SkillNode#requiresAll()} node asks.
+	 *
+	 * <p>Three kinds do not count against it: the node doing the asking, nodes
+	 * that are not built yet, and the losing half of a capstone choice the
+	 * player has already made. Without that last exemption a pick-one pair
+	 * would make completion impossible by construction.
+	 *
+	 * <p>Takes a plain set rather than a progress object so the client can ask
+	 * it of its synced snapshot and get the same answer as the server.
+	 */
+	public int missingForCompletion(Set<String> purchased, String askingNodeId) {
+		int missing = 0;
+		for (SkillNode node : nodes.values()) {
+			if (node.id().equals(askingNodeId) || !node.implemented() || purchased.contains(node.id())) {
+				continue;
+			}
+			if (node.exclusiveWith() != null && purchased.contains(node.exclusiveWith())) {
+				continue; // passed over on purpose, not missing
+			}
+			missing++;
+		}
+		return missing;
 	}
 }

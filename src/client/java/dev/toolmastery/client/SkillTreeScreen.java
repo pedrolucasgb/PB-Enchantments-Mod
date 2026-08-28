@@ -267,9 +267,17 @@ public class SkillTreeScreen extends Screen {
 			.append(SkillTreeStyle.typeName(node.type())
 				.withColor(SkillTreeStyle.typeColor(node.type()) & 0xFFFFFF));
 		if (nodeState == NodeState.OWNED) {
+			if (node.pveOnly()) {
+				tip.append(Component.literal("\n"))
+					.append(Component.translatable("screen.toolmastery.pve_only").withColor(0xE8A45F));
+			}
 			tip.append(Component.literal("\n"))
 				.append(Component.translatable("screen.toolmastery.unlocked").withColor(0x5FBF4F));
 			return tip;
+		}
+		if (node.pveOnly()) {
+			tip.append(Component.literal("\n"))
+				.append(Component.translatable("screen.toolmastery.pve_only").withColor(0xE8A45F));
 		}
 		tip.append(Component.literal("\n"))
 			.append(Component.translatable("screen.toolmastery.unlock_cost", node.unlockCost())
@@ -445,6 +453,16 @@ public class SkillTreeScreen extends Screen {
 		if (node.exclusiveWith() != null && state.purchased().contains(node.exclusiveWith())) {
 			return Component.translatable("screen.toolmastery.unlock_blocked_by",
 				SkillNode.displayName(node.exclusiveWith()));
+		}
+		// The end of a tree: everything else in it, first. Asked of the synced
+		// snapshot with the same method the server uses, so the button greys out
+		// with the real number rather than a guess.
+		SkillTree tree = SkillTrees.byId(treeId);
+		if (node.requiresAll() && tree != null) {
+			int missing = tree.missingForCompletion(state.purchased(), node.id());
+			if (missing > 0) {
+				return Component.translatable("screen.toolmastery.unlock_needs_all", missing);
+			}
 		}
 		return null;
 	}

@@ -98,6 +98,12 @@ public final class SkillService {
 		if (node.exclusiveWith() != null && progress.owns(node.exclusiveWith())) {
 			return fail("mastery.toolmastery.unlock.fail.exclusive", SkillNode.displayName(node.exclusiveWith()));
 		}
+		if (node.requiresAll()) {
+			int missing = tree.missingForCompletion(progress.purchased, node.id());
+			if (missing > 0) {
+				return fail("mastery.toolmastery.unlock.fail.requires_all", missing);
+			}
+		}
 		MaterialCost missing = MaterialCost.missing(player, node.materials());
 		if (missing != null) {
 			return fail("mastery.toolmastery.unlock.fail.materials", missing.label(), missing.held(player));
