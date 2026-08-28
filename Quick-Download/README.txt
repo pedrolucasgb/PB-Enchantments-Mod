@@ -82,13 +82,48 @@ WHAT IS NEW IN 0.4.0
   simply do not fire at a player. The skill screen says so on the card.
   config/toolmastery.json has the two switches if your server disagrees.
 
-- THE ARMOR TREE OPENS (Path of the Bulwark) - the class that cannot level
-  from doing something, because wearing armour is not an action. It levels
-  from DAMAGE SURVIVED: what your set absorbed, what your shield stopped,
-  what you walked away from. The tree ships whole and priced with one node
-  built so far:
-    Flashpoint - touching lava buys you ten seconds of immunity to it,
-                 and only rearms once you are out and no longer burning
+- THE ARMOR CLASS (Path of the Bulwark) - the class that cannot level from
+  doing something, because wearing armour is not an action. It levels from
+  DAMAGE SURVIVED: what your set absorbed, what your shield stopped, what
+  you walked away from - which makes it the only tree that advances while
+  you play every other one. Seven tiers, like the Sword.
+    Padded Lining   - armour takes 15/30/45% less durability damage
+    Set Sense       - your real armour, toughness and damage reduction,
+                      drawn above the armour bar that hides them
+    Shield Wall     - the shield is up the instant you raise it; II widens
+                      the arc it covers
+    Steady Stance   - 25% less knockback from mobs
+    Flashpoint      - touching lava buys you ten seconds of immunity to it,
+                      and only rearms once you are out and no longer burning
+    Thermal Weave   - ENCHANTMENT: much less fire and lava damage, and it
+                      adds to Fire Protection instead of replacing it
+    Sure Footing    - nothing underfoot slows you down, plus half Depth
+                      Strider and half Soul Speed without the enchantments
+    Second Skin     - a piece never spends its last durability point
+    Ablative Plating- ENCHANTMENT: explosion damage -20/-40%, and a creeper
+                      no longer throws you at all
+    Bulwark         - ENCHANTMENT for the shield: 25/50/75% less durability,
+                      and at III an axe cannot disable it any more
+    Thorned Plate   - ENCHANTMENT: Thorns with no durability cost
+    Last Stand      - below four hearts, Resistance for five seconds
+    Repair Rites    - armour mends itself while you stand still, unhurt
+    Kinetic Plating - ENCHANTMENT for boots: six free blocks of fall, and
+                      the rest hurts half as much
+    Guardian's Aura - everyone near you takes 10% less damage. The first
+                      node in the mod whose value is entirely for others
+    Warden's Weight - nothing knocks you back while you are blocking
+    Nightplate      - a full set of one material carries its own bonus
+
+- PICK ONE OF THREE at the end of the Armor tree, and only one:
+    Aegis         - your ceiling on vanilla PROTECTION goes from IV to V
+    Immortal Line - a killing blow leaves you on one heart instead, once
+                    every ten minutes, and it costs no totem
+    Living Armor  - experience you pick up mends the whole set at once,
+                    from any source, with no Mending on the pieces
+
+- THE SKILL SCREEN SCROLLS SIDEWAYS. The two seven-tier trees are wider
+  than the window, so the tree pans: the wheel over it, or the bar under
+  it. Five-tier trees look exactly as they always did.
 
 - SHIELD BREAKER MOVED from the Axe tree to the Sword tree, where a PvP
   node belongs. If you already bought it, you keep it - it moves with you.
