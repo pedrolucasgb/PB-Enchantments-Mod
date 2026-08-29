@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.4
+Version 0.6.5
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,23 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.5
+--------------------
+- THE MOD SPEAKS YOUR LANGUAGE. Full translations into Brazilian
+  Portuguese and Spanish, following the language your client is set to.
+  Every skill, tier, gate achievement, button, tooltip and chat message.
+  Any other language falls back to English.
+
+- AXE TREE, tiers 1 and 2: the wood targets were cut in half. Chop Logs
+  256 -> 128, Make Charcoal 64 -> 32, Logs Chopped In Total 512 -> 256,
+  Strip Logs 32 -> 16.
+
+- New coming-soon nodes in the Explorer tree: BIOME CHART I (tier 2) -
+  buy a real map to a random biome for a little XP, as often as you
+  like; BIOME CHART II (tier 3) - the map now points only at biomes you
+  have never visited, for more XP. The mod's first skills that put an
+  item in your inventory.
 
 WHAT IS NEW IN 0.6.4
 --------------------
@@ -435,7 +452,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.4.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.5.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
