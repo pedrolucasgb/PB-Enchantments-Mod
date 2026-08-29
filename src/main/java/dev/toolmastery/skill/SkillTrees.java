@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -182,32 +183,19 @@ public final class SkillTrees {
 			SkillNode.chained("logic_2", 2, 9, "logic_1", SkillType.ENCHANTMENT).icon(Items.OAK_WOOD)
 				.costing(mat(ItemTags.LOGS, 64), mat(Items.DIAMOND, 4))
 				.enchantFor(35),
-			SkillNode.of("double_axe_1", 2, 7, SkillType.PASSIVE).icon(Items.GOLDEN_AXE)
-				.costing(mat(ItemTags.LOGS, 32), mat(Items.DIAMOND, 4)),
 			// Tier 4
 			SkillNode.chained("logic_3", 3, 12, "logic_2", SkillType.ENCHANTMENT).icon(Items.OAK_LEAVES)
 				.costing(mat(ItemTags.LOGS, 64), mat(Items.DIAMOND, 8))
 				.enchantFor(50),
-			SkillNode.chained("double_axe_2", 3, 8, "double_axe_1", SkillType.PASSIVE).icon(Items.GOLD_BLOCK)
+			SkillNode.of("double_axe_1", 3, 7, SkillType.PASSIVE).icon(Items.GOLDEN_AXE)
+				.costing(mat(ItemTags.LOGS, 32), mat(Items.DIAMOND, 4)),
+			// Tier 5 — the tree closes on its two payoffs: the doubled harvest
+			// and the enchantment that replants what Logic fells.
+			SkillNode.chained("double_axe_2", 4, 8, "double_axe_1", SkillType.PASSIVE).icon(Items.GOLD_BLOCK)
 				.costing(mat(Items.DIAMOND, 8), mat(Items.EMERALD_BLOCK, 1)),
-			SkillNode.chained("environment", 3, 8, "logic_3", SkillType.ENCHANTMENT).icon(Items.BONE_MEAL)
+			SkillNode.chained("environment", 4, 8, "logic_3", SkillType.ENCHANTMENT).icon(Items.BONE_MEAL)
 				.costing(mat(ItemTags.SAPLINGS, 64), mat(Items.BONE_MEAL, 32))
-				.enchantFor(25),
-			// Four sides of the axe that have nothing to do with what it can hit:
-			// fuel, building, sap and copper. All still to be built.
-			SkillNode.of("kindling", 3, 8, SkillType.PASSIVE).icon(Items.CHARCOAL)
-				.costing(mat(ItemTags.LOGS, 64), mat(Items.CHARCOAL, 32)).future(),
-			SkillNode.of("woodcarver", 3, 9, SkillType.PASSIVE).icon(Items.OAK_STAIRS)
-				.costing(mat(ItemTags.LOGS, 64), mat(Items.IRON_INGOT, 16)).future(),
-			SkillNode.of("sap_tapper", 3, 9, SkillType.PASSIVE).icon(Items.RESIN_CLUMP)
-				.costing(mat(Items.STRIPPED_OAK_LOG, 32), mat(Items.GLASS_BOTTLE, 8)).future(),
-			SkillNode.of("patina_hand", 3, 7, SkillType.PASSIVE).icon(Items.COPPER_INGOT)
-				.costing(mat(Items.COPPER_INGOT, 32), mat(Items.HONEYCOMB, 8)).future(),
-			// Tier 5 — two finishers, both still to be built
-			SkillNode.of("everbloom", 4, 20, SkillType.PASSIVE).icon(Items.OAK_SAPLING)
-				.costing(mat(Items.EMERALD_BLOCK, 4), mat(ItemTags.SAPLINGS, 64)).future(),
-			SkillNode.of("bountiful_grove", 4, 20, SkillType.PASSIVE).icon(Items.HONEYCOMB)
-				.costing(mat(Items.EMERALD_BLOCK, 4), mat(ItemTags.LOGS, 128)).future()
+				.enchantFor(25)
 		)
 	);
 
@@ -454,15 +442,9 @@ public final class SkillTrees {
 			// Tier 4
 			SkillNode.of("restock_nearby", 3, 10, SkillType.PASSIVE).icon(Items.HOPPER)
 				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.DIAMOND, 8)),
-			// The rest of the quartermaster's kit, still to be built.
-			SkillNode.of("container_labels", 3, 7, SkillType.PASSIVE).icon(Items.NAME_TAG)
-				.costing(mat(Items.NAME_TAG, 4), mat(Items.PAPER, 32)).future(),
+			// The one piece of the quartermaster's kit still to be built.
 			SkillNode.of("shulker_sight", 3, 10, SkillType.PASSIVE).icon(Items.SHULKER_BOX)
 				.costing(mat(Items.SHULKER_SHELL, 4), mat(Items.ENDER_PEARL, 8)).future(),
-			SkillNode.of("blueprints", 3, 8, SkillType.PASSIVE).icon(Items.KNOWLEDGE_BOOK)
-				.costing(mat(Items.BOOK, 16), mat(Items.GOLD_INGOT, 16)).future(),
-			SkillNode.of("salvage", 3, 9, SkillType.PASSIVE).icon(Items.IRON_NUGGET)
-				.costing(mat(Items.IRON_INGOT, 32), mat(Items.GRINDSTONE, 1)).future(),
 			// Tier 5 — capstone
 			SkillNode.of("hand_of_order", 4, 20, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CHEST, 64))
@@ -933,6 +915,13 @@ public final class SkillTrees {
 	 */
 	public static final List<SkillTree> ORDER =
 		List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR, BOW);
+
+	/**
+	 * Trees whose balance is still being play-tested. Fully playable — the
+	 * skill screen just stamps an "in testing" badge on their tabs and nodes
+	 * so nobody mistakes their numbers for final.
+	 */
+	public static final Set<String> IN_TESTING = Set.of("sword", "armor", "bow");
 
 	/**
 	 * Classes the design calls for but that have no tree yet. They show up as
