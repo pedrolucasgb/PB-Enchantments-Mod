@@ -15,6 +15,7 @@ import dev.toolmastery.skill.SkillNode;
 import dev.toolmastery.skill.SkillTier;
 import dev.toolmastery.skill.SkillTree;
 import dev.toolmastery.skill.SkillTrees;
+import dev.toolmastery.skill.XpMath;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -45,11 +46,12 @@ import java.util.Map;
  * HUD.
  *
  * <p>A node offers up to two purchases, and neither happens on a single click:
- * <b>Unlock</b> (XP levels + materials, once) and <b>Enchant</b> (whole XP
- * levels, repeatable, stamps the enchantment on the held item). Pressing either
- * swaps the details panel for a confirmation card that spells out exactly what
- * the player is about to buy — the enchanting-table promise for an unlock, the
- * held item and its compatibility for an enchant — with Confirm and Cancel.
+ * <b>Unlock</b> (XP points + materials, once) and <b>Enchant</b> (XP points,
+ * repeatable, stamps the enchantment on the held item). An owned node can be
+ * sold back for a fifth of its price. Pressing any of them swaps the details
+ * panel for a confirmation card that spells out exactly what the player is
+ * about to buy — the enchanting-table promise for an unlock, the held item and
+ * its compatibility for an enchant — with Confirm and Cancel.
  *
  * <p>Nothing here is written per class: the tabs come from
  * {@link SkillTrees#ORDER}, the tier names and icons off the tree and its
@@ -85,7 +87,8 @@ public class SkillTreeScreen extends Screen {
 		NONE,
 		UNLOCK_TIER,
 		UNLOCK_NODE,
-		ENCHANT_NODE
+		ENCHANT_NODE,
+		SELL_NODE
 	}
 
 	private String treeId = SkillTrees.ORDER.getFirst().id();
@@ -184,9 +187,28 @@ public class SkillTreeScreen extends Screen {
 			buildActionButtons(tree, state);
 		}
 
-		addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
-			.bounds(panelX + 6, height - 26, panelWidth - 12, 18)
-			.build());
+		// With a node or tier selected the bottom row splits: Track pins the
+		// selection's missing gates to the HUD scoreboard (one pin at a time —
+		// pinning replaces, pinning again unpins), Done keeps its corner.
+		if (selectedNode != null || selectedTier >= 0) {
+			int half = (panelWidth - 12 - 2) / 2;
+			boolean pinned = GoalTracker.isPinned(treeId, selectedNode, selectedTier);
+			addRenderableWidget(Button.builder(
+					Component.translatable(pinned ? "screen.toolmastery.untrack" : "screen.toolmastery.track"),
+					button -> {
+						GoalTracker.toggle(treeId, selectedNode, selectedTier);
+						scheduleRebuild();
+					})
+				.bounds(panelX + 6, height - 26, half, 18)
+				.build());
+			addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
+				.bounds(panelX + 6 + half + 2, height - 26, panelWidth - 12 - half - 2, 18)
+				.build());
+		} else {
+			addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onClose())
+				.bounds(panelX + 6, height - 26, panelWidth - 12, 18)
+				.build());
+		}
 	}
 
 	/**
@@ -416,7 +438,9 @@ public class SkillTreeScreen extends Screen {
 		if (node.blockedBy(state.purchased()::contains) != null) {
 			return NodeState.BLOCKED;
 		}
-		if (node.tier() >= state.unlockedTiers()
+		// Master mode ignores tier locks, so a node only the tier was holding
+		// back lights up gold — the whole point of the mode is clicking it.
+		if ((node.tier() >= state.unlockedTiers() && !ClientSkillState.debugMaster())
 			|| (node.requires() != null && !state.purchased().contains(node.requires()))) {
 			return NodeState.LOCKED;
 		}
@@ -442,7 +466,8 @@ public class SkillTreeScreen extends Screen {
 				.append(Component.translatable("screen.toolmastery.pve_only").withColor(0xE8A45F));
 		}
 		tip.append(Component.literal("\n"))
-			.append(Component.translatable("screen.toolmastery.unlock_cost", node.unlockCost())
+			.append(Component.translatable("screen.toolmastery.unlock_cost",
+					XpMath.pointsForLevel(node.unlockCost()))
 				.withColor(0x9AA1AD));
 		Component blocker = state == null ? null : unlockProblem(node, state);
 		if (blocker != null) {
@@ -458,7 +483,7 @@ public class SkillTreeScreen extends Screen {
 			return tip.append(Component.translatable("screen.toolmastery.unlocked").withColor(0x5FBF4F));
 		}
 		return tip.append(Component.translatable("screen.toolmastery.unlock_cost_tier",
-			tree.tiers().get(tier).accessCost()).withColor(0x9AA1AD));
+			XpMath.pointsForLevel(tree.tiers().get(tier).accessCost())).withColor(0x9AA1AD));
 	}
 
 	// ---------- actions ----------
@@ -486,32 +511,54 @@ public class SkillTreeScreen extends Screen {
 			return;
 		}
 
+		boolean master = ClientSkillState.debugMaster();
 		SkillNode node = selectedNode == null ? null : tree.node(selectedNode);
 		if (node != null) {
 			boolean owned = state.purchased().contains(node.id());
-			Component unlockLabel = owned
-				? Component.translatable("screen.toolmastery.unlocked")
-				: Component.translatable("screen.toolmastery.unlock_node", node.unlockCost());
-			Component unlockBlocker = owned ? null : unlockProblem(node, state);
-			if (!owned && unlockBlocker == null) {
-				addRenderableWidget(Button.builder(unlockLabel, button -> {
-						pending = Pending.UNLOCK_NODE;
-						scheduleRebuild();
-					})
-					.bounds(panelX + 6, primaryY, buttonWidth, 18)
-					.build());
+			if (owned) {
+				// The primary slot flips to selling the node back — the details
+				// panel already says "Unlocked", the button offers the way out.
+				Component sellLabel = Component.translatable("screen.toolmastery.sell_node",
+					XpMath.pointsForLevel(node.unlockCost()) / 5);
+				Component sellBlocker = sellProblem(node, state);
+				if (sellBlocker == null) {
+					addRenderableWidget(Button.builder(sellLabel, button -> {
+							pending = Pending.SELL_NODE;
+							scheduleRebuild();
+						})
+						.bounds(panelX + 6, primaryY, buttonWidth, 18)
+						.build());
+				} else {
+					Button disabled = addDisabled(sellLabel, primaryY);
+					disabled.setTooltip(Tooltip.create(sellBlocker));
+				}
 			} else {
-				Component blockedLabel = node.implemented()
-					? Component.translatable("screen.toolmastery.locked")
-					: Component.translatable("screen.toolmastery.coming_soon");
-				Button disabled = addDisabled(owned ? unlockLabel : blockedLabel, primaryY);
-				if (unlockBlocker != null) {
+				Component unlockLabel = master
+					? Component.translatable("screen.toolmastery.unlock_node_free")
+					: Component.translatable("screen.toolmastery.unlock_node",
+						XpMath.pointsForLevel(node.unlockCost()));
+				Component unlockBlocker = unlockProblem(node, state);
+				if (unlockBlocker == null) {
+					addRenderableWidget(Button.builder(unlockLabel, button -> {
+							pending = Pending.UNLOCK_NODE;
+							scheduleRebuild();
+						})
+						.bounds(panelX + 6, primaryY, buttonWidth, 18)
+						.build());
+				} else {
+					Component blockedLabel = node.implemented()
+						? Component.translatable("screen.toolmastery.locked")
+						: Component.translatable("screen.toolmastery.coming_soon");
+					Button disabled = addDisabled(blockedLabel, primaryY);
 					disabled.setTooltip(Tooltip.create(unlockBlocker));
 				}
 			}
 
 			if (node.enchantable()) {
-				Component enchantLabel = Component.translatable("screen.toolmastery.enchant_node", node.enchantCost());
+				Component enchantLabel = master
+					? Component.translatable("screen.toolmastery.enchant_node_free")
+					: Component.translatable("screen.toolmastery.enchant_node",
+						XpMath.pointsForLevel(node.enchantCost()));
 				if (owned && enchantProblem(node) == null) {
 					addRenderableWidget(Button.builder(enchantLabel, button -> {
 							pending = Pending.ENCHANT_NODE;
@@ -532,10 +579,14 @@ public class SkillTreeScreen extends Screen {
 
 		if (selectedTier >= 0) {
 			SkillTier tier = tree.tiers().get(selectedTier);
+			Component tierLabel = master
+				? Component.translatable("screen.toolmastery.unlock_free")
+				: Component.translatable("screen.toolmastery.unlock",
+					XpMath.pointsForLevel(tier.accessCost()));
 			if (selectedTier < state.unlockedTiers()) {
 				addDisabled(Component.translatable("screen.toolmastery.unlocked"), primaryY);
 			} else if (selectedTier == state.unlockedTiers()) {
-				addRenderableWidget(Button.builder(Component.translatable("screen.toolmastery.unlock", tier.accessCost()),
+				addRenderableWidget(Button.builder(tierLabel,
 						button -> {
 							pending = Pending.UNLOCK_TIER;
 							scheduleRebuild();
@@ -544,7 +595,7 @@ public class SkillTreeScreen extends Screen {
 					.build());
 			} else {
 				// Tiers open strictly in order, so this one is not even a choice yet.
-				Button disabled = addDisabled(Component.translatable("screen.toolmastery.unlock", tier.accessCost()), primaryY);
+				Button disabled = addDisabled(tierLabel, primaryY);
 				disabled.setTooltip(Tooltip.create(
 					Component.translatable("screen.toolmastery.tier_needs_previous", state.unlockedTiers() + 1)));
 			}
@@ -579,6 +630,12 @@ public class SkillTreeScreen extends Screen {
 						new SkillActionPayload(SkillActionPayload.Action.ENCHANT_NODE, treeId, selectedNode));
 				}
 			}
+			case SELL_NODE -> {
+				if (selectedNode != null) {
+					ClientPlayNetworking.send(
+						new SkillActionPayload(SkillActionPayload.Action.SELL_NODE, treeId, selectedNode));
+				}
+			}
 			case NONE -> {
 				// nothing pending
 			}
@@ -605,7 +662,8 @@ public class SkillTreeScreen extends Screen {
 		if (!node.implemented()) {
 			return Component.translatable("screen.toolmastery.coming_soon");
 		}
-		if (node.tier() >= state.unlockedTiers()) {
+		// Master mode buys straight past the tier lock — same rule as the server.
+		if (node.tier() >= state.unlockedTiers() && !ClientSkillState.debugMaster()) {
 			return Component.translatable("screen.toolmastery.unlock_needs_tier", node.tier() + 1);
 		}
 		if (node.requires() != null && !state.purchased().contains(node.requires())) {
@@ -631,8 +689,30 @@ public class SkillTreeScreen extends Screen {
 	}
 
 	/**
+	 * Why this owned node cannot be sold back, or null when it can. Mirrors
+	 * {@code SkillService.sellNode}: anything bought on top of it — a higher
+	 * rank, or an everything-first capstone — has to be sold first.
+	 */
+	@Nullable
+	private Component sellProblem(SkillNode node, SkillStatePayload.TreeState state) {
+		SkillTree tree = SkillTrees.byId(treeId);
+		if (tree == null) {
+			return Component.translatable("screen.toolmastery.syncing");
+		}
+		for (SkillNode other : tree.nodes().values()) {
+			if (other.id().equals(node.id()) || !state.purchased().contains(other.id())) {
+				continue;
+			}
+			if (node.id().equals(other.requires()) || other.requiresAll()) {
+				return Component.translatable("screen.toolmastery.sell_blocked_by", other.displayName());
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * The same compatibility verdict the server will reach, computed locally so
-	 * the button can be greyed out with the reason attached before any level is
+	 * the button can be greyed out with the reason attached before any point is
 	 * spent. Null means the enchant would go through.
 	 */
 	@Nullable
@@ -787,11 +867,14 @@ public class SkillTreeScreen extends Screen {
 		SkillTreeStyle.progressBar(graphics, barX, barY, barWidth, 11, player.experienceProgress,
 			SkillTreeStyle.XP_GREEN);
 
-		// The level rides on the bar rather than above it: the HUD has the whole
-		// screen to breathe in, this strip has eleven pixels.
-		String level = Component.translatable("screen.toolmastery.levels", player.experienceLevel).getString();
-		SkillTreeStyle.outlinedText(graphics, font, level,
-			barX + (barWidth - font.width(level)) / 2, barY + 2, SkillTreeStyle.TEXT);
+		// The wallet rides on the bar rather than above it: the HUD has the
+		// whole screen to breathe in, this strip has eleven pixels. Points lead
+		// because points are what everything here is priced in; the level tags
+		// along so the bar still matches the HUD's number.
+		String wallet = Component.translatable("screen.toolmastery.xp_bar",
+			XpMath.totalPoints(player), player.experienceLevel).getString();
+		SkillTreeStyle.outlinedText(graphics, font, wallet,
+			barX + (barWidth - font.width(wallet)) / 2, barY + 2, SkillTreeStyle.TEXT);
 	}
 
 	/**
@@ -857,13 +940,15 @@ public class SkillTreeScreen extends Screen {
 		y = wrappedText(graphics,
 			owned
 				? Component.translatable("screen.toolmastery.unlocked")
-				: Component.translatable("screen.toolmastery.unlock_cost", node.unlockCost()),
+				: Component.translatable("screen.toolmastery.unlock_cost",
+					XpMath.pointsForLevel(node.unlockCost())),
 			x, y, owned ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 11);
 		if (!owned) {
 			y = drawMaterials(graphics, node, x, y);
 		}
 		if (node.enchantable()) {
-			y = wrappedText(graphics, Component.translatable("screen.toolmastery.enchant_cost", node.enchantCost()),
+			y = wrappedText(graphics, Component.translatable("screen.toolmastery.enchant_cost",
+					XpMath.pointsForLevel(node.enchantCost())),
 				x, y, SkillTreeStyle.MUTED, 11);
 		}
 		if (node.requires() != null) {
@@ -906,7 +991,8 @@ public class SkillTreeScreen extends Screen {
 		y = wrappedText(graphics,
 			open
 				? Component.translatable("screen.toolmastery.unlocked")
-				: Component.translatable("screen.toolmastery.unlock_cost_tier", tier.accessCost()),
+				: Component.translatable("screen.toolmastery.unlock_cost_tier",
+					XpMath.pointsForLevel(tier.accessCost())),
 			x, y, open ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 13);
 
 		graphics.text(font, Component.translatable("screen.toolmastery.gate"), x, y, SkillTreeStyle.GOLD);
@@ -946,7 +1032,8 @@ public class SkillTreeScreen extends Screen {
 				tree.tierName(tierIndex)), x, y, SkillTreeStyle.GOLD, 11);
 			y += 2;
 			graphics.textWithWordWrap(font,
-				Component.translatable("screen.toolmastery.confirm.tier_body", tier.accessCost()),
+				Component.translatable("screen.toolmastery.confirm.tier_body",
+					XpMath.pointsForLevel(tier.accessCost())),
 				x, y, wrap, SkillTreeStyle.MUTED);
 			return;
 		}
@@ -954,10 +1041,22 @@ public class SkillTreeScreen extends Screen {
 			return;
 		}
 
+		if (pending == Pending.SELL_NODE) {
+			y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.sell_title",
+				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
+			y += 2;
+			graphics.textWithWordWrap(font,
+				Component.translatable("screen.toolmastery.confirm.sell_body",
+					XpMath.pointsForLevel(node.unlockCost()) / 5),
+				x, y, wrap, SkillTreeStyle.MUTED);
+			return;
+		}
+
 		if (pending == Pending.UNLOCK_NODE) {
 			y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.unlock_title",
 				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
-			y = wrappedText(graphics, Component.translatable("screen.toolmastery.unlock_cost", node.unlockCost()),
+			y = wrappedText(graphics, Component.translatable("screen.toolmastery.unlock_cost",
+					XpMath.pointsForLevel(node.unlockCost())),
 				x, y, SkillTreeStyle.MUTED, 11);
 			y = drawMaterials(graphics, node, x, y);
 			y += 2;
@@ -971,7 +1070,8 @@ public class SkillTreeScreen extends Screen {
 				bodyKey = "screen.toolmastery.confirm.unlock_body_capstone";
 			}
 			graphics.textWithWordWrap(font,
-				Component.translatable(bodyKey, node.displayName(), node.enchantCost()), x, y, wrap,
+				Component.translatable(bodyKey, node.displayName(),
+					XpMath.pointsForLevel(node.enchantCost())), x, y, wrap,
 				SkillTreeStyle.MUTED);
 			return;
 		}
@@ -983,7 +1083,8 @@ public class SkillTreeScreen extends Screen {
 			node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
 		y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.enchant_target", held),
 			x, y, SkillTreeStyle.TEXT, 11);
-		y = wrappedText(graphics, Component.translatable("screen.toolmastery.enchant_cost", node.enchantCost()),
+		y = wrappedText(graphics, Component.translatable("screen.toolmastery.enchant_cost",
+				XpMath.pointsForLevel(node.enchantCost())),
 			x, y, SkillTreeStyle.MUTED, 11);
 		Component problem = enchantProblem(node);
 		if (problem != null) {

@@ -14,10 +14,12 @@ public record SkillActionPayload(Action action, String treeId, String nodeId) im
 	public enum Action {
 		REQUEST_STATE,
 		UNLOCK_TIER,
-		/** One-off purchase: XP levels + materials, opens the node. */
+		/** One-off purchase: XP points + materials, opens the node. */
 		UNLOCK_NODE,
-		/** Repeatable: whole XP levels, stamps the enchantment on the held item. */
-		ENCHANT_NODE
+		/** Repeatable: XP points, stamps the enchantment on the held item. */
+		ENCHANT_NODE,
+		/** Refunds an owned node for a fifth of its unlock price. */
+		SELL_NODE
 	}
 
 	public static final Type<SkillActionPayload> TYPE =

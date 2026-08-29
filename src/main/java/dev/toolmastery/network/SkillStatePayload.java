@@ -17,7 +17,7 @@ import java.util.Set;
  * S2C: full snapshot of the player's skill progress, sent when the client
  * requests it and after every successful action.
  */
-public record SkillStatePayload(Map<String, TreeState> trees) implements CustomPacketPayload {
+public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> trees) implements CustomPacketPayload {
 	public record TreeState(int unlockedTiers, Set<String> purchased, Map<String, Integer> counters,
 		long lockedSlots) {
 	}
@@ -29,6 +29,7 @@ public record SkillStatePayload(Map<String, TreeState> trees) implements CustomP
 		CustomPacketPayload.codec(SkillStatePayload::write, SkillStatePayload::read);
 
 	private static SkillStatePayload read(FriendlyByteBuf buf) {
+		boolean debugMaster = buf.readBoolean();
 		int treeCount = buf.readVarInt();
 		Map<String, TreeState> trees = new HashMap<>();
 		for (int i = 0; i < treeCount; i++) {
@@ -46,10 +47,11 @@ public record SkillStatePayload(Map<String, TreeState> trees) implements CustomP
 			}
 			trees.put(treeId, new TreeState(unlocked, purchased, counters, buf.readLong()));
 		}
-		return new SkillStatePayload(trees);
+		return new SkillStatePayload(debugMaster, trees);
 	}
 
 	private void write(FriendlyByteBuf buf) {
+		buf.writeBoolean(debugMaster);
 		buf.writeVarInt(trees.size());
 		for (Map.Entry<String, TreeState> entry : trees.entrySet()) {
 			buf.writeUtf(entry.getKey());
