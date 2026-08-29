@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.0
+Version 0.6.1
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,22 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.1
+--------------------
+- E (inventory key) and K (the skill tree key) now CLOSE the skill tree,
+  the same way E closes your inventory.
+
+- AXE TREE cleaned up: every coming-soon node is gone. Double Axe I moved
+  to tier 4; Double Axe II and the Environment enchantment are now the
+  tier 5 finishers.
+
+- ARTISAN TREE: Crate Labels, Blueprints and Salvage were removed. The
+  only coming-soon node left is Shulker Sight.
+
+- The SWORD, ARMOR and BOW classes are tagged IN TESTING: fully playable,
+  but their numbers may still change. The tag shows on the class tab, on
+  every node tooltip and in the details panel.
 
 WHAT IS NEW IN 0.6.0
 --------------------
@@ -366,7 +382,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.0.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.1.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
