@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.6
+Version 0.6.7
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,15 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.7
+--------------------
+- THE SKILL SCREEN ANSWERS WHERE YOU CLICKED. Every verdict of a skill
+  action - "unlocked!", "not enough XP", "no such biome within reach",
+  "sell the higher rank first" - now appears as a banner inside the
+  skill screen itself, green for success and red for the reason it
+  failed, instead of a chat message behind the screen. Chat is only the
+  fallback for a reply that arrives after you closed the screen.
 
 WHAT IS NEW IN 0.6.6
 --------------------
@@ -470,7 +479,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.6.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.7.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).

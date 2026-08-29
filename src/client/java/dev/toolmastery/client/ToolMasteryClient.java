@@ -27,6 +27,19 @@ public class ToolMasteryClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		ClientPlayNetworking.registerGlobalReceiver(SkillStatePayload.TYPE, (payload, context) ->
 			ClientSkillState.accept(payload));
+		// Action verdicts land where the click happened: a banner in the skill
+		// screen. Chat only catches a reply that outlived the screen.
+		ClientPlayNetworking.registerGlobalReceiver(dev.toolmastery.network.SkillFeedbackPayload.TYPE,
+			(payload, context) -> {
+				if (context.client().gui.screen() instanceof SkillTreeScreen screen) {
+					screen.showFeedback(payload.ok(), payload.message());
+				} else if (context.player() != null) {
+					context.player().sendSystemMessage(payload.message().copy()
+						.withStyle(payload.ok()
+							? net.minecraft.ChatFormatting.GREEN
+							: net.minecraft.ChatFormatting.RED));
+				}
+			});
 		ClientPlayNetworking.registerGlobalReceiver(EnchantPreviewPayload.TYPE, (payload, context) ->
 			EnchantPreviewState.accept(payload));
 
