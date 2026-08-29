@@ -13,8 +13,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -83,6 +85,29 @@ public class ItemStackMixin {
 	private void toolmastery$spentHarvestsNothing(BlockState state, CallbackInfoReturnable<Boolean> cir) {
 		if (Indestructible.isSpent((ItemStack) (Object) this)) {
 			cir.setReturnValue(false);
+		}
+	}
+
+	/**
+	 * A spent armour piece protects for nothing. This is the one funnel every
+	 * equipped attribute flows through — {@code LivingEntity} re-reads it each
+	 * time a slot's stack changes, and a durability tick <em>is</em> a change —
+	 * so cancelling it here strips the armour, toughness and knockback
+	 * resistance off a spent piece for whoever wears it: the player (whose
+	 * armour bar empties with the attribute, which is the visible half of the
+	 * promise), a zombie in a scavenged helmet, a wolf, a horse, a nautilus.
+	 * Repairing the piece is a stack change too, so everything comes back.
+	 *
+	 * <p>Armour slots only: a held item's attack damage is judged by the
+	 * attack hooks, not silently zeroed on the way in.
+	 */
+	@Inject(
+		method = "forEachModifier(Lnet/minecraft/world/entity/EquipmentSlot;Ljava/util/function/BiConsumer;)V",
+		at = @At("HEAD"), cancellable = true)
+	private void toolmastery$spentArmourProtectsNothing(EquipmentSlot slot, BiConsumer<?, ?> consumer,
+			CallbackInfo ci) {
+		if (slot.isArmor() && Indestructible.isSpent((ItemStack) (Object) this)) {
+			ci.cancel();
 		}
 	}
 }

@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.2
+Version 0.6.3
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,21 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.3
+--------------------
+- INDESTRUCTIBLE finally means what it says everywhere:
+    * A spent armour piece (durability run out) protects for NOTHING
+      until repaired - your armour bar visibly drops, as if the piece
+      were not there. The same happens to armour worn by mobs: a zombie's
+      scavenged helmet, wolf armour, horse armour, nautilus armour.
+    * A spent item's RIGHT CLICK is dead too: a bow will not draw, a
+      crossbow will not load, a hoe will not till, a shovel will not
+      path, an axe will not strip, a brush will not brush, a spear will
+      not throw - nothing works until you repair it. (The mace never had
+      a right-click job, so it is unchanged.)
+    * The action bar tells you why: "Your <item> is spent - repair it
+      before it works again."
 
 WHAT IS NEW IN 0.6.2
 --------------------
@@ -399,7 +414,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.2.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.3.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
