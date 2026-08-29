@@ -72,6 +72,13 @@ public final class ModNetworking {
 						feedback(player, SkillService.enchantHeld(player, tree, node));
 					}
 				}
+				case SELL_NODE -> {
+					SkillTree tree = SkillTrees.byId(payload.treeId());
+					SkillNode node = tree == null ? null : tree.node(payload.nodeId());
+					if (node != null) {
+						feedback(player, SkillService.sellNode(player, tree, node));
+					}
+				}
 			}
 			sendState(player);
 		});
@@ -99,6 +106,6 @@ public final class ModNetworking {
 				treeProgress.lockedSlots
 			));
 		}
-		ServerPlayNetworking.send(player, new SkillStatePayload(trees));
+		ServerPlayNetworking.send(player, new SkillStatePayload(progress.debugMaster, trees));
 	}
 }
