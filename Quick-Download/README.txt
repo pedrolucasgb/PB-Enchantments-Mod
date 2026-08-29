@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.5.0
+Version 0.5.1
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,27 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.5.1
+--------------------
+Bug fixes for the combat progress counters - if a gate seemed stuck, it
+was, and these were why:
+
+- CRIT KILLS count again. The game only remembered a critical hit AFTER
+  the blow had already landed - too late for the kill it caused - and on
+  a server it never remembered one at all.
+
+- MELEE DAMAGE counts again, and it now counts what the hit actually
+  took off the target: spam-clicking, hits during the red flash and
+  overkill on a nearly dead mob are all worth what they did, nothing.
+
+- DAMAGE ABSORBED counts again. It was being measured before the armour
+  had done its work, so it read zero on every hit.
+
+- The Sword damage skills (Keen Edge, Executioner, Adrenaline,
+  Bloodthirst, Death Eyes), Hunter's Mark and Cleave now actually apply
+  in real play - the same bug that froze the melee counter was
+  swallowing their bonuses too.
 
 WHAT IS NEW IN 0.5.0
 --------------------
@@ -341,7 +362,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.5.0.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.5.1.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).

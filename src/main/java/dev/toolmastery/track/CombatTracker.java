@@ -35,7 +35,12 @@ public final class CombatTracker {
 		return SkillService.progress(player, SkillTrees.SWORD);
 	}
 
-	/** Melee damage the player put into something, before armour. */
+	/**
+	 * Melee damage the player actually dealt — the target's health before the
+	 * blow minus after, read where vanilla reads its own DAMAGE_DEALT stat.
+	 * Whiffed clicks, invulnerability frames and overkill past the last heart
+	 * all count for what they were worth: nothing.
+	 */
 	public static void onMeleeDamage(ServerPlayer player, float amount) {
 		if (amount > 0.0F) {
 			progress(player).addCount("melee_damage", Math.round(amount));
