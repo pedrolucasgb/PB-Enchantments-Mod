@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 
 /** Wires the C2S action channel and the S2C state channel. */
 public final class ModNetworking {
@@ -33,6 +34,8 @@ public final class ModNetworking {
 		// you mine, and the enchanting perks (lapis-free offers, the reroll
 		// button) consult it outside the skill screen too.
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.getPlayer()));
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
+			LAST_SYNC.remove(handler.getPlayer().getUUID()));
 
 		// Artisan buttons live in the inventory screen, not the skill screen, and
 		// change the world rather than the tree — so they get their own channel
@@ -108,6 +111,38 @@ public final class ModNetworking {
 		}
 	}
 
+	/**
+	 * The last snapshot each online player was sent, as a cheap fingerprint.
+	 * Gate counters move constantly during play — every log chopped, every
+	 * block walked — but for a long time nothing pushed those to the client
+	 * outside of login and skill-screen actions, which left the HUD's pinned
+	 * goal tracker frozen on a stale snapshot. The slow tick now asks
+	 * {@link #syncIfDirty} once a second and only actually sends when the
+	 * fingerprint moved, so an idle player costs no traffic at all.
+	 */
+	private static final Map<UUID, Integer> LAST_SYNC = new HashMap<>();
+
+	/** Called once a second per player: re-sends the snapshot only on change. */
+	public static void syncIfDirty(ServerPlayer player) {
+		Integer last = LAST_SYNC.get(player.getUUID());
+		if (last == null || last != fingerprint(player)) {
+			sendState(player);
+		}
+	}
+
+	private static int fingerprint(ServerPlayer player) {
+		PlayerProgress progress = ModAttachments.of(player);
+		int hash = Boolean.hashCode(progress.debugMaster);
+		for (SkillTree tree : SkillTrees.ALL.values()) {
+			TreeProgress treeProgress = progress.tree(tree.id());
+			hash = 31 * hash + treeProgress.unlockedTiers;
+			hash = 31 * hash + treeProgress.purchased.hashCode();
+			hash = 31 * hash + treeProgress.counters.hashCode();
+			hash = 31 * hash + Long.hashCode(treeProgress.lockedSlots);
+		}
+		return hash;
+	}
+
 	/** Pushes the full progress snapshot to one player's client. */
 	public static void sendState(ServerPlayer player) {
 		PlayerProgress progress = ModAttachments.of(player);
@@ -121,6 +156,7 @@ public final class ModNetworking {
 				treeProgress.lockedSlots
 			));
 		}
+		LAST_SYNC.put(player.getUUID(), fingerprint(player));
 		ServerPlayNetworking.send(player, new SkillStatePayload(progress.debugMaster, trees));
 	}
 }
