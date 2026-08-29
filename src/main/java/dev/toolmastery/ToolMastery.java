@@ -3,6 +3,8 @@ package dev.toolmastery;
 import dev.toolmastery.advancement.ModAdvancements;
 import dev.toolmastery.command.MasteryCommand;
 import dev.toolmastery.perk.AquaLungs;
+import dev.toolmastery.perk.ArrowOrigin;
+import dev.toolmastery.perk.BowPerks;
 import dev.toolmastery.perk.ArmorUpkeep;
 import dev.toolmastery.perk.AreaBreak;
 import dev.toolmastery.perk.CombatDrops;
@@ -26,6 +28,7 @@ import dev.toolmastery.storage.SteadyGrid;
 import dev.toolmastery.track.ArmorTracker;
 import dev.toolmastery.track.BiomeTracker;
 import dev.toolmastery.track.BlockBreakTracker;
+import dev.toolmastery.track.BowTracker;
 import dev.toolmastery.track.CombatTracker;
 import dev.toolmastery.track.MovementTracker;
 import dev.toolmastery.track.StorageTracker;
@@ -39,6 +42,7 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.InteractionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +115,13 @@ public class ToolMastery implements ModInitializer {
 				CombatPerks.onKill(killer, victim);
 				CombatPerks.warlordsWake(killer, victim);
 				CombatDrops.onKill(killer, victim);
+				// Bow: an arrow kill is judged by the arrow that landed it —
+				// the weapon and the launch point both travel on the entity.
+				if (source.getDirectEntity() instanceof AbstractArrow arrow) {
+					BowTracker.onKill(killer, victim, arrow, ((ArrowOrigin) arrow).toolmastery$origin());
+					BowPerks.ricochet(killer, victim, arrow);
+				}
+				BowPerks.featherBounty(killer, victim);
 			}
 		});
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> Remember.onRespawn(newPlayer));
@@ -137,6 +148,7 @@ public class ToolMastery implements ModInitializer {
 			ServerPlayer player = handler.getPlayer();
 			Trailblazer.forget(player);
 			CombatPerks.forget(player);
+			BowPerks.forget(player);
 			DeftHands.forget(player);
 			Flashpoint.forget(player);
 			ArmorUpkeep.forget(player);
@@ -160,6 +172,9 @@ public class ToolMastery implements ModInitializer {
 				// Every tick too: a braced spear reaches as far as the spear in
 				// hand, and a Hunter's Mark has to go out on time.
 				CombatPerks.tick(player);
+				// Same clock: a Piercing Sight outline burns out on time, and
+				// an over-drawn Storm of Arrows reports what it has banked.
+				BowPerks.tick(player);
 				// Every tick as well: a ten-second window has to close on the
 				// tick it runs out, not up to a second late.
 				Flashpoint.tick(player);
@@ -192,6 +207,8 @@ public class ToolMastery implements ModInitializer {
 					// Armor: the gates measured in time worn and time on fire.
 					ArmorTracker.tick(player);
 					ArmorUpkeep.slowTick(player);
+					// Bow: Rapid Reload II's background crossbow load.
+					BowPerks.slowTick(player);
 				}
 			}
 		});

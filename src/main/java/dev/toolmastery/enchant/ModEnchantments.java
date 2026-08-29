@@ -52,6 +52,15 @@ public final class ModEnchantments {
 	public static final ResourceKey<Enchantment> BULWARK = key("bulwark");
 	public static final ResourceKey<Enchantment> KINETIC_PLATING = key("kinetic_plating");
 
+	// Bow — Path of the Arrow. All four are Java-effect enchantments: distance
+	// at impact, arrow gravity, a kill that bounces and a hit that roots have
+	// no data-driven slot to hang off, so the data files only carry identity,
+	// price and which items accept them.
+	public static final ResourceKey<Enchantment> LONG_SHOT = key("long_shot");
+	public static final ResourceKey<Enchantment> GALE = key("gale");
+	public static final ResourceKey<Enchantment> RICOCHET = key("ricochet");
+	public static final ResourceKey<Enchantment> PINNING_SHOT = key("pinning_shot");
+
 	/** Which skill node grants which enchantment level. */
 	public record Grant(ResourceKey<Enchantment> enchantment, int level) {
 	}
@@ -102,7 +111,15 @@ public final class ModEnchantments {
 		Map.entry("bulwark_1", new Grant(BULWARK, 1)),
 		Map.entry("bulwark_2", new Grant(BULWARK, 2)),
 		Map.entry("bulwark_3", new Grant(BULWARK, 3)),
-		Map.entry("kinetic_plating", new Grant(KINETIC_PLATING, 1))
+		Map.entry("kinetic_plating", new Grant(KINETIC_PLATING, 1)),
+		Map.entry("long_shot_1", new Grant(LONG_SHOT, 1)),
+		Map.entry("long_shot_2", new Grant(LONG_SHOT, 2)),
+		Map.entry("long_shot_3", new Grant(LONG_SHOT, 3)),
+		Map.entry("gale_1", new Grant(GALE, 1)),
+		Map.entry("gale_2", new Grant(GALE, 2)),
+		Map.entry("ricochet_1", new Grant(RICOCHET, 1)),
+		Map.entry("ricochet_2", new Grant(RICOCHET, 2)),
+		Map.entry("pinning_shot", new Grant(PINNING_SHOT, 1))
 	);
 
 	/**
@@ -115,7 +132,7 @@ public final class ModEnchantments {
 		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE, SLIPSTREAM,
 			KEEN_EDGE, SWEEPING_ARC, EXECUTIONER, TIDECALLER, GRAVITY_WELL, PHALANX, NOSTALGY,
 			SUNDERING_BLOW, THERMAL_WEAVE, ABLATIVE_PLATING, THORNED_PLATE, BULWARK,
-			KINETIC_PLATING);
+			KINETIC_PLATING, LONG_SHOT, GALE, RICOCHET, PINNING_SHOT);
 
 	/**
 	 * Every enchantment the tree hands out, derived from {@link #NODE_GRANTS}

@@ -2,6 +2,7 @@ package dev.toolmastery.mixin;
 
 import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.perk.ArmorPerks;
+import dev.toolmastery.perk.BowPerks;
 import dev.toolmastery.perk.CombatPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTree;
@@ -155,7 +156,12 @@ public class AnvilMenuMixin {
 		}
 		int protection = toolmastery$gatedCeiling(enchantment, Enchantments.PROTECTION,
 			"armor", ArmorPerks.AEGIS, 4);
-		return protection >= 0 ? protection : max;
+		if (protection >= 0) {
+			return protection;
+		}
+		int power = toolmastery$gatedCeiling(enchantment, Enchantments.POWER,
+			"bow", BowPerks.HUNTERS_BOUNTY, 5);
+		return power >= 0 ? power : max;
 	}
 
 	/**
@@ -184,6 +190,35 @@ public class AnvilMenuMixin {
 		}
 		if (toolmastery$player instanceof ServerPlayer serverPlayer
 			&& SkillService.owns(serverPlayer, SkillTrees.SWORD, CombatPerks.BROAD_SWING)) {
+			return;
+		}
+		menu.getSlot(AnvilMenu.RESULT_SLOT).set(ItemStack.EMPTY);
+		this.cost.set(0);
+	}
+
+	/**
+	 * Endless Quiver, the anvil half: Infinity and Mending only share a bow for
+	 * someone who has bought the node. The data pack empties vanilla's
+	 * {@code exclusive_set/bow} tag for everybody — a tag cannot ask who is
+	 * hammering — and this puts the wall back for anyone else, the same shape
+	 * as Broad Swing above.
+	 */
+	@Inject(method = "createResult", at = @At("RETURN"))
+	private void toolmastery$endlessQuiverAtTheAnvil(CallbackInfo ci) {
+		AnvilMenu menu = (AnvilMenu) (Object) this;
+		ItemStack result = menu.getSlot(AnvilMenu.RESULT_SLOT).getItem();
+		if (result.isEmpty() || !result.is(net.minecraft.world.item.Items.BOW) || toolmastery$player == null) {
+			return;
+		}
+		Holder<Enchantment> infinity = toolmastery$holder(Enchantments.INFINITY);
+		Holder<Enchantment> mending = toolmastery$holder(Enchantments.MENDING);
+		if (infinity == null || mending == null
+			|| EnchantmentHelper.getItemEnchantmentLevel(infinity, result) <= 0
+			|| EnchantmentHelper.getItemEnchantmentLevel(mending, result) <= 0) {
+			return;
+		}
+		if (toolmastery$player instanceof ServerPlayer serverPlayer
+			&& SkillService.owns(serverPlayer, SkillTrees.BOW, BowPerks.ENDLESS_QUIVER)) {
 			return;
 		}
 		menu.getSlot(AnvilMenu.RESULT_SLOT).set(ItemStack.EMPTY);
