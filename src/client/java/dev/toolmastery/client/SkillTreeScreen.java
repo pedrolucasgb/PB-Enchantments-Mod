@@ -127,6 +127,21 @@ public class SkillTreeScreen extends Screen {
 
 	private final List<Positioned> treeWidgets = new ArrayList<>();
 
+	/**
+	 * The last action's verdict, painted as a banner over the details panel —
+	 * green frame for a purchase that went through, red for the reason it did
+	 * not (not enough XP, no biome in range, a dependent rank in the way).
+	 * The screen is where the click happened, so the answer shows here rather
+	 * than in chat.
+	 */
+	@Nullable
+	private Component feedback;
+	private boolean feedbackOk;
+	private long feedbackUntil;
+
+	/** How long a verdict banner stays up. */
+	private static final long FEEDBACK_MILLIS = 5000;
+
 	/** Node id to the widget drawing it, so the connectors know where to run. */
 	private final Map<String, SkillNodeWidget> nodeWidgets = new LinkedHashMap<>();
 
@@ -161,7 +176,17 @@ public class SkillTreeScreen extends Screen {
 		selectedNode = nodeId;
 		selectedTier = tier;
 		pending = Pending.NONE;
+		// A verdict about the old selection over a new selection reads as an
+		// answer to a question nobody asked — clear it.
+		feedback = null;
 		scheduleRebuild();
+	}
+
+	/** Called by the network receiver when the server answers an action. */
+	public void showFeedback(boolean ok, Component message) {
+		feedback = message;
+		feedbackOk = ok;
+		feedbackUntil = System.currentTimeMillis() + FEEDBACK_MILLIS;
 	}
 
 	// ---------- layout ----------
@@ -797,6 +822,34 @@ public class SkillTreeScreen extends Screen {
 
 		drawDetails(graphics);
 		drawXpBar(graphics);
+		drawFeedback(graphics);
+	}
+
+	/**
+	 * The verdict banner: sits just above the action buttons, inside the
+	 * details panel, framed in the verdict's colour. Drawn last so nothing
+	 * paints over it.
+	 */
+	private void drawFeedback(GuiGraphicsExtractor graphics) {
+		if (feedback == null) {
+			return;
+		}
+		if (System.currentTimeMillis() > feedbackUntil) {
+			feedback = null;
+			return;
+		}
+		int wrap = panelWidth - 18;
+		List<FormattedCharSequence> lines = font.split(feedback, wrap);
+		int boxHeight = lines.size() * 10 + 8;
+		int x = panelX + 3;
+		int y = height - 72 - boxHeight;
+		SkillTreeStyle.panel(graphics, x, y, panelWidth - 6, boxHeight, SkillTreeStyle.PANEL_DEEP,
+			feedbackOk ? SkillTreeStyle.GREEN : SkillTreeStyle.BAD);
+		int textY = y + 4;
+		for (FormattedCharSequence line : lines) {
+			graphics.text(font, line, x + 6, textY, SkillTreeStyle.TEXT);
+			textY += 10;
+		}
 	}
 
 	private void drawTitleBar(GuiGraphicsExtractor graphics, @Nullable SkillTree tree) {
