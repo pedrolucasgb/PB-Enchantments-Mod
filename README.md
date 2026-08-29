@@ -103,7 +103,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ---
 
-## Implemented so far (Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword & Armor)
+## Implemented so far (Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword, Armor & Bow)
 
 ### Core systems
 - ✅ Per-player skill progress (tiers, nodes, counters) persisted via data attachments
@@ -271,7 +271,7 @@ The combat class, and the first tree that is **seven tiers** rather than five. I
 Its scope is deliberately narrow. It changes *what Smite considers undead*, on your hits alone: not drops, not Bane of Arthropods, not zombie behaviour, not sunlight, and not what another player's weapon sees. Vanilla drives Smite off the `#minecraft:sensitive_to_smite` entity-type tag, and widening that tag in a data pack would hand the bonus to everyone on the server — so unlike Fortune IV and Looting IV, this one cannot be a data-pack trick with a clamp. The Smite bonus is recomputed on the damage path for the holder instead, and targets vanilla already counts as undead are skipped so nothing is paid twice.
 
 ### Server config
-`config/toolmastery.json`, written on first run. Two switches, and only the Sword tree reads them — everything else in the mod plays the same in a solo world and on a server.
+`config/toolmastery.json`, written on first run. Two switches, read by the Sword and Bow trees — everything else in the mod plays the same in a solo world and on a server.
 
 | Key | Default | What it does |
 |---|---|---|
@@ -314,6 +314,51 @@ Seven tiers, like the Sword, and for the same reason: the defensive kit splits i
 **Gates.** Damage absorbed is the difference between raw and applied damage, counted only while all four slots are filled — a helmet on its own does not creep the counter forward. Shield blocking is measured where the shield actually soaks the hit rather than from the damage event, because a fully blocked hit deals no damage at all. Falls count off the *base* damage, so a fall softened by Feather Falling is still a fall you walked away from.
 
 
+### Bow nodes (Path of the Arrow)
+The ranged class ([#27](../../issues/27)): bow, crossbow and everything that leaves your hand and travels. Its whole identity is **distance** — nodes get better the further the shot, and none of them makes close-range archery the answer, because that fight already belongs to the Sword tree. Seven tiers, like Sword and Armor: this tree carries **eleven mobs-only nodes**, and spreading them across seven columns keeps each tier's power step honest.
+
+| Tier | Name | Nodes |
+|---|---|---|
+| 1 | Fletcher | Fletcher's Hands I, Swift Draw I, Quiver Sense, Arrow Recovery I |
+| 2 | Marksman | Swift Draw II, Long Shot I, Steady Aim, Fletcher's Bench |
+| 3 | Sharpshooter | Fletcher's Hands II, Gale I, Long Shot II, Ricochet I, Piercing Sight |
+| 4 | Hawkeye | Rapid Reload I, Arrow Recovery II, Gale II, Multishot Focus, Alchemist's Quiver |
+| 5 | Deadeye | Fletcher's Hands III, Long Shot III, Rapid Reload II, Pinning Shot |
+| 6 | Windrunner | Swift Draw III, Ricochet II, Aerial Hunter, Endless Quiver |
+| 7 | Eye of the Storm | **One** of Deadeye / Storm of Arrows / Hunter's Bounty |
+
+**You move while you aim.** Vanilla slows an aiming archer to 20% walking speed, and that slowdown is most of why the bow feels planted. **Swift Draw I–III** lifts it to 40/60/80%, and **Rapid Reload I** removes it for the crossbow outright — load at full speed, sprint included. Both work in PvP on purpose: moving while aiming is visible and symmetric, the class's Nostalgy. Rapid Reload II goes further and loads a stowed crossbow by itself, one every five seconds, using real ammunition.
+
+**The PvE-only rule, at range.** Distance is a sharper knife against players than against mobs, so this tree marks more nodes **mobs only** than any other — eleven: Long Shot I–III, Ricochet I–II, Piercing Sight, Multishot Focus, Alchemist's Quiver, Pinning Shot, Aerial Hunter and the Deadeye capstone. Same single gate as the Sword tree (`pvp_perks` flips them all), and the fact is on each node's card. Multishot Focus is the one that cannot be gated at fire time — a volley in flight has no target yet — so its converged side arrows are tagged and land at a third against players, making a focused volley on a player worth about one vanilla shot.
+
+| Node | Tier | Effect |
+|---|---|---|
+| **Fletcher's Hands I–III** | 1/3/5 | Bow draw and crossbow load 20/40/60% faster |
+| **Swift Draw I–III** | 1/2/6 | Move at 40/60/80% speed while aiming (vanilla: 20%) |
+| **Quiver Sense** | 1 | The HUD names the arrow the bow will actually fire, and how many you carry |
+| **Arrow Recovery I–II** | 1/4 | 25/50% of your arrows come back — including kills and terrain losses. Never a skeleton's |
+| **Long Shot I–III** | 2/3/5 | Enchantment, bow + crossbow: +10/20/30% damage past 25 blocks. Mobs only |
+| **Steady Aim** | 2 | Drawing while sneaking removes the bow's natural inaccuracy entirely |
+| **Fletcher's Bench** | 2 | Arrow crafting yields double; chickens and parrots drop one more feather |
+| **Gale I–II** | 3/4 | Enchantment, bow: arrow gravity cut 30/60% — a flatter arc is range *and* less lead to guess |
+| **Ricochet I–II** | 3/6 | Enchantment, bow: an arrow that kills bounces to a second target (8/12 blocks, 50/75%). Mobs only |
+| **Piercing Sight** | 3 | The mob you hit is outlined three seconds, health on the action bar. Mobs only |
+| **Rapid Reload I–II** | 4/5 | Crossbow loads at full speed, sprint included; II loads a stowed crossbow by itself |
+| **Multishot Focus** | 4 | Multishot's three arrows converge on one target. Mobs only |
+| **Alchemist's Quiver** | 4 | Tipped-arrow effects last 50% longer. Mobs only |
+| **Pinning Shot** | 5 | Enchantment, crossbow only: a hit roots the target 1.5 s. Mobs only |
+| **Aerial Hunter** | 6 | +50% damage to airborne targets, and while you fly an Elytra. Mobs only |
+| **Endless Quiver** | 6 | Infinity also covers spectral arrows, and shares a bow with Mending at the anvil |
+| **Deadeye** | 7 | Capstone: a fully drawn shot landing past 50 blocks deals double damage. Mobs only |
+| **Storm of Arrows** | 7 | Capstone: over-drawing banks up to two more arrows — real ammunition — released as one volley |
+| **Hunter's Bounty** | 7 | Capstone: vanilla **Power** reaches VI at the table and the anvil — the Ancient Fortune trick |
+
+**Damage attribution.** Arrow damage is applied by the projectile, not the player, so the whole tree reads the arrow at impact: the weapon it left travels on the arrow entity, and so does the point it was launched from — distance is measured from the *shot*, not from wherever the archer backpedalled to. An arrow already in flight when the tree changes is judged at impact, same as a sword changing mid-swing.
+
+**Shared items grew their ranged branch.** A lent Long Shot III bow is not a hole: a bow carrying an unearned Tool Mastery enchantment skips the entire enchantment pass at impact — it *fires*, because a bow that refuses to shoot reads as a bug, but the arrow lands at bare-bow damage with no Power, no Flame, no Punch behind it. Partial ownership clamps rank by rank, exactly like tools.
+
+**Gates.** The trackers the class needed and vanilla never had: arrows fired vs. landed (per projectile — a Multishot volley is honestly three), shot distance at impact, kills at 30+/60+ blocks, phantoms killed in the air, Multishot volley kills, and a checklist of tipped-arrow types fired.
+
 ### Enchanting table integration
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
 - ✅ Rolls above your unlocked level are clamped down, never hidden
@@ -351,7 +396,7 @@ Environmental modifiers still apply on top: a locked pickaxe swung underwater is
 
 **Attack speed, now that a node depends on it.** Nostalgy is the mod's first enchantment that changes how *fast* you swing rather than how hard, so a lent Nostalgy IV sword would have handed a beginner 1.8 combat. It does not: every reader of the ladder asks `ItemAuthority.effectiveLevel`, which is 0 on an item its holder has not earned and clamped to their rank otherwise. The same is true of the trident, mace and spear nodes, each of which goes through a different damage path than the sword.
 
-**Not covered.** Vanilla enchantments have no unlock concept, so a plain Efficiency V pickaxe still transfers freely, and vanilla's own attack-speed attribute is untouched. Armour, bows and elytra are out of scope; the check is written generally enough that "inert" can mean something different per item class later.
+**Not covered.** Vanilla enchantments have no unlock concept, so a plain Efficiency V pickaxe still transfers freely, and vanilla's own attack-speed attribute is untouched. Armour and elytra are out of scope; bows grew their own branch with the Bow tree — an unearned bow still fires, at bare-bow damage with no enchantment effects. The check is written generally enough that "inert" can mean something different per item class.
 
 ### Safety & feel
 - ✅ Sneak disables all area effects (Dig Range, Rich Vein, Logic)
@@ -402,7 +447,7 @@ nothing about *displaying* the class does.
 
 **Seven-tier trees scroll.** A tier column never shrinks below a readable width, so the Sword and Armor trees are wider than the window and the tree pans sideways: the wheel over the tree, or the bar under it, whose thumb is as wide a share of the track as the viewport is of the tree. Five-tier trees are laid out exactly as they always were and show no bar at all.
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), the rest of the Armor tree ([#28](../../issues/28)), and the three future classes (Sword, Bow, Rod).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the one future class still greyed out in the tab strip (Rod).
 
 ## License
 

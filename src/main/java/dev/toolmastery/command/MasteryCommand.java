@@ -424,6 +424,7 @@ public final class MasteryCommand {
 			giveTierTools(player, SkillTrees.PICKAXE, net.minecraft.world.item.Items.DIAMOND_PICKAXE, "Pickaxe");
 			giveTierTools(player, SkillTrees.AXE, net.minecraft.world.item.Items.DIAMOND_AXE, "Axe");
 			giveTierTools(player, SkillTrees.SWORD, net.minecraft.world.item.Items.DIAMOND_SWORD, "Sword");
+			giveTierTools(player, SkillTrees.BOW, net.minecraft.world.item.Items.BOW, "Bow");
 			source.sendSystemMessage(Component.literal("Full kit delivered: one tool per tier of every tree.").withStyle(ChatFormatting.YELLOW));
 			return 1;
 		}
@@ -482,6 +483,8 @@ public final class MasteryCommand {
 					return net.minecraft.world.item.Items.MACE;
 				case "phalanx":
 					return net.minecraft.world.item.Items.DIAMOND_SPEAR;
+				case "pinning_shot":
+					return net.minecraft.world.item.Items.CROSSBOW;
 				default:
 					break;
 			}
@@ -489,6 +492,7 @@ public final class MasteryCommand {
 		return switch (treeId) {
 			case "axe" -> net.minecraft.world.item.Items.DIAMOND_AXE;
 			case "sword" -> net.minecraft.world.item.Items.DIAMOND_SWORD;
+			case "bow" -> net.minecraft.world.item.Items.BOW;
 			default -> net.minecraft.world.item.Items.DIAMOND_PICKAXE;
 		};
 	}

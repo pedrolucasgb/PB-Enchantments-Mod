@@ -51,8 +51,14 @@ public final class ItemGainTracker {
 			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "craft_books", amount);
 		} else if (stack.is(Items.ENCHANTING_TABLE)) {
 			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "craft_enchanting_table", amount);
+		} else if (stack.is(Items.BOW)) {
+			SkillService.addCount(serverPlayer, SkillTrees.BOW, "craft_bow", amount);
+		} else if (stack.is(Items.CROSSBOW)) {
+			SkillService.addCount(serverPlayer, SkillTrees.BOW, "craft_crossbow", amount);
 		}
 		ArmorTracker.onCraft(serverPlayer, stack);
+		// Fletcher's Bench: arrows leave the grid in double yield.
+		dev.toolmastery.perk.BowPerks.onCraftTake(serverPlayer, stack, amount);
 		trackArtisanCraft(serverPlayer, stack, amount);
 	}
 
