@@ -9,16 +9,25 @@ import java.util.Map;
 /** All skill-tree progress for one player. Persisted via data attachment. */
 public final class PlayerProgress {
 	public static final Codec<PlayerProgress> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-		Codec.unboundedMap(Codec.STRING, TreeProgress.CODEC).fieldOf("trees").forGetter(p -> Map.copyOf(p.trees))
+		Codec.unboundedMap(Codec.STRING, TreeProgress.CODEC).fieldOf("trees").forGetter(p -> Map.copyOf(p.trees)),
+		Codec.BOOL.optionalFieldOf("debug_master", false).forGetter(p -> p.debugMaster)
 	).apply(instance, PlayerProgress::new));
 
 	private final Map<String, TreeProgress> trees = new HashMap<>();
 
+	/**
+	 * Debug master mode: unlocks are free and skip gates, tiers and materials.
+	 * Toggled by {@code /mastery debug master}; persisted so a testing session
+	 * survives a relog, and synced so the skill screen shows the free prices.
+	 */
+	public boolean debugMaster;
+
 	public PlayerProgress() {
 	}
 
-	private PlayerProgress(Map<String, TreeProgress> trees) {
+	private PlayerProgress(Map<String, TreeProgress> trees, boolean debugMaster) {
 		trees.forEach((id, progress) -> this.trees.put(id, progress));
+		this.debugMaster = debugMaster;
 		migrateShieldBreaker();
 	}
 

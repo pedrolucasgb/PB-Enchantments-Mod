@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.5.1
+Version 0.6.4
 ================================================
 
 HOW TO INSTALL
@@ -20,17 +20,17 @@ HOW IT WORKS
 ------------
 Every skill in the tree has up to TWO buttons:
 
-  UNLOCK  - a one-off purchase: a few XP levels plus materials you gather
-            by playing the class. A passive switches on immediately. An
+  UNLOCK  - a one-off purchase: XP points plus materials you gather by
+            playing the class. A passive switches on immediately. An
             enchantment starts showing up at your enchanting table.
 
-  ENCHANT - repeatable: costs whole XP levels and applies the enchantment
+  ENCHANT - repeatable: costs XP points and applies the enchantment
             to the item in your hand. Use it as often as you like, on as
             many tools as you like.
 
-Enchant is deliberately pricier than the enchanting table (20 levels for
-rank I, 35 for II, 50 for III): the table stays the cheap route, Enchant is
-the guaranteed one.
+Enchant is deliberately pricier than the enchanting table (550 XP for
+rank I, 2005 for II, 5345 for III): the table stays the cheap route,
+Enchant is the guaranteed one.
 
 Both buttons explain themselves before charging you. Clicking either turns
 the panel into a confirmation card with the exact cost, the materials you
@@ -43,7 +43,7 @@ out, with the reason in the tooltip.
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
 
-WHAT IS NEW IN 0.5.1
+WHAT IS NEW IN 0.6.4
 --------------------
 Bug fixes for the combat progress counters - if a gate seemed stuck, it
 was, and these were why:
@@ -63,6 +63,79 @@ was, and these were why:
   Bloodthirst, Death Eyes), Hunter's Mark and Cleave now actually apply
   in real play - the same bug that froze the melee counter was
   swallowing their bonuses too.
+
+WHAT IS NEW IN 0.6.3
+--------------------
+- INDESTRUCTIBLE finally means what it says everywhere:
+    * A spent armour piece (durability run out) protects for NOTHING
+      until repaired - your armour bar visibly drops, as if the piece
+      were not there. The same happens to armour worn by mobs: a zombie's
+      scavenged helmet, wolf armour, horse armour, nautilus armour.
+    * A spent item's RIGHT CLICK is dead too: a bow will not draw, a
+      crossbow will not load, a hoe will not till, a shovel will not
+      path, an axe will not strip, a brush will not brush, a spear will
+      not throw - nothing works until you repair it. (The mace never had
+      a right-click job, so it is unchanged.)
+    * The action bar tells you why: "Your <item> is spent - repair it
+      before it works again."
+
+WHAT IS NEW IN 0.6.2
+--------------------
+- NIGHT EYES actually works now. The old brightness lift was invisible in
+  a truly dark night; the node is now a permanent Night Vision at 70% of
+  the potion's strength. A real potion still beats it, and a warden still
+  blinds you.
+
+- PUFFERFISH LUNGS is no longer infinite air. Every time your head goes
+  under you get 15 seconds of Water Breathing - one dive's worth. Stay
+  down longer and the breath meter runs like anyone's; surface for a
+  moment and the next dive refills it.
+
+- New coming-soon node in the Artisan tree (tier 4): AUTO BLOCK - nine of
+  any ore material in your inventory pack themselves into the block
+  (ingots, raw ore, diamonds, emeralds, redstone, lapis - everything but
+  quartz), and nine gold nuggets pack into an ingot.
+
+WHAT IS NEW IN 0.6.1
+--------------------
+- E (inventory key) and K (the skill tree key) now CLOSE the skill tree,
+  the same way E closes your inventory.
+
+- AXE TREE cleaned up: every coming-soon node is gone. Double Axe I moved
+  to tier 4; Double Axe II and the Environment enchantment are now the
+  tier 5 finishers.
+
+- ARTISAN TREE: Crate Labels, Blueprints and Salvage were removed. The
+  only coming-soon node left is Shulker Sight.
+
+- The SWORD, ARMOR and BOW classes are tagged IN TESTING: fully playable,
+  but their numbers may still change. The tag shows on the class tab, on
+  every node tooltip and in the details panel.
+
+WHAT IS NEW IN 0.6.0
+--------------------
+- EVERYTHING IS PRICED IN XP POINTS now, not levels. Levels get more
+  expensive the higher you are, so "20 levels" used to cost a level-50
+  player far more experience than a level-30 one. A price is now a fixed
+  number of points - the same for everyone. The skill screen shows your
+  points on the XP bar, every button shows the exact points it will
+  spend, and nothing changed about HOW you earn experience.
+
+- SELL A SKILL BACK. An owned node's button becomes "Sell (+XP)": selling
+  refunds one fifth of the unlock price in XP points. Materials are not
+  refunded, and a rank that has higher ranks (or a capstone) bought on
+  top of it has to wait until those are sold first. Buying it back later
+  costs the full price again.
+
+- TRACK A GOAL ON YOUR HUD. Select any node or tier and press the new
+  Track button: a small scoreboard appears at the right edge of the
+  screen with the gate achievements still missing for it, ticking up
+  live as you play - no need to reopen the tree. One goal at a time;
+  Track something else to switch, or Untrack to clear it.
+
+- For testers: "/mastery debug master true" (op only) makes every unlock
+  free - no XP, no materials, no gates, no tier locks. Rank chains still
+  unlock in order. "false" turns it back off; the flag survives relogs.
 
 WHAT IS NEW IN 0.5.0
 --------------------
@@ -362,7 +435,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.5.1.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.4.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
