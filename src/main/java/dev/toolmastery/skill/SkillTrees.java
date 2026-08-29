@@ -344,9 +344,9 @@ public final class SkillTrees {
 			// The mod's first buy-an-item nodes: each purchase drops a real map
 			// in the inventory. Rank I points anywhere; rank II, a tier up,
 			// points only at biomes the player has never set foot in — the
-			// price climbing with the tier. Still to be built.
+			// price climbing with the tier. See BiomeCharts.
 			SkillNode.of("biome_chart_1", 1, 4, SkillType.ITEM).icon(Items.FILLED_MAP)
-				.costing(mat(Items.PAPER, 16), mat(Items.COMPASS, 1)).future(),
+				.costing(mat(Items.PAPER, 16), mat(Items.COMPASS, 1)),
 			// Tier 3
 			SkillNode.of("remember", 2, 9, SkillType.PASSIVE).icon(Items.WRITTEN_BOOK)
 				.costing(mat(Items.PAPER, 16), mat(Items.COMPASS, 1), mat(Items.ENDER_PEARL, 4)),
@@ -358,7 +358,7 @@ public final class SkillTrees {
 			SkillNode.of("trailblazer", 2, 7, SkillType.PASSIVE).icon(Items.GRAVEL)
 				.costing(mat(Items.GRAVEL, 64), mat(Items.IRON_INGOT, 8)),
 			SkillNode.chained("biome_chart_2", 2, 8, "biome_chart_1", SkillType.ITEM).icon(Items.CARTOGRAPHY_TABLE)
-				.costing(mat(Items.PAPER, 32), mat(Items.COMPASS, 1), mat(Items.ENDER_PEARL, 2)).future(),
+				.costing(mat(Items.PAPER, 32), mat(Items.COMPASS, 1), mat(Items.ENDER_PEARL, 2)),
 			// Tier 4
 			SkillNode.chained("tireless_3", 3, 8, "tireless_2", SkillType.PASSIVE).icon(Items.GOLDEN_CARROT)
 				.costing(mat(Items.LEATHER, 64), mat(Items.GOLDEN_CARROT, 8), mat(Items.DIAMOND, 4)),
@@ -455,7 +455,7 @@ public final class SkillTrees {
 			SkillNode.of("shulker_sight", 3, 10, SkillType.PASSIVE).icon(Items.SHULKER_BOX)
 				.costing(mat(Items.SHULKER_SHELL, 4), mat(Items.ENDER_PEARL, 8)).future(),
 			SkillNode.of("auto_block", 3, 9, SkillType.PASSIVE).icon(Items.IRON_BLOCK)
-				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.GOLD_BLOCK, 4)).future(),
+				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.GOLD_BLOCK, 4)),
 			// Tier 5 — capstone
 			SkillNode.of("hand_of_order", 4, 20, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CHEST, 64))

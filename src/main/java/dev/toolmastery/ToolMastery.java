@@ -221,6 +221,8 @@ public class ToolMastery implements ModInitializer {
 					dev.toolmastery.track.EnchantTracker.scanBookChecklist(player);
 					DeepHaste.tick(player);
 					AquaLungs.tick(player);
+					// Artisan: nine of an ore material pack into the block.
+					dev.toolmastery.perk.AutoBlock.slowTick(player);
 					// Explorer: distance off the vanilla statistics, places off
 					// where the player is standing.
 					MovementTracker.tick(player);

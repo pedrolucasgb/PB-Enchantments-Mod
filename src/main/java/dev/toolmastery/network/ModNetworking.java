@@ -79,6 +79,15 @@ public final class ModNetworking {
 						feedback(player, SkillService.sellNode(player, tree, node));
 					}
 				}
+				case BUY_ITEM -> {
+					SkillTree tree = SkillTrees.byId(payload.treeId());
+					SkillNode node = tree == null ? null : tree.node(payload.nodeId());
+					// Only the nodes that actually sell an item honour the action —
+					// the client never offers it elsewhere, but the server decides.
+					if (node != null && dev.toolmastery.perk.BiomeCharts.isChart(node.id())) {
+						feedback(player, dev.toolmastery.perk.BiomeCharts.buy(player, tree, node));
+					}
+				}
 			}
 			sendState(player);
 		});
