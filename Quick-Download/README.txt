@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.4.0
+Version 0.5.0
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,70 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.5.0
+--------------------
+- THE BOW CLASS (Path of the Arrow) - the ranged tree, seven tiers like
+  the Sword and the Armor. Everything about it is DISTANCE: nodes get
+  better the further the shot, and none of them makes point-blank archery
+  the answer. It levels from arrows fired, arrows landed, kills at 30+
+  and 60+ blocks, phantoms shot out of the sky, Multishot volley kills
+  and the tipped arrows you have fired.
+
+- YOU MOVE WHILE YOU AIM. Vanilla slows an aiming archer to 20% walking
+  speed - that crawl is most of why the bow feels planted.
+    Swift Draw I-III - move at 40/60/80% speed while drawing a bow or
+                       loading a crossbow
+    Rapid Reload I   - the crossbow loads at FULL speed, sprint included
+    Rapid Reload II  - a crossbow stowed in your inventory loads itself,
+                       one every five seconds, using real ammunition
+  Both work in PvP on purpose: moving while aiming is visible and
+  symmetric, the class's Nostalgy.
+
+- The rest of the quiver:
+    Fletcher's Hands I-III - bow draw and crossbow load 20/40/60% faster
+    Quiver Sense    - the HUD names the arrow the bow will ACTUALLY fire,
+                      and how many of it you carry
+    Arrow Recovery  - 25/50% of your arrows come back, even from kills
+                      and terrain. Never a skeleton's
+    Long Shot I-III - ENCHANTMENT, bow + crossbow: +10/20/30% damage past
+                      25 blocks. Worth nothing in a corridor
+    Steady Aim      - drawing while sneaking removes the bow's natural
+                      inaccuracy entirely
+    Fletcher's Bench- arrow crafting yields double; chickens and parrots
+                      drop one more feather
+    Gale I-II       - ENCHANTMENT, bow: arrow gravity cut 30/60% - a
+                      flatter arc is range AND less lead to guess
+    Ricochet I-II   - ENCHANTMENT, bow: an arrow that kills bounces to a
+                      second target (8/12 blocks, 50/75% damage)
+    Piercing Sight  - the mob you hit is outlined for three seconds, with
+                      its health on the action bar
+    Multishot Focus - Multishot's three arrows converge on ONE target
+    Alchemist's Quiver - tipped-arrow effects last 50% longer
+    Pinning Shot    - ENCHANTMENT, crossbow only: a hit roots the target
+                      for 1.5 seconds
+    Aerial Hunter   - +50% damage to airborne targets, and while YOU are
+                      flying an Elytra
+    Endless Quiver  - Infinity also covers spectral arrows, and finally
+                      shares a bow with Mending at the anvil
+
+- PICK ONE OF THREE at the end of the tree, and only one:
+    Deadeye         - a fully drawn shot landing past 50 blocks deals
+                      DOUBLE damage
+    Storm of Arrows - holding the draw past full charge banks up to two
+                      more arrows - real ammunition - released as a volley
+    Hunter's Bounty - vanilla POWER reaches VI, at the table and the anvil
+
+- MOBS ONLY, at range. Distance is a sharper knife against players than
+  against mobs, so eleven of the class's nodes never fire at a player:
+  Long Shot, Ricochet, Piercing Sight, Multishot Focus, Alchemist's
+  Quiver, Pinning Shot, Aerial Hunter and Deadeye. The card says so in
+  the skill screen, and config/toolmastery.json flips them for servers
+  that disagree.
+
+- A BORROWED BOW IS INERT: carrying an unearned Tool Mastery enchantment,
+  it still fires - a bow that refuses to shoot reads as a bug - but the
+  arrow lands at bare-bow damage with no enchantment effects behind it.
 
 WHAT IS NEW IN 0.4.0
 --------------------
@@ -277,7 +341,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.4.0.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.5.0.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).

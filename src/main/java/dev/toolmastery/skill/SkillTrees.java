@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 /**
  * Static definitions of every skill tree — the design document in code.
- * Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword and Armor are playable;
- * Bow and Rod are still coming.
+ * Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword, Armor and Bow are
+ * playable; Rod is still coming.
  *
  * <p>Every node carries two prices. {@code of/chained/capstone} sets the XP half
  * of the <b>unlock</b>, {@code .costing(...)} its materials, and
@@ -779,13 +779,160 @@ public final class SkillTrees {
 		)
 	);
 
+	// ---------- Bow — Path of the Arrow ----------
+
+	/**
+	 * The ranged class: bow, crossbow and everything that leaves your hand and
+	 * travels. Its whole identity is <b>distance</b> — nodes get better the
+	 * further the shot, and none of them makes close-range archery the answer,
+	 * because that fight already belongs to the Sword tree.
+	 *
+	 * <p>Seven tiers, like Sword and Armor, and for the same structural reason
+	 * plus a new one: this tree carries <b>eleven</b> {@code .pve()} nodes —
+	 * distance-scaled damage, a root, a kill that bounces, an outline through
+	 * the dark — every one of them reasonable against a skeleton and a rewrite
+	 * of PvP against a player. Spreading them across seven tiers keeps each
+	 * tier's power step honest instead of stacking three sharp knives per
+	 * column. What stays live in a duel is deliberate: Swift Draw and Rapid
+	 * Reload (you move while you aim — visible, symmetric, the class's feel),
+	 * Fletcher's Hands, Steady Aim, Gale, and the capstones that are economy or
+	 * mechanics rather than burst.
+	 */
+	public static final SkillTree BOW = new SkillTree(
+		"bow",
+		Items.BOW,
+		List.of(
+			// Tier 1 — Fletcher
+			new SkillTier(5, List.of(
+				new GateRequirement("arrows_fired", 300),
+				new GateRequirement("arrows_hit", 100),
+				new GateRequirement("craft_bow", 1)
+			)),
+			// Tier 2 — Marksman
+			new SkillTier(10, List.of(
+				new GateRequirement("arrows_fired", 800),
+				new GateRequirement("arrows_hit", 300),
+				new GateRequirement("bow_kills", 50)
+			)),
+			// Tier 3 — Sharpshooter
+			new SkillTier(15, List.of(
+				new GateRequirement("bow_kills", 150),
+				new GateRequirement("kills_30", 25),
+				new GateRequirement("craft_crossbow", 1)
+			)),
+			// Tier 4 — Hawkeye
+			new SkillTier(20, List.of(
+				new GateRequirement("crossbow_kills", 50),
+				new GateRequirement("arrows_hit", 800),
+				new GateRequirement("multishot_kills", 10)
+			)),
+			// Tier 5 — Deadeye
+			new SkillTier(25, List.of(
+				new GateRequirement("kills_60", 25),
+				new GateRequirement("arrows_hit", 1500),
+				new GateRequirement("phantom_air_kills", 10)
+			)),
+			// Tier 6 — Windrunner
+			new SkillTier(30, List.of(
+				new GateRequirement("ranged_kills", 600),
+				new GateRequirement("tipped_checklist", 3),
+				new GateRequirement("arrows_hit", 2500)
+			)),
+			// Tier 7 — Eye of the Storm
+			new SkillTier(40, List.of(
+				new GateRequirement("ranged_kills", 1000),
+				new GateRequirement("kills_60", 75),
+				new GateRequirement("tipped_checklist", 8)
+			))
+		),
+		List.of(
+			// Tier 1 — the draw
+			SkillNode.of("fletchers_hands_1", 0, 4, SkillType.PASSIVE).icon(Items.BOW)
+				.costing(mat(Items.STRING, 16), mat(Items.STICK, 32)),
+			SkillNode.of("swift_draw_1", 0, 4, SkillType.PASSIVE).icon(Items.FEATHER)
+				.costing(mat(Items.FEATHER, 16), mat(Items.LEATHER, 8)),
+			SkillNode.of("quiver_sense", 0, 3, SkillType.PASSIVE).icon(Items.ARROW)
+				.costing(mat(Items.ARROW, 32), mat(Items.GLASS, 4)),
+			SkillNode.of("arrow_recovery_1", 0, 5, SkillType.PASSIVE).icon(Items.FLINT)
+				.costing(mat(Items.FLINT, 32), mat(Items.FEATHER, 16)),
+			// Tier 2 — the shot
+			SkillNode.chained("swift_draw_2", 1, 6, "swift_draw_1", SkillType.PASSIVE).icon(Items.RABBIT_FOOT)
+				.costing(mat(Items.FEATHER, 32), mat(Items.SUGAR, 16)),
+			SkillNode.of("long_shot_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.SPYGLASS)
+				.costing(mat(Items.STRING, 32), mat(Items.IRON_INGOT, 8))
+				.enchantFor(20).pve(),
+			SkillNode.of("steady_aim", 1, 5, SkillType.PASSIVE).icon(Items.TARGET)
+				.costing(mat(Items.TARGET, 1), mat(Items.STRING, 16)),
+			SkillNode.of("fletchers_bench", 1, 5, SkillType.PASSIVE).icon(Items.FLETCHING_TABLE)
+				.costing(mat(Items.FLETCHING_TABLE, 1), mat(Items.FEATHER, 32)),
+			// Tier 3 — the quiver
+			SkillNode.chained("fletchers_hands_2", 2, 7, "fletchers_hands_1", SkillType.PASSIVE).icon(Items.CROSSBOW)
+				.costing(mat(Items.STRING, 64), mat(Items.IRON_INGOT, 16)),
+			SkillNode.of("gale_1", 2, 8, SkillType.ENCHANTMENT).icon(Items.WIND_CHARGE)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 8), mat(Items.FEATHER, 32))
+				.enchantFor(20),
+			SkillNode.chained("long_shot_2", 2, 9, "long_shot_1", SkillType.ENCHANTMENT).icon(Items.SPYGLASS)
+				.costing(mat(Items.GOLD_INGOT, 16), mat(Items.STRING, 64))
+				.enchantFor(35).pve(),
+			SkillNode.of("ricochet_1", 2, 8, SkillType.ENCHANTMENT).icon(Items.SLIME_BALL)
+				.costing(mat(Items.SLIME_BALL, 16), mat(Items.STRING, 32))
+				.enchantFor(20).pve(),
+			SkillNode.of("piercing_sight", 2, 7, SkillType.PASSIVE).icon(Items.GLOW_INK_SAC)
+				.costing(mat(Items.SPIDER_EYE, 8), mat(Items.GLOWSTONE_DUST, 16)).pve(),
+			// Tier 4 — the crossbow's column
+			SkillNode.of("rapid_reload_1", 3, 9, SkillType.PASSIVE).icon(Items.REDSTONE)
+				.costing(mat(Items.CROSSBOW, 1), mat(Items.REDSTONE, 32)),
+			SkillNode.chained("arrow_recovery_2", 3, 9, "arrow_recovery_1", SkillType.PASSIVE).icon(Items.BUNDLE)
+				.costing(mat(Items.FLINT, 64), mat(Items.EMERALD, 8)),
+			SkillNode.chained("gale_2", 3, 10, "gale_1", SkillType.ENCHANTMENT).icon(Items.BREEZE_ROD)
+				.costing(mat(Items.BREEZE_ROD, 2), mat(Items.PHANTOM_MEMBRANE, 16))
+				.enchantFor(35),
+			SkillNode.of("multishot_focus", 3, 10, SkillType.PASSIVE).icon(Items.FIREWORK_STAR)
+				.costing(mat(Items.QUARTZ, 16), mat(Items.CROSSBOW, 1)).pve(),
+			SkillNode.of("alchemists_quiver", 3, 9, SkillType.PASSIVE).icon(Items.TIPPED_ARROW)
+				.costing(mat(Items.GLASS_BOTTLE, 16), mat(Items.GLOWSTONE_DUST, 16)).pve(),
+			// Tier 5 — the hard shots
+			SkillNode.chained("fletchers_hands_3", 4, 12, "fletchers_hands_2", SkillType.PASSIVE).icon(Items.DIAMOND)
+				.costing(mat(Items.DIAMOND, 6), mat(Items.STRING, 64)),
+			SkillNode.chained("long_shot_3", 4, 14, "long_shot_2", SkillType.ENCHANTMENT).icon(Items.SPYGLASS)
+				.costing(mat(Items.DIAMOND, 6), mat(Items.AMETHYST_SHARD, 16))
+				.enchantFor(50).pve(),
+			SkillNode.chained("rapid_reload_2", 4, 12, "rapid_reload_1", SkillType.PASSIVE).icon(Items.DISPENSER)
+				.costing(mat(Items.REDSTONE, 64), mat(Items.DIAMOND, 4)),
+			SkillNode.of("pinning_shot", 4, 12, SkillType.ENCHANTMENT).icon(Items.COBWEB)
+				.costing(mat(Items.COBWEB, 8), mat(Items.IRON_INGOT, 16))
+				.enchantFor(20).pve(),
+			// Tier 6 — the sky
+			SkillNode.chained("swift_draw_3", 5, 14, "swift_draw_2", SkillType.PASSIVE).icon(Items.GOLDEN_BOOTS)
+				.costing(mat(Items.GOLD_INGOT, 16), mat(Items.SUGAR, 32)),
+			SkillNode.chained("ricochet_2", 5, 14, "ricochet_1", SkillType.ENCHANTMENT).icon(Items.SLIME_BLOCK)
+				.costing(mat(Items.SLIME_BLOCK, 4), mat(Items.GOLD_INGOT, 16))
+				.enchantFor(35).pve(),
+			SkillNode.of("aerial_hunter", 5, 16, SkillType.PASSIVE).icon(Items.PHANTOM_MEMBRANE)
+				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.FIREWORK_ROCKET, 32)).pve(),
+			SkillNode.of("endless_quiver", 5, 14, SkillType.PASSIVE).icon(Items.SPECTRAL_ARROW)
+				.costing(mat(Items.SPECTRAL_ARROW, 32), mat(Items.GLOWSTONE_DUST, 32)),
+			// Tier 7 — capstones (pick one of three)
+			SkillNode.capstone("deadeye", 6, 20, SkillType.PASSIVE, "storm_of_arrows", "hunters_bounty")
+				.icon(Items.ENDER_EYE)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.AMETHYST_SHARD, 16), mat(Items.EMERALD, 32))
+				.pve(),
+			SkillNode.capstone("storm_of_arrows", 6, 20, SkillType.PASSIVE, "deadeye", "hunters_bounty")
+				.icon(Items.FIREWORK_ROCKET)
+				.costing(mat(Items.ARROW, 64), mat(Items.BREEZE_ROD, 4), mat(Items.NETHERITE_SCRAP, 2)),
+			SkillNode.capstone("hunters_bounty", 6, 20, SkillType.PASSIVE, "deadeye", "storm_of_arrows")
+				.icon(Items.ENCHANTED_BOOK)
+				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.LAPIS_LAZULI, 64), mat(Items.NETHERITE_INGOT, 1))
+		)
+	);
+
 	/**
 	 * Every playable tree, in the order the skill screen tabs them. Adding a
 	 * class is one entry here plus its {@code SkillTree} above — the GUI, the
 	 * commands, the advancements and the state packet all read this list.
 	 */
 	public static final List<SkillTree> ORDER =
-		List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR);
+		List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR, BOW);
 
 	/**
 	 * Classes the design calls for but that have no tree yet. They show up as
@@ -795,7 +942,6 @@ public final class SkillTrees {
 	}
 
 	public static final List<PlannedTree> PLANNED = List.of(
-		new PlannedTree("Bow", Items.BOW),
 		new PlannedTree("Rod", Items.FISHING_ROD)
 	);
 

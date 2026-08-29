@@ -19,6 +19,10 @@
     "toolmastery:ablative_plating",
     "toolmastery:thorned_plate",
     "toolmastery:bulwark",
-    "toolmastery:kinetic_plating"
+    "toolmastery:kinetic_plating",
+    "toolmastery:long_shot",
+    "toolmastery:gale",
+    "toolmastery:ricochet",
+    "toolmastery:pinning_shot"
   ]
 }

@@ -5,6 +5,7 @@ import dev.toolmastery.enchant.EnchanterPerks;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.network.EnchantPreviewPayload;
 import dev.toolmastery.perk.ArmorPerks;
+import dev.toolmastery.perk.BowPerks;
 import dev.toolmastery.skill.SkillService;
 import dev.toolmastery.skill.SkillTrees;
 import dev.toolmastery.track.EnchantTracker;
@@ -155,6 +156,11 @@ public abstract class EnchantmentMenuMixin {
 			if (instance.enchantment().is(Enchantments.PROTECTION) && instance.level() > 4
 					&& !SkillService.owns(serverPlayer, SkillTrees.ARMOR, ArmorPerks.AEGIS)) {
 				result.add(new EnchantmentInstance(instance.enchantment(), 4));
+				continue;
+			}
+			if (instance.enchantment().is(Enchantments.POWER) && instance.level() > 5
+					&& !SkillService.owns(serverPlayer, SkillTrees.BOW, BowPerks.HUNTERS_BOUNTY)) {
+				result.add(new EnchantmentInstance(instance.enchantment(), 5));
 				continue;
 			}
 			int allowed = instance.enchantment().value().getMaxLevel();
