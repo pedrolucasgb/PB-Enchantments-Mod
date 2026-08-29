@@ -47,14 +47,8 @@ public abstract class SwordPlayerMixin {
 	@Shadow
 	public abstract float getAttackStrengthScale(float partial);
 
-	/**
-	 * Nostalgy shortens the cooldown, which would make Keen Edge — a node that
-	 * pays out on a <em>full</em> cooldown — a flat permanent bonus. So Keen
-	 * Edge asks what the scale would have been without the node, and this flag
-	 * is how it asks: the two hooks below step aside while it is set.
-	 */
-	@Unique
-	private static boolean toolmastery$vanillaCooldown;
+	@Shadow
+	protected abstract boolean canCriticalAttack(Entity target);
 
 	// ---------- Nostalgy: the cooldown ladder ----------
 
@@ -63,10 +57,14 @@ public abstract class SwordPlayerMixin {
 	 * by {@link #toolmastery$nostalgyScale} instead: a delay of zero would make
 	 * vanilla's {@code ticker / delay} a NaN, and a NaN attack scale is a much
 	 * worse bug than the one it would fix.
+	 *
+	 * <p>Both hooks step aside while {@code CombatPerks.vanillaCooldownQuery()}
+	 * is set — that is Keen Edge asking what the cooldown would have been
+	 * without Nostalgy, so a timing reward does not become a flat bonus.
 	 */
 	@Inject(method = "getCurrentItemAttackStrengthDelay", at = @At("RETURN"), cancellable = true)
 	private void toolmastery$nostalgyDelay(CallbackInfoReturnable<Float> cir) {
-		if (toolmastery$vanillaCooldown) {
+		if (CombatPerks.vanillaCooldownQuery()) {
 			return;
 		}
 		int rank = toolmastery$nostalgy();
@@ -78,7 +76,7 @@ public abstract class SwordPlayerMixin {
 	/** Rank IV: the cooldown is gone. Every swing lands at full damage, 1.8-style. */
 	@Inject(method = "getAttackStrengthScale", at = @At("RETURN"), cancellable = true)
 	private void toolmastery$nostalgyScale(float partial, CallbackInfoReturnable<Float> cir) {
-		if (!toolmastery$vanillaCooldown && toolmastery$nostalgy() >= 4) {
+		if (!CombatPerks.vanillaCooldownQuery() && toolmastery$nostalgy() >= 4) {
 			cir.setReturnValue(1.0F);
 		}
 	}
@@ -92,61 +90,75 @@ public abstract class SwordPlayerMixin {
 	// ---------- the damage the tree adds ----------
 
 	/**
-	 * One hook for every damage node in the class: Keen Edge, Executioner,
-	 * Adrenaline, Bloodthirst and Death Eyes. This is the single point where the
-	 * attacker, the target and the base damage are all in hand — and a locked
-	 * item never reaches it, because {@link PlayerMixin} skips the call
-	 * entirely, so a borrowed sword adds nothing here either.
+	 * Every damage node in the class — Keen Edge, Executioner, Adrenaline,
+	 * Bloodthirst, Death Eyes — funnels through
+	 * {@link CombatPerks#onEnchantedDamage}. A locked item never reaches it,
+	 * because {@link PlayerMixin} skips the call entirely, so a borrowed sword
+	 * adds nothing here either.
 	 *
-	 * <p>The side effects (the mark, the cleave, the counters) deliberately only
-	 * fire for the primary hit. {@code doSweepAttack} calls this again for every
-	 * mob in the arc, and a sweep through six zombies should not be six marks,
-	 * six cleaves and six entries in the damage gate.
+	 * <p>This injector only ever fires for the <b>client's</b> predicted swing:
+	 * {@code ServerPlayer} overrides {@code getEnchantedDamage} without calling
+	 * super, so the server's copy of the same hook lives in
+	 * {@link SwordServerPlayerMixin}. Keeping this half keeps the client's
+	 * sounds and particles in step with the damage the server will deal.
 	 */
 	@Inject(method = "getEnchantedDamage", at = @At("RETURN"), cancellable = true)
 	private void toolmastery$combatDamage(Entity target, float damage, DamageSource source,
 	                                      CallbackInfoReturnable<Float> cir) {
 		Player self = (Player) (Object) this;
 		float actualScale = getAttackStrengthScale(0.5F);
-		float vanillaScale = toolmastery$vanillaScale(actualScale);
-		float total = cir.getReturnValueF()
-			+ CombatPerks.damageBonus(self, target, damage, vanillaScale);
+		float vanillaScale = CombatPerks.vanillaAttackScale(self, actualScale);
+		cir.setReturnValue(CombatPerks.onEnchantedDamage(self, target, damage,
+			cir.getReturnValueF(), actualScale, vanillaScale));
+	}
 
-		// Nostalgy switched off for PvP: same swing, vanilla damage.
-		if (target instanceof Player && !CombatPerks.nostalgyAppliesInPvp() && toolmastery$nostalgy() > 0) {
-			total *= CombatPerks.pvpCooldownRatio(vanillaScale, actualScale);
-		}
-		cir.setReturnValue(total);
+	// ---------- the counters the fight feeds ----------
 
-		if (!(self instanceof ServerPlayer player) || CombatPerks.state(self).inSweep) {
-			return;
+	/**
+	 * The tier-1 gate wants kills that ended on a critical hit, so the crit is
+	 * remembered off vanilla's own crit <em>decision</em>, mid-swing. Not off
+	 * {@code Player.crit}: that is the particle call, it happens after the
+	 * damage — after the death event, for the killing blow — and
+	 * {@code ServerPlayer} overrides it without calling super anyway, so a hook
+	 * there never fired on the server at all.
+	 */
+	@Redirect(method = "attack", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/entity/player/Player;canCriticalAttack(Lnet/minecraft/world/entity/Entity;)Z"))
+	private boolean toolmastery$rememberCrit(Player self, Entity target) {
+		boolean crit = canCriticalAttack(target);
+		if (crit && self instanceof ServerPlayer) {
+			CombatPerks.onCrit(self, target);
 		}
-		CombatPerks.onMeleeHit(player, total);
-		CombatTracker.onMeleeDamage(player, total);
-		if (target instanceof LivingEntity living) {
-			CombatPerks.mark(player, living);
-			CombatPerks.cleave(player, living, total);
+		return crit;
+	}
+
+	/**
+	 * ...and every swing starts by forgetting the last one, or a single crit
+	 * would make every later kill of that mob a "crit kill". Vanilla skips the
+	 * crit check entirely for weak swings, so the forgetting cannot live in the
+	 * redirect above.
+	 */
+	@Inject(method = "attack", at = @At("HEAD"))
+	private void toolmastery$forgetCrit(Entity target, CallbackInfo ci) {
+		Player self = (Player) (Object) this;
+		if (self instanceof ServerPlayer) {
+			CombatPerks.forgetCrit(self);
 		}
 	}
 
-	/** What {@code getAttackStrengthScale} would have said without Nostalgy. */
-	@Unique
-	private float toolmastery$vanillaScale(float actualScale) {
-		if (toolmastery$nostalgy() <= 0) {
-			return actualScale;
+	/**
+	 * The melee-damage gate counts what the swing actually cost the target —
+	 * read where vanilla reads its own DAMAGE_DEALT stat, so the counter, the
+	 * stats screen and the player's sense of the fight all agree. Both melee
+	 * paths ({@code attack} and the spear's {@code stabAttack}) land here, only
+	 * on hits that connected, with the cooldown, the crit and the target's
+	 * remaining health already spoken for.
+	 */
+	@Inject(method = "damageStatsAndHearts", at = @At("HEAD"))
+	private void toolmastery$countMeleeDamage(Entity target, float healthBefore, CallbackInfo ci) {
+		if ((Player) (Object) this instanceof ServerPlayer player && target instanceof LivingEntity living) {
+			CombatTracker.onMeleeDamage(player, healthBefore - living.getHealth());
 		}
-		toolmastery$vanillaCooldown = true;
-		try {
-			return getAttackStrengthScale(0.5F);
-		} finally {
-			toolmastery$vanillaCooldown = false;
-		}
-	}
-
-	/** The tier-1 gate wants kills that ended on a critical hit, so remember the crit. */
-	@Inject(method = "crit", at = @At("HEAD"))
-	private void toolmastery$rememberCrit(Entity target, CallbackInfo ci) {
-		CombatPerks.onCrit((Player) (Object) this, target);
 	}
 
 	// ---------- the sweep ----------
