@@ -38,6 +38,8 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
@@ -85,6 +87,26 @@ public class ToolMastery implements ModInitializer {
 			TimberScheduler.onBreak(level, player, pos, state);
 			AxeHarvest.onBreak(level, player, pos, state);
 		});
+
+		// Indestructible: a spent item is inert, and that has to include the
+		// right click — a bow that still draws, a crossbow that still loads and
+		// a hoe that still tills would make "spent" mean nothing for half the
+		// tools in the game. Registered before every other use handler and on
+		// both sides, so no ghost animation starts and no perk sees the click.
+		// The mace's right hook needs nothing here: it has no use action, and
+		// its damage path is judged by the attack hooks like any weapon.
+		UseItemCallback.EVENT.register((player, level, hand) ->
+			dev.toolmastery.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
+				? InteractionResult.FAIL
+				: InteractionResult.PASS);
+		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
+			dev.toolmastery.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
+				? InteractionResult.FAIL
+				: InteractionResult.PASS);
+		UseEntityCallback.EVENT.register((player, level, hand, entity, hitResult) ->
+			dev.toolmastery.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
+				? InteractionResult.FAIL
+				: InteractionResult.PASS);
 
 		// Explorer: the compass is the class's tool. Sneaking binds a waypoint,
 		// standing up asks the world where the nearest known structure is.
