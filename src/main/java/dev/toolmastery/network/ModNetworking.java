@@ -10,7 +10,6 @@ import dev.toolmastery.skill.SkillTrees;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.HashMap;
@@ -25,6 +24,7 @@ public final class ModNetworking {
 	public static void init() {
 		PayloadTypeRegistry.serverboundPlay().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(SkillFeedbackPayload.TYPE, SkillFeedbackPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
 
@@ -93,12 +93,18 @@ public final class ModNetworking {
 		});
 	}
 
+	/**
+	 * The verdict goes back on its own channel rather than into chat: the
+	 * click happened in the skill screen, so the answer belongs there too.
+	 * The client decides where to paint it — a banner in the screen while it
+	 * is open, chat only if the reply outlived the screen.
+	 */
 	private static void feedback(ServerPlayer player, SkillService.Result result) {
 		switch (result) {
 			case SkillService.Result.Ok ok ->
-				player.sendSystemMessage(ok.message().copy().withStyle(ChatFormatting.GREEN));
+				ServerPlayNetworking.send(player, new SkillFeedbackPayload(true, ok.message()));
 			case SkillService.Result.Fail fail ->
-				player.sendSystemMessage(fail.message().copy().withStyle(ChatFormatting.RED));
+				ServerPlayNetworking.send(player, new SkillFeedbackPayload(false, fail.message()));
 		}
 	}
 
