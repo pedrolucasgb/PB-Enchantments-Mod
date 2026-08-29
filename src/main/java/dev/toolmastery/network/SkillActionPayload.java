@@ -19,7 +19,9 @@ public record SkillActionPayload(Action action, String treeId, String nodeId) im
 		/** Repeatable: XP points, stamps the enchantment on the held item. */
 		ENCHANT_NODE,
 		/** Refunds an owned node for a fifth of its unlock price. */
-		SELL_NODE
+		SELL_NODE,
+		/** Repeatable: XP points for an item in the inventory (Biome Chart). */
+		BUY_ITEM
 	}
 
 	public static final Type<SkillActionPayload> TYPE =
