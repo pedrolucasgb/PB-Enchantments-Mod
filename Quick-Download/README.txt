@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.5.0
+Version 0.6.0
 ================================================
 
 HOW TO INSTALL
@@ -20,17 +20,17 @@ HOW IT WORKS
 ------------
 Every skill in the tree has up to TWO buttons:
 
-  UNLOCK  - a one-off purchase: a few XP levels plus materials you gather
-            by playing the class. A passive switches on immediately. An
+  UNLOCK  - a one-off purchase: XP points plus materials you gather by
+            playing the class. A passive switches on immediately. An
             enchantment starts showing up at your enchanting table.
 
-  ENCHANT - repeatable: costs whole XP levels and applies the enchantment
+  ENCHANT - repeatable: costs XP points and applies the enchantment
             to the item in your hand. Use it as often as you like, on as
             many tools as you like.
 
-Enchant is deliberately pricier than the enchanting table (20 levels for
-rank I, 35 for II, 50 for III): the table stays the cheap route, Enchant is
-the guaranteed one.
+Enchant is deliberately pricier than the enchanting table (550 XP for
+rank I, 2005 for II, 5345 for III): the table stays the cheap route,
+Enchant is the guaranteed one.
 
 Both buttons explain themselves before charging you. Clicking either turns
 the panel into a confirmation card with the exact cost, the materials you
@@ -42,6 +42,31 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.0
+--------------------
+- EVERYTHING IS PRICED IN XP POINTS now, not levels. Levels get more
+  expensive the higher you are, so "20 levels" used to cost a level-50
+  player far more experience than a level-30 one. A price is now a fixed
+  number of points - the same for everyone. The skill screen shows your
+  points on the XP bar, every button shows the exact points it will
+  spend, and nothing changed about HOW you earn experience.
+
+- SELL A SKILL BACK. An owned node's button becomes "Sell (+XP)": selling
+  refunds one fifth of the unlock price in XP points. Materials are not
+  refunded, and a rank that has higher ranks (or a capstone) bought on
+  top of it has to wait until those are sold first. Buying it back later
+  costs the full price again.
+
+- TRACK A GOAL ON YOUR HUD. Select any node or tier and press the new
+  Track button: a small scoreboard appears at the right edge of the
+  screen with the gate achievements still missing for it, ticking up
+  live as you play - no need to reopen the tree. One goal at a time;
+  Track something else to switch, or Untrack to clear it.
+
+- For testers: "/mastery debug master true" (op only) makes every unlock
+  free - no XP, no materials, no gates, no tier locks. Rank chains still
+  unlock in order. "false" turns it back off; the flag survives relogs.
 
 WHAT IS NEW IN 0.5.0
 --------------------
@@ -341,7 +366,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.5.0.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.0.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
