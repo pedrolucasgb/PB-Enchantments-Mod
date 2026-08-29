@@ -32,6 +32,9 @@ public class ToolMasteryClient implements ClientModInitializer {
 
 		// Set Sense draws next to the armour bar it explains.
 		SetSenseHud.register();
+		// Quiver Sense mirrors it on the hotbar's other side: the arrow the
+		// bow will actually fire, and how many of it you carry.
+		QuiverSenseHud.register();
 
 		// Lets common code (enchanting menu logic) check enchanter perk
 		// ownership on the client via the synced skill state.
