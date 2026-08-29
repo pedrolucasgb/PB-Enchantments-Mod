@@ -18,12 +18,13 @@ import net.minecraft.world.item.Items;
  * here reads damage that happened to the player and what their set did about
  * it.
  *
- * <p>Two hooks carry most of it. {@code AFTER_DAMAGE} hands over the damage
- * before and after mitigation, and the difference between the two <em>is</em>
- * the number the class is scored on. Shield blocking is taken separately, off
- * the mixin on {@code applyItemBlocking}, because a fully blocked hit never
- * reaches the damage event at all — its whole point is that no damage got
- * through.
+ * <p>Three hooks carry most of it. {@code ArmorPlayerMixin} measures what the
+ * armour actually soaked, inside {@code actuallyHurt} where vanilla does the
+ * soaking — the one place that number exists. {@code AFTER_DAMAGE} carries the
+ * survive-this gates, which only need to know a hit happened and how big it
+ * started. Shield blocking is taken separately, off the mixin on
+ * {@code applyItemBlocking}, because a fully blocked hit never reaches the
+ * damage event at all — its whole point is that no damage got through.
  */
 public final class ArmorTracker {
 	/** Fall damage vanilla deals for a five-block drop: {@code floor(distance - 3)}. */
@@ -36,12 +37,16 @@ public final class ArmorTracker {
 	}
 
 	/**
-	 * {@code ServerLivingEntityEvents.AFTER_DAMAGE}: base is the damage before
-	 * armour and enchantments, taken is what actually landed.
+	 * {@code ServerLivingEntityEvents.AFTER_DAMAGE}: the survive-this gates.
+	 * base is the damage on the way into {@code hurtServer}, taken is the same
+	 * amount after the shield's share.
 	 *
-	 * <p>Absorption only counts while the player is wearing all four pieces, so
-	 * the gate reads the way it is written — "absorb 500 damage in a full set" —
-	 * and a helmet on its own does not creep the counter forward.
+	 * <p>The absorb gate does <b>not</b> live here any more. It looked like it
+	 * could — "the damage the armour absorbed is base minus taken" — but the
+	 * event fires before armour is applied: {@code actuallyHurt} does that
+	 * reduction on a local of its own, so base and taken only ever differ by
+	 * what a shield blocked. The real number is read in
+	 * {@code ArmorPlayerMixin} and lands in {@link #onArmorAbsorb}.
 	 */
 	public static void onDamage(LivingEntity entity, DamageSource source, float base, float taken, boolean blocked) {
 		if (!(entity instanceof ServerPlayer player)) {
@@ -49,10 +54,6 @@ public final class ArmorTracker {
 		}
 		TreeProgress progress = SkillService.progress(player, SkillTrees.ARMOR);
 
-		int absorbed = Math.round(base - taken);
-		if (absorbed > 0 && !blocked && ArmorPerks.wearsFullSet(player)) {
-			progress.addCount("absorb_damage", absorbed);
-		}
 		// Base damage, not applied damage: a fall softened by Feather Falling is
 		// still a fall you walked away from, and that is what the gate asks.
 		if (source.is(DamageTypes.FALL) && base >= FIVE_BLOCK_FALL && player.isAlive()) {
@@ -63,6 +64,22 @@ public final class ArmorTracker {
 		}
 		if (source.is(DamageTypeTags.IS_EXPLOSION) && player.isAlive()) {
 			progress.addCount("survive_explosions", 1);
+		}
+	}
+
+	/**
+	 * What the armour, Protection and Resistance soaked out of one hit —
+	 * measured in {@code ArmorPlayerMixin} across vanilla's own two reduction
+	 * calls, which is the only place that difference exists as a number.
+	 *
+	 * <p>Only counts while the player is wearing all four pieces, so the gate
+	 * reads the way it is written — "absorb 500 damage in a full set" — and a
+	 * helmet on its own does not creep the counter forward.
+	 */
+	public static void onArmorAbsorb(ServerPlayer player, float absorbed) {
+		int amount = Math.round(absorbed);
+		if (amount > 0 && ArmorPerks.wearsFullSet(player)) {
+			SkillService.progress(player, SkillTrees.ARMOR).addCount("absorb_damage", amount);
 		}
 	}
 
