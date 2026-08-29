@@ -442,9 +442,11 @@ public final class SkillTrees {
 			// Tier 4
 			SkillNode.of("restock_nearby", 3, 10, SkillType.PASSIVE).icon(Items.HOPPER)
 				.costing(mat(Items.GOLD_INGOT, 32), mat(Items.DIAMOND, 8)),
-			// The one piece of the quartermaster's kit still to be built.
+			// The two pieces of the quartermaster's kit still to be built.
 			SkillNode.of("shulker_sight", 3, 10, SkillType.PASSIVE).icon(Items.SHULKER_BOX)
 				.costing(mat(Items.SHULKER_SHELL, 4), mat(Items.ENDER_PEARL, 8)).future(),
+			SkillNode.of("auto_block", 3, 9, SkillType.PASSIVE).icon(Items.IRON_BLOCK)
+				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.GOLD_BLOCK, 4)).future(),
 			// Tier 5 — capstone
 			SkillNode.of("hand_of_order", 4, 20, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CHEST, 64))

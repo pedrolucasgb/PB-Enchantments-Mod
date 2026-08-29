@@ -72,30 +72,11 @@ public final class ExplorerPerks {
 	// ---------- Night Eyes ----------
 
 	/**
-	 * The brightness Night Eyes holds the lightmap at, on the same 0..1 scale as
-	 * the video setting — where 0 is Moody and 1 is the Bright end of the
-	 * slider. Above 1 because that is the whole promise of the node: a lift the
-	 * options screen cannot give you.
-	 *
-	 * <p>The shader reads this as {@code mix(colour, liftedColour, brightness)},
-	 * and {@code liftedColour} equals {@code colour} wherever the picture is
-	 * already bright — so going past 1 extrapolates in dark pixels and does
-	 * nothing at all in daylight. Night stays night; the corners stop being a
-	 * flat black wall.
+	 * The strength Night Eyes runs the Night Vision effect at, on the shader's
+	 * 0..1 scale where the potion is 1. Strong enough that night is clearly
+	 * navigable, weak enough that the real potion is still an upgrade.
 	 */
-	public static final float NIGHT_EYES_BRIGHTNESS = 1.25F;
-
-	/**
-	 * The floor Night Eyes puts under ambient light: a very dark blue, so a
-	 * pitch-black cave reads as deep blue rather than as nothing at all.
-	 *
-	 * <p>Ambient is added to every pixel before the sky and block light, which
-	 * is why it has to stay this small — anything higher would wash out daylight
-	 * as well, and this node is not a torch.
-	 */
-	public static final float NIGHT_EYES_AMBIENT_RED = 0.035F;
-	public static final float NIGHT_EYES_AMBIENT_GREEN = 0.040F;
-	public static final float NIGHT_EYES_AMBIENT_BLUE = 0.060F;
+	public static final float NIGHT_EYES_INTENSITY = 0.7F;
 
 	public static boolean seesInTheDark(Player player) {
 		return owns(player, NIGHT_EYES);
