@@ -22,6 +22,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
@@ -236,7 +237,12 @@ public class SkillTreeScreen extends Screen {
 						select(null, -1);
 					}
 				});
-			tab.setTooltip(Tooltip.create(tree.displayName()));
+			MutableComponent tabTip = tree.displayName().copy();
+			if (SkillTrees.IN_TESTING.contains(id)) {
+				tabTip.append(Component.literal("\n"))
+					.append(Component.translatable("screen.toolmastery.in_testing").withColor(0xFFA94D));
+			}
+			tab.setTooltip(Tooltip.create(tabTip));
 			addRenderableWidget(tab);
 			x += tabWidth + 2;
 		}
@@ -424,6 +430,21 @@ public class SkillTreeScreen extends Screen {
 		return super.mouseReleased(event);
 	}
 
+	/**
+	 * The key that opened the tree closes it again, and so does the inventory
+	 * key — both are "get this screen out of my face" gestures, the same deal
+	 * vanilla's inventory offers with E.
+	 */
+	@Override
+	public boolean keyPressed(KeyEvent event) {
+		if (ToolMasteryClient.OPEN_TREE_KEY.matches(event)
+			|| (minecraft != null && minecraft.options.keyInventory.matches(event))) {
+			onClose();
+			return true;
+		}
+		return super.keyPressed(event);
+	}
+
 	/** The colour a node wears in the tree, and the reason behind it. */
 	private NodeState stateOf(SkillNode node, @Nullable SkillStatePayload.TreeState state) {
 		if (state != null && state.purchased().contains(node.id())) {
@@ -452,6 +473,10 @@ public class SkillTreeScreen extends Screen {
 			.append(Component.literal("\n"))
 			.append(SkillTreeStyle.typeName(node.type())
 				.withColor(SkillTreeStyle.typeColor(node.type()) & 0xFFFFFF));
+		if (SkillTrees.IN_TESTING.contains(treeId)) {
+			tip.append(Component.literal("\n"))
+				.append(Component.translatable("screen.toolmastery.in_testing").withColor(0xFFA94D));
+		}
 		if (nodeState == NodeState.OWNED) {
 			if (node.pveOnly()) {
 				tip.append(Component.literal("\n"))
@@ -926,8 +951,13 @@ public class SkillTreeScreen extends Screen {
 		}
 		y = Math.max(afterTitle, y + 18) + 2;
 
-		SkillTreeStyle.badge(graphics, font, SkillTreeStyle.typeName(node.type()), x, y,
+		int badgeWidth = SkillTreeStyle.badge(graphics, font, SkillTreeStyle.typeName(node.type()), x, y,
 			SkillTreeStyle.typeColor(node.type()));
+		if (SkillTrees.IN_TESTING.contains(treeId)) {
+			SkillTreeStyle.badge(graphics, font,
+				Component.translatable("screen.toolmastery.in_testing_badge"), x + badgeWidth + 3, y,
+				SkillTreeStyle.SOON);
+		}
 		y += 15;
 
 		if (!node.implemented()) {
