@@ -35,6 +35,8 @@ public class ToolMasteryClient implements ClientModInitializer {
 		// Quiver Sense mirrors it on the hotbar's other side: the arrow the
 		// bow will actually fire, and how many of it you carry.
 		QuiverSenseHud.register();
+		// The pinned-goal scoreboard on the right edge, fed by the Track button.
+		GoalTrackerHud.register();
 
 		// Lets common code (enchanting menu logic) check enchanter perk
 		// ownership on the client via the synced skill state.
@@ -46,6 +48,7 @@ public class ToolMasteryClient implements ClientModInitializer {
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			ClientSkillState.clear();
 			ArtisanSearch.clear();
+			GoalTracker.clear();
 		});
 
 		// Why a borrowed tool feels dead, and why a librarian will not sell a

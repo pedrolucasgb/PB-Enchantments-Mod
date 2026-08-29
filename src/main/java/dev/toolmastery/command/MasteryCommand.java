@@ -93,6 +93,11 @@ public final class MasteryCommand {
 							StringArgumentType.getString(context, "node"))))))
 			.then(Commands.literal("debug")
 				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+				.then(Commands.literal("master")
+					.then(Commands.argument("enabled", com.mojang.brigadier.arguments.BoolArgumentType.bool())
+						.executes(context -> master(
+							context.getSource(),
+							com.mojang.brigadier.arguments.BoolArgumentType.getBool(context, "enabled")))))
 				.then(Commands.literal("maxall")
 					.executes(context -> {
 						ServerPlayer player = context.getSource().getPlayer();
@@ -205,7 +210,8 @@ public final class MasteryCommand {
 		int next = progress.unlockedTiers;
 		if (next < tree.tiers().size()) {
 			SkillTier tier = tree.tiers().get(next);
-			source.sendSystemMessage(Component.literal("Next gate (tier " + (next + 1) + ", access " + tier.accessCost() + " lv):")
+			source.sendSystemMessage(Component.literal("Next gate (tier " + (next + 1) + ", access "
+					+ dev.toolmastery.skill.XpMath.pointsForLevel(tier.accessCost()) + " XP):")
 				.withStyle(ChatFormatting.GOLD));
 			for (GateRequirement gate : tier.gates()) {
 				int count = Math.min(progress.count(gate.id()), gate.target());
@@ -284,6 +290,26 @@ public final class MasteryCommand {
 		int result = report(source, SkillService.unlockTierNodes(player, tree, tier));
 		dev.toolmastery.network.ModNetworking.sendState(player);
 		return result;
+	}
+
+	/**
+	 * /mastery debug master true|false - free-unlock mode for testing. Every
+	 * purchase (tiers, nodes, enchants) costs nothing and skips gates, tiers
+	 * and materials; only the requires-chain still applies, so a rank ladder is
+	 * still climbed in order — just for free. Persists until switched off.
+	 */
+	private static int master(CommandSourceStack source, boolean enabled) {
+		ServerPlayer player = source.getPlayer();
+		if (player == null) {
+			return 0;
+		}
+		dev.toolmastery.progress.ModAttachments.of(player).debugMaster = enabled;
+		dev.toolmastery.network.ModNetworking.sendState(player);
+		source.sendSystemMessage(Component.literal(enabled
+				? "Master mode ON: every unlock is free and ignores gates, tiers and materials. Rank chains still unlock in order."
+				: "Master mode OFF: normal prices and requirements are back.")
+			.withStyle(ChatFormatting.YELLOW));
+		return 1;
 	}
 
 	/** /mastery debug reset [tree] - wipe progress back to a brand-new player. */

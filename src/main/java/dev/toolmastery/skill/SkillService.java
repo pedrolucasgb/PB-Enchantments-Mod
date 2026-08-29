@@ -18,16 +18,30 @@ import org.jetbrains.annotations.Nullable;
  * All progression rules in one place: gate checks, tier unlocking, and the two
  * ways a player spends on a node.
  *
- * <p><b>Unlock</b> is the one-off purchase — XP levels plus materials. It marks
+ * <p><b>Unlock</b> is the one-off purchase — XP points plus materials. It marks
  * the node owned: a passive starts working immediately, an enchantment joins
  * the player's enchanting-table pool.
  *
- * <p><b>Enchant</b> is the repeatable one — whole XP levels, no materials — and
+ * <p><b>Enchant</b> is the repeatable one — XP points, no materials — and
  * stamps an unlocked enchantment onto whatever the player is holding, after
  * checking that the item and its existing enchantments accept it.
+ *
+ * <p>All prices are declared in levels but charged in points via
+ * {@link XpMath}, so a purchase costs the same experience whatever level the
+ * buyer is standing on.
  */
 public final class SkillService {
 	private SkillService() {
+	}
+
+	/**
+	 * Debug master mode ({@code /mastery debug master true}): every purchase in
+	 * here is free and skips gates, tiers and materials — but the shape of the
+	 * tree still holds, so a rank chain is still bought in order. For testing
+	 * one node without handing over the whole tree first.
+	 */
+	public static boolean master(ServerPlayer player) {
+		return ModAttachments.of(player).debugMaster;
 	}
 
 	public static TreeProgress progress(ServerPlayer player, SkillTree tree) {
@@ -68,28 +82,33 @@ public final class SkillService {
 			return fail("mastery.toolmastery.tier.fail.complete");
 		}
 		SkillTier tier = tree.tiers().get(next);
-		if (!gateComplete(progress, tier)) {
+		boolean master = master(player);
+		if (!master && !gateComplete(progress, tier)) {
 			return fail("mastery.toolmastery.tier.fail.gate", tree.id());
 		}
-		if (player.experienceLevel < tier.accessCost()) {
-			return fail("mastery.toolmastery.fail.levels", tier.accessCost(), player.experienceLevel);
+		int cost = master ? 0 : XpMath.pointsForLevel(tier.accessCost());
+		if (XpMath.totalPoints(player) < cost) {
+			return fail("mastery.toolmastery.fail.xp", cost, XpMath.totalPoints(player));
 		}
-		player.giveExperienceLevels(-tier.accessCost());
+		if (cost > 0) {
+			player.giveExperiencePoints(-cost);
+		}
 		progress.unlockedTiers = next + 1;
 		ModAdvancements.grantTier(player, tree.id(), next);
-		return ok("mastery.toolmastery.tier.ok", next + 1, tier.accessCost());
+		return ok("mastery.toolmastery.tier.ok", next + 1, cost);
 	}
 
-	/** Attempts to unlock a node: XP levels plus the node's materials. */
+	/** Attempts to unlock a node: XP points plus the node's materials. */
 	public static Result unlockNode(ServerPlayer player, SkillTree tree, SkillNode node) {
 		TreeProgress progress = progress(player, tree);
+		boolean master = master(player);
 		if (!node.implemented()) {
 			return fail("mastery.toolmastery.unlock.fail.future", node.displayName());
 		}
 		if (progress.owns(node.id())) {
 			return fail("mastery.toolmastery.unlock.fail.owned", node.displayName());
 		}
-		if (node.tier() >= progress.unlockedTiers) {
+		if (!master && node.tier() >= progress.unlockedTiers) {
 			return fail("mastery.toolmastery.unlock.fail.tier", node.tier() + 1);
 		}
 		if (node.requires() != null && !progress.owns(node.requires())) {
@@ -105,18 +124,47 @@ public final class SkillService {
 				return fail("mastery.toolmastery.unlock.fail.requires_all", missing);
 			}
 		}
-		MaterialCost missing = MaterialCost.missing(player, node.materials());
-		if (missing != null) {
-			return fail("mastery.toolmastery.unlock.fail.materials", missing.label(), missing.held(player));
+		if (!master) {
+			MaterialCost missing = MaterialCost.missing(player, node.materials());
+			if (missing != null) {
+				return fail("mastery.toolmastery.unlock.fail.materials", missing.label(), missing.held(player));
+			}
+			int cost = XpMath.pointsForLevel(node.unlockCost());
+			if (XpMath.totalPoints(player) < cost) {
+				return fail("mastery.toolmastery.fail.xp", cost, XpMath.totalPoints(player));
+			}
+			MaterialCost.consume(player, node.materials());
+			player.giveExperiencePoints(-cost);
 		}
-		if (player.experienceLevel < node.unlockCost()) {
-			return fail("mastery.toolmastery.fail.levels", node.unlockCost(), player.experienceLevel);
-		}
-
-		MaterialCost.consume(player, node.materials());
-		player.giveExperienceLevels(-node.unlockCost());
 		progress.purchased.add(node.id());
 		return new Result.Ok(unlockMessage(node));
+	}
+
+	/**
+	 * Sells an owned node back for one fifth of its unlock price in XP points.
+	 * Materials are gone for good, and anything bought on top of this node —
+	 * a higher rank, or an everything-first capstone — has to be sold first,
+	 * so the tree never holds a node whose prerequisite was refunded away.
+	 */
+	public static Result sellNode(ServerPlayer player, SkillTree tree, SkillNode node) {
+		TreeProgress progress = progress(player, tree);
+		if (!progress.owns(node.id())) {
+			return fail("mastery.toolmastery.sell.fail.not_owned", node.displayName());
+		}
+		for (SkillNode other : tree.nodes().values()) {
+			if (other.id().equals(node.id()) || !progress.owns(other.id())) {
+				continue;
+			}
+			if (node.id().equals(other.requires()) || other.requiresAll()) {
+				return fail("mastery.toolmastery.sell.fail.dependent", other.displayName());
+			}
+		}
+		int refund = XpMath.pointsForLevel(node.unlockCost()) / 5;
+		progress.purchased.remove(node.id());
+		if (refund > 0) {
+			player.giveExperiencePoints(refund);
+		}
+		return ok("mastery.toolmastery.sell.ok", node.displayName(), refund);
 	}
 
 	/**
@@ -161,14 +209,17 @@ public final class SkillService {
 		if (problem != null) {
 			return new Result.Fail(problem);
 		}
-		if (player.experienceLevel < node.enchantCost()) {
-			return fail("mastery.toolmastery.fail.levels", node.enchantCost(), player.experienceLevel);
+		int cost = master(player) ? 0 : XpMath.pointsForLevel(node.enchantCost());
+		if (XpMath.totalPoints(player) < cost) {
+			return fail("mastery.toolmastery.fail.xp", cost, XpMath.totalPoints(player));
 		}
 
-		player.giveExperienceLevels(-node.enchantCost());
+		if (cost > 0) {
+			player.giveExperiencePoints(-cost);
+		}
 		EnchantmentHelper.updateEnchantments(stack, mutable -> mutable.set(holder, grant.level()));
 		return ok("mastery.toolmastery.enchant.ok",
-			Enchantment.getFullname(holder, grant.level()), stack.getHoverName(), node.enchantCost());
+			Enchantment.getFullname(holder, grant.level()), stack.getHoverName(), cost);
 	}
 
 	/** Debug: completes every gate counter and unlocks every tier, free. */
