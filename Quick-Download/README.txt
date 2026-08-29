@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.7
+Version 0.6.8
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,15 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.8
+--------------------
+- THE HUD GOAL TRACKER TICKS LIVE now. Progress used to reach your
+  client only on login and after skill-screen actions, so the pinned
+  scoreboard froze on old numbers until you reopened the tree. The
+  server now pushes your progress the moment it changes (checked once a
+  second, sent only when something actually moved) - chop a log and the
+  tracker line ticks up right there on your HUD.
 
 WHAT IS NEW IN 0.6.7
 --------------------
@@ -479,7 +488,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.7.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.8.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
