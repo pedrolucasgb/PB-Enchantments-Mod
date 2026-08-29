@@ -233,6 +233,9 @@ public class ToolMastery implements ModInitializer {
 					ArmorUpkeep.slowTick(player);
 					// Bow: Rapid Reload II's background crossbow load.
 					BowPerks.slowTick(player);
+					// Last, so everything the trackers above just counted rides
+					// this second's snapshot: the HUD goal tracker ticks live.
+					dev.toolmastery.network.ModNetworking.syncIfDirty(player);
 				}
 			}
 		});
