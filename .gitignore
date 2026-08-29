@@ -24,5 +24,7 @@ bin/
 run/
 remappedSrc/
 
-# Claude Code scratch: session worktrees live here, never part of the repo
-.claude/
+# Claude Code: session worktrees are scratch and never part of the repo,
+# but project skills (.claude/skills) ship with it.
+.claude/*
+!.claude/skills/
