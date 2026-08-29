@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.1
+Version 0.6.2
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,23 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.2
+--------------------
+- NIGHT EYES actually works now. The old brightness lift was invisible in
+  a truly dark night; the node is now a permanent Night Vision at 70% of
+  the potion's strength. A real potion still beats it, and a warden still
+  blinds you.
+
+- PUFFERFISH LUNGS is no longer infinite air. Every time your head goes
+  under you get 15 seconds of Water Breathing - one dive's worth. Stay
+  down longer and the breath meter runs like anyone's; surface for a
+  moment and the next dive refills it.
+
+- New coming-soon node in the Artisan tree (tier 4): AUTO BLOCK - nine of
+  any ore material in your inventory pack themselves into the block
+  (ingots, raw ore, diamonds, emeralds, redstone, lapis - everything but
+  quartz), and nine gold nuggets pack into an ingot.
 
 WHAT IS NEW IN 0.6.1
 --------------------
@@ -382,7 +399,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.1.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.2.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
