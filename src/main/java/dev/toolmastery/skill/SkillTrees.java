@@ -129,17 +129,18 @@ public final class SkillTrees {
 		"axe",
 		Items.DIAMOND_AXE,
 		List.of(
-			// Tier 1 — Apprentice Lumberjack
+			// Tier 1 — Apprentice Lumberjack. Wood targets halved in 0.6.5:
+			// the old numbers made tier 1 the grindiest opener of any tree.
 			new SkillTier(5, List.of(
-				new GateRequirement("chop_logs", 256),
+				new GateRequirement("chop_logs", 128),
 				new GateRequirement("craft_iron_axe", 1),
-				new GateRequirement("make_charcoal", 64)
+				new GateRequirement("make_charcoal", 32)
 			)),
-			// Tier 2 — Feller
+			// Tier 2 — Feller (wood targets halved in 0.6.5 too)
 			new SkillTier(10, List.of(
 				new GateRequirement("overworld_wood_checklist", 6),
-				new GateRequirement("chop_logs_total", 512),
-				new GateRequirement("strip_logs", 32)
+				new GateRequirement("chop_logs_total", 256),
+				new GateRequirement("strip_logs", 16)
 			)),
 			// Tier 3 — Master Lumberjack
 			new SkillTier(15, List.of(
@@ -340,6 +341,12 @@ public final class SkillTrees {
 			SkillNode.of("slipstream_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.PHANTOM_MEMBRANE)
 				.costing(mat(Items.PHANTOM_MEMBRANE, 8), mat(Items.FIREWORK_ROCKET, 16))
 				.enchantFor(20),
+			// The mod's first buy-an-item nodes: each purchase drops a real map
+			// in the inventory. Rank I points anywhere; rank II, a tier up,
+			// points only at biomes the player has never set foot in — the
+			// price climbing with the tier. Still to be built.
+			SkillNode.of("biome_chart_1", 1, 4, SkillType.ITEM).icon(Items.FILLED_MAP)
+				.costing(mat(Items.PAPER, 16), mat(Items.COMPASS, 1)).future(),
 			// Tier 3
 			SkillNode.of("remember", 2, 9, SkillType.PASSIVE).icon(Items.WRITTEN_BOOK)
 				.costing(mat(Items.PAPER, 16), mat(Items.COMPASS, 1), mat(Items.ENDER_PEARL, 4)),
@@ -350,6 +357,8 @@ public final class SkillTrees {
 				.costing(mat(Items.PRISMARINE_SHARD, 32), mat(Items.HEART_OF_THE_SEA, 1)),
 			SkillNode.of("trailblazer", 2, 7, SkillType.PASSIVE).icon(Items.GRAVEL)
 				.costing(mat(Items.GRAVEL, 64), mat(Items.IRON_INGOT, 8)),
+			SkillNode.chained("biome_chart_2", 2, 8, "biome_chart_1", SkillType.ITEM).icon(Items.CARTOGRAPHY_TABLE)
+				.costing(mat(Items.PAPER, 32), mat(Items.COMPASS, 1), mat(Items.ENDER_PEARL, 2)).future(),
 			// Tier 4
 			SkillNode.chained("tireless_3", 3, 8, "tireless_2", SkillType.PASSIVE).icon(Items.GOLDEN_CARROT)
 				.costing(mat(Items.LEATHER, 64), mat(Items.GOLDEN_CARROT, 8), mat(Items.DIAMOND, 4)),
