@@ -1,5 +1,5 @@
 TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.5
+Version 0.6.6
 ================================================
 
 HOW TO INSTALL
@@ -42,6 +42,24 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.6
+--------------------
+- AUTO BLOCK is live (Artisan, tier 4). Nine of any ore material in your
+  inventory pack themselves into the block within a second - ingots, raw
+  ore, coal, diamonds, emeralds, redstone, lapis, netherite. Everything
+  but quartz. Nine gold or iron nuggets become an ingot, and a nugget
+  windfall cascades all the way up to blocks. Your pinned slots are
+  never touched, and renamed or enchanted stacks are left alone.
+
+- BIOME CHART I & II are live (Explorer, tiers 2-3). Own the node and a
+  "Buy map" button appears: each purchase drops a real filled map in
+  your inventory with an X on the biome it found, named after it.
+    Rank I  - 55 XP, points at a random biome of your dimension
+    Rank II - the map only points at biomes you have NEVER visited, so
+              every purchase is a guaranteed new discovery for the biome
+              checklist. Price: 55 XP times your unlocked Explorer tiers
+  If no biome can be found in range, nothing is spent.
 
 WHAT IS NEW IN 0.6.5
 --------------------
@@ -452,7 +470,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.5.jar" have to stay in the same folder
+- "install.ps1" and "toolmastery-0.6.6.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).

@@ -74,6 +74,15 @@ public final class SkillService {
 		return new Result.Ok(Component.translatable(key, args));
 	}
 
+	/** Public factories, for perks that report through the same Result channel. */
+	public static Result okFor(String key, Object... args) {
+		return ok(key, args);
+	}
+
+	public static Result failFor(String key, Object... args) {
+		return fail(key, args);
+	}
+
 	/** Attempts to unlock the next tier of a tree. */
 	public static Result unlockNextTier(ServerPlayer player, SkillTree tree) {
 		TreeProgress progress = progress(player, tree);
