@@ -9,6 +9,7 @@ import dev.toolmastery.enchant.EnchantCompat;
 import dev.toolmastery.enchant.ModEnchantments;
 import dev.toolmastery.network.SkillActionPayload;
 import dev.toolmastery.network.SkillStatePayload;
+import dev.toolmastery.perk.BiomeCharts;
 import dev.toolmastery.skill.GateRequirement;
 import dev.toolmastery.skill.MaterialCost;
 import dev.toolmastery.skill.SkillNode;
@@ -89,7 +90,8 @@ public class SkillTreeScreen extends Screen {
 		UNLOCK_TIER,
 		UNLOCK_NODE,
 		ENCHANT_NODE,
-		SELL_NODE
+		SELL_NODE,
+		BUY_ITEM
 	}
 
 	private String treeId = SkillTrees.ORDER.getFirst().id();
@@ -579,6 +581,20 @@ public class SkillTreeScreen extends Screen {
 				}
 			}
 
+			// A chart node's owned-state action is buying the map: the secondary
+			// slot the enchantables use, since an ITEM node is never enchantable.
+			if (owned && BiomeCharts.isChart(node.id())) {
+				addRenderableWidget(Button.builder(
+						Component.translatable("screen.toolmastery.buy_node",
+							BiomeCharts.cost(node.id(), state.unlockedTiers())),
+						button -> {
+							pending = Pending.BUY_ITEM;
+							scheduleRebuild();
+						})
+					.bounds(panelX + 6, secondaryY, buttonWidth, 18)
+					.build());
+			}
+
 			if (node.enchantable()) {
 				Component enchantLabel = master
 					? Component.translatable("screen.toolmastery.enchant_node_free")
@@ -659,6 +675,12 @@ public class SkillTreeScreen extends Screen {
 				if (selectedNode != null) {
 					ClientPlayNetworking.send(
 						new SkillActionPayload(SkillActionPayload.Action.SELL_NODE, treeId, selectedNode));
+				}
+			}
+			case BUY_ITEM -> {
+				if (selectedNode != null) {
+					ClientPlayNetworking.send(
+						new SkillActionPayload(SkillActionPayload.Action.BUY_ITEM, treeId, selectedNode));
 				}
 			}
 			case NONE -> {
@@ -981,6 +1003,11 @@ public class SkillTreeScreen extends Screen {
 					XpMath.pointsForLevel(node.enchantCost())),
 				x, y, SkillTreeStyle.MUTED, 11);
 		}
+		if (BiomeCharts.isChart(node.id())) {
+			y = wrappedText(graphics, Component.translatable("screen.toolmastery.buy_cost",
+					BiomeCharts.cost(node.id(), state.unlockedTiers())),
+				x, y, SkillTreeStyle.MUTED, 11);
+		}
 		if (node.requires() != null) {
 			boolean has = state.purchased().contains(node.requires());
 			y = wrappedText(graphics,
@@ -1068,6 +1095,18 @@ public class SkillTreeScreen extends Screen {
 			return;
 		}
 		if (node == null) {
+			return;
+		}
+
+		if (pending == Pending.BUY_ITEM) {
+			SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
+			int cost = BiomeCharts.cost(node.id(), state == null ? 0 : state.unlockedTiers());
+			y = wrappedText(graphics, Component.translatable("screen.toolmastery.confirm.buy_title",
+				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
+			y += 2;
+			graphics.textWithWordWrap(font,
+				Component.translatable("screen.toolmastery.confirm.buy_body", cost),
+				x, y, wrap, SkillTreeStyle.MUTED);
 			return;
 		}
 
