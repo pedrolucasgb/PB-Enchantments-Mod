@@ -221,6 +221,69 @@ public final class CombatPerks {
 	// ---------- damage ----------
 
 	/**
+	 * True while {@link #vanillaAttackScale} is re-asking the cooldown without
+	 * Nostalgy. The two cooldown injectors in {@code SwordPlayerMixin} step aside
+	 * while this is set, so Keen Edge — a node that pays out on a <em>full</em>
+	 * cooldown — reads the timing vanilla would have shown, not the one Nostalgy
+	 * flattened. Thread-local because the client's cooldown bar reads the same
+	 * methods every frame while the server thread is mid-swing.
+	 */
+	private static final ThreadLocal<Boolean> VANILLA_COOLDOWN = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+	/** Asked by the Nostalgy injectors: is this query about the vanilla cooldown? */
+	public static boolean vanillaCooldownQuery() {
+		return VANILLA_COOLDOWN.get();
+	}
+
+	/** What {@code getAttackStrengthScale} would have said without Nostalgy. */
+	public static float vanillaAttackScale(Player self, float actualScale) {
+		if (level(self, self.getMainHandItem(), ModEnchantments.NOSTALGY) <= 0) {
+			return actualScale;
+		}
+		VANILLA_COOLDOWN.set(Boolean.TRUE);
+		try {
+			return self.getAttackStrengthScale(0.5F);
+		} finally {
+			VANILLA_COOLDOWN.set(Boolean.FALSE);
+		}
+	}
+
+	/**
+	 * The whole of one {@code getEnchantedDamage} call, shared by the two mixins
+	 * that hook it. It has to be two: {@code ServerPlayer} <b>overrides</b>
+	 * {@code getEnchantedDamage} without calling super, so an injector on
+	 * {@code Player} alone never runs on the server — the damage nodes and the
+	 * melee counters were all dead until the server got its own copy of this
+	 * hook. The {@code Player} half still runs for the client's predicted swing,
+	 * so its sounds and particles agree with the damage the server will deal.
+	 *
+	 * <p>The side effects (Adrenaline's ramp, the mark, the cleave) fire on the
+	 * server only, and only for the primary hit — {@code doSweepAttack} calls
+	 * this again for every mob in the arc, and a sweep through six zombies
+	 * should not be six marks and six cleaves.
+	 */
+	public static float onEnchantedDamage(Player self, Entity target, float damage, float vanillaReturn,
+			float actualScale, float vanillaScale) {
+		float total = vanillaReturn + damageBonus(self, target, damage, vanillaScale);
+
+		// Nostalgy switched off for PvP: same swing, vanilla damage.
+		if (target instanceof Player && !nostalgyAppliesInPvp()
+			&& level(self, self.getMainHandItem(), ModEnchantments.NOSTALGY) > 0) {
+			total *= pvpCooldownRatio(vanillaScale, actualScale);
+		}
+
+		if (!(self instanceof ServerPlayer player) || state(self).inSweep) {
+			return total;
+		}
+		onMeleeHit(player, total);
+		if (target instanceof LivingEntity living) {
+			mark(player, living);
+			cleave(player, living, total);
+		}
+		return total;
+	}
+
+	/**
 	 * What the tree adds to one melee hit, on top of the weapon and vanilla's
 	 * own enchantments. Called from {@code Player.getEnchantedDamage}, which is
 	 * the one point where the attacker, the target and the base damage are all
@@ -493,9 +556,21 @@ public final class CombatPerks {
 		}
 	}
 
-	/** A critical hit landed, remembered so the tier-1 gate can ask about the kill. */
+	/**
+	 * This swing is a critical hit, remembered so the tier-1 gate can ask about
+	 * the kill. Recorded off the crit <em>decision</em> inside {@code attack},
+	 * not off {@code Player.crit}: vanilla only calls that method after the
+	 * damage has landed — after the death event, for a killing blow — and
+	 * {@code ServerPlayer} overrides it without calling super besides, so a hook
+	 * there both never fires on the server and would fire too late if it did.
+	 */
 	public static void onCrit(Player player, Entity target) {
 		state(player).critTarget = target.getId();
+	}
+
+	/** A new swing is starting: only <em>this</em> swing's crit may count its kill. */
+	public static void forgetCrit(Player player) {
+		state(player).critTarget = -1;
 	}
 
 	private static void clearMark(ServerPlayer player, State state) {
