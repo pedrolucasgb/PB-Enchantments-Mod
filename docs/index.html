@@ -198,17 +198,6 @@
   }
   .release .head .get-btn:hover { filter: brightness(1.08); }
   .release .size { color: var(--muted); font-size: 0.85rem; }
-  .release .body {
-    color: var(--muted);
-    font-size: 0.92rem;
-    margin-top: 10px;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    max-height: 150px;
-    overflow-y: auto;
-  }
-  .release .body a { color: var(--accent); text-decoration: none; }
-  .release .body a:hover { text-decoration: underline; }
   #releases .empty { color: var(--muted); }
   #releases .empty a { color: var(--accent); }
   .load-more {
@@ -504,15 +493,6 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  /** Release notes: escaped, with bare PR links shortened to #N. */
-  function notesHtml(body) {
-    let html = escapeHtml(body.trim());
-    html = html.replace(/https:\/\/github\.com\/([\w.-]+\/[\w.-]+)\/pull\/(\d+)/g,
-      '<a href="https://github.com/$1/pull/$2">#$2</a>');
-    html = html.replace(/^## .*$/gm, "").trim();
-    return html;
-  }
-
   function renderReleases() {
     if (failed && !releases.length) {
       releasesBox.innerHTML = '<p class="empty">' + t("error") + "</p>";
@@ -557,13 +537,6 @@
         head.appendChild(size);
       }
       div.appendChild(head);
-
-      if (r.body) {
-        const body = document.createElement("div");
-        body.className = "body";
-        body.innerHTML = notesHtml(r.body);
-        div.appendChild(body);
-      }
       releasesBox.appendChild(div);
     }
     loadMoreBtn.hidden = !morePages;
