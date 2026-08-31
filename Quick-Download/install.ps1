@@ -1,4 +1,4 @@
-# Tool Mastery installer for Minecraft 26.2 (Fabric)
+# PB Enchantments installer for Minecraft 26.2 (Fabric)
 # Plain ASCII on purpose, so the console reads the same under any code page.
 
 $ErrorActionPreference = 'Stop'
@@ -14,7 +14,7 @@ function Fail($msg) {
 }
 
 Write-Host '======================================='
-Write-Host '  Tool Mastery installer'
+Write-Host '  PB Enchantments installer'
 Write-Host "  Minecraft $mcVersion + Fabric"
 Write-Host '======================================='
 Write-Host ''
@@ -26,11 +26,11 @@ if (-not (Test-Path $mc)) {
 
 # The jar is found by name pattern, so updating the mod is just a matter of
 # swapping the file in this folder - the installer never needs editing.
-$modJar = Get-ChildItem $PSScriptRoot -Filter 'toolmastery-*.jar' -ErrorAction SilentlyContinue |
+$modJar = Get-ChildItem $PSScriptRoot -Filter 'pbenchants-*.jar' -ErrorAction SilentlyContinue |
           Where-Object { $_.Name -notlike '*-sources.jar' } |
           Sort-Object Name -Descending | Select-Object -First 1
 if (-not $modJar) {
-    Fail 'No toolmastery-*.jar found in this folder. It has to sit next to this installer.'
+    Fail 'No pbenchants-*.jar found in this folder. It has to sit next to this installer.'
 }
 Write-Host "      Mod found: $($modJar.Name)"
 Write-Host ''
@@ -107,13 +107,16 @@ if ($hasApi) {
     Write-Host "      Downloaded: $($file.filename)"
 }
 
-# --- 4. Tool Mastery ---------------------------------------------------------
-Write-Host '[4/4] Installing the Tool Mastery mod...'
+# --- 4. PB Enchantments ---------------------------------------------------------
+Write-Host '[4/4] Installing the PB Enchantments mod...'
 
 # Two copies of the same mod in the folder = the game crashes on launch
 # (duplicate mod id). So the old one leaves before the new one arrives.
-$previous = Get-ChildItem $mods -Filter 'toolmastery-*.jar' -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ne $modJar.Name }
+# The mod used to ship as toolmastery-*.jar, so those leave too.
+$previous = @()
+$previous += Get-ChildItem $mods -Filter 'pbenchants-*.jar' -ErrorAction SilentlyContinue |
+             Where-Object { $_.Name -ne $modJar.Name }
+$previous += Get-ChildItem $mods -Filter 'toolmastery-*.jar' -ErrorAction SilentlyContinue
 foreach ($old in $previous) {
     Write-Host "      Removing the previous version: $($old.Name)"
     Remove-Item $old.FullName -Force
@@ -124,7 +127,7 @@ Write-Host "      Installed: $($modJar.Name)"
 
 # --- Heads-up about other mods -----------------------------------------------
 $others = Get-ChildItem $mods -Filter '*.jar' -ErrorAction SilentlyContinue |
-          Where-Object { $_.Name -notlike 'fabric-api-*' -and $_.Name -notlike 'toolmastery-*' }
+          Where-Object { $_.Name -notlike 'fabric-api-*' -and $_.Name -notlike 'pbenchants-*' }
 if ($others) {
     Write-Host ''
     Write-Host '[NOTE] There are other mods in your mods folder:' -ForegroundColor Yellow

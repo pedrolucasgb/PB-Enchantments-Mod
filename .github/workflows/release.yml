@@ -1,0 +1,48 @@
+name: Release
+
+# Every tag that looks like a version (v1.0.0, v1.2.3...) becomes a GitHub
+# Release: the jar is built from that exact commit, the tag supplies the mod
+# version, and the release carries two copies of the jar - the versioned one
+# and a stable "pbenchants.jar" so /releases/latest/download/pbenchants.jar
+# always points at the newest build (the landing page download button).
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ./gradlew build -Pversion="$VERSION" --no-daemon
+
+      - name: Stage release assets
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir staging
+          cp "build/libs/pbenchants-${VERSION}.jar" staging/
+          cp "build/libs/pbenchants-${VERSION}.jar" staging/pbenchants.jar
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: staging/*
+          generate_release_notes: true
