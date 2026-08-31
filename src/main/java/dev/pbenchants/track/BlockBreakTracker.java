@@ -36,7 +36,7 @@ public final class BlockBreakTracker {
 	 * most players meet their first emerald, so the gate sat at 0/1 for them.
 	 */
 	private static final TagKey<Biome> EMERALD_MOUNTAIN = TagKey.create(Registries.BIOME,
-		Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "emerald_mountain"));
+		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "emerald_mountain"));
 
 	private BlockBreakTracker() {
 	}

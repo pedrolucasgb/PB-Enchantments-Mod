@@ -25,7 +25,7 @@ public final class ModAdvancements {
 
 	/** Advancement id for a 0-based tier index: tier 0 of "pickaxe" → {@code pbenchants:pickaxe/tier_1}. */
 	public static Identifier tierId(String treeId, int tierIndex) {
-		return Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, treeId + "/tier_" + (tierIndex + 1));
+		return Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, treeId + "/tier_" + (tierIndex + 1));
 	}
 
 	/** Awards the advancement for one tier. Silent no-op when it is already earned. */

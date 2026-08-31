@@ -148,7 +148,7 @@ public final class ModEnchantments {
 	}
 
 	private static ResourceKey<Enchantment> key(String path) {
-		return ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, path));
+		return ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, path));
 	}
 
 	@Nullable

@@ -4,7 +4,8 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Version **1.0.0** · internal mod id: `pbenchants` · package `dev.pbenchants`
+> Version **1.0.0** · mod id: `pbenchants` · package `dev.pbenchants` · save-data namespace: `toolmastery`
+> (the mod shipped as *Tool Mastery* before 1.0.0 — everything a world persists kept the old namespace on purpose, so existing worlds carry all progress, advancements and enchanted items across the rename)
 >
 > **Download page: [pedrolucasgb.github.io/PB-Enchantments-Mod](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)**
 
@@ -91,7 +92,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | Unlock the next tier | GUI button, or `/pbenchants unlock <tree>` |
 | Unlock a node | Click the node → **Unlock** → Confirm, or `/pbenchants unlock <tree> <node>` |
 | Enchant the held item | Click the node → **Enchant** → Confirm, or `/pbenchants enchant <tree> <node>` |
-| Other ways in | Enchanting table (any unlocked enchantment) · `/enchant @s pbenchants:<id> <level>` |
+| Other ways in | Enchanting table (any unlocked enchantment) · `/enchant @s toolmastery:<id> <level>` |
 
 ### Debug commands (operators)
 
@@ -387,7 +388,7 @@ Enchanted books are the third way onto a tool, next to the enchanting table and 
 - ✅ **Refused, not clamped.** A *Dig Range III* book offered to someone who owns only rank I is blocked outright. The enchanting table clamps because the roll is invisible until it lands; a trade puts the rank and the price on the label, so quietly handing over a weaker book for the full price would be a bug.
 - ✅ **No click-into-refusal.** The offer renders with vanilla's barred arrow and the book's tooltip names the rank you still owe.
 - ✅ **One book per librarian.** The offer joins the vanilla *apprentice* pool, from which a librarian draws two trades for life — so mod books never crowd the vanilla book trades out of a village.
-- ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#pbenchants:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
+- ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#toolmastery:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
 
 **Price.** 24 emeralds flat plus vanilla's own rank-scaled book price, so a rank I lands around 30 and a rank III up near the 64 ceiling. Books are deliberately expensive: emeralds are a currency the progression does not otherwise touch, and a cheap book would make the skill screen's Enchant button dead UI.
 
@@ -451,7 +452,7 @@ public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXP
 That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
 the class from `SkillTrees.PLANNED` (the greyed "coming soon" tabs), add `tree.pbenchants.sword`,
 `tree.pbenchants.sword.short` and one `tier.pbenchants.sword.<n>` per tier to `en_us.json`, and one
-advancement JSON per tier under `data/pbenchants/advancement/sword/` if they should show up in the **L**
+advancement JSON per tier under `data/toolmastery/advancement/sword/` if they should show up in the **L**
 screen. A tree is as many tiers as its list is long — the Sword tree is seven, and the GUI reads the
 count rather than assuming five. Gate counters still need a tracker feeding them and perks still need their own code — but
 nothing about *displaying* the class does.

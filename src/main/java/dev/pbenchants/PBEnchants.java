@@ -49,6 +49,14 @@ import org.slf4j.LoggerFactory;
 
 public class PBEnchants implements ModInitializer {
 	public static final String MOD_ID = "pbenchants";
+	/**
+	 * Namespace of everything a world persists: the progress attachment,
+	 * enchantment ids stamped on items, advancement ids, the datapack, and
+	 * the config file. The mod shipped as Tool Mastery before the rename, so
+	 * this stays "toolmastery" forever — changing it wipes every player's
+	 * progress and strips the mod's enchantments off existing items.
+	 */
+	public static final String DATA_NS = "toolmastery";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	private int slowTickCounter = 0;

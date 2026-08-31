@@ -67,6 +67,14 @@ public final class PBEnchantsConfig {
 		Path path = FabricLoader.getInstance().getConfigDir().resolve(FILE_NAME);
 		try {
 			if (!Files.exists(path)) {
+				// The mod shipped as Tool Mastery before the rename; a server
+				// upgrading in place keeps the settings it already chose.
+				Path legacy = FabricLoader.getInstance().getConfigDir().resolve("toolmastery.json");
+				if (Files.exists(legacy)) {
+					Files.move(legacy, path);
+				}
+			}
+			if (!Files.exists(path)) {
 				Files.createDirectories(path.getParent());
 				Files.writeString(path, DEFAULT_CONTENT, StandardCharsets.UTF_8);
 				return;

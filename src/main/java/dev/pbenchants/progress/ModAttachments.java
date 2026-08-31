@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 public final class ModAttachments {
 	public static final AttachmentType<PlayerProgress> PROGRESS = AttachmentRegistry.create(
-		Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "progress"),
+		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "progress"),
 		builder -> builder
 			.initializer(PlayerProgress::new)
 			.persistent(PlayerProgress.CODEC)

@@ -46,14 +46,12 @@ describes the cross, not the whole family.
 WHAT IS NEW IN 1.0.0
 --------------------
 - THE MOD HAS A NEW NAME: Tool Mastery is now PB ENCHANTMENTS. Same mod,
-  same skill trees, new identity - the internal id changed from
-  "toolmastery" to "pbenchants".
+  same skill trees, new identity.
 - The /mastery command is now /pbenchants. Typing /mastery still answers,
   with a pointer to the new command.
-- IMPORTANT if you played Tool Mastery before: because the internal id
-  changed, an existing world does not carry your skill progress over, and
-  items enchanted with the old Tool Mastery enchantments lose them. Best
-  enjoyed on a fresh world (or accept the reset).
+- YOUR WORLDS ARE SAFE: everything a world saves (skill progress, tier
+  advancements, enchanted items, server config) kept its old internal name
+  on purpose, so a world that played Tool Mastery carries everything over.
 - Official download page: https://pedrolucasgb.github.io/PB-Enchantments-Mod/
   New versions are published there and on the GitHub releases page.
 
