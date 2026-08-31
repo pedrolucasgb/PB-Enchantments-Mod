@@ -11,7 +11,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"toolmastery" {
+		"pbenchants" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

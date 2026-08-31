@@ -1,0 +1,29 @@
+{
+	"parent": "pbenchants:sword/tier_4",
+	"display": {
+		"icon": {
+			"id": "minecraft:netherite_sword"
+		},
+		"title": {
+			"translate": "advancements.pbenchants.sword.tier_5.title"
+		},
+		"description": {
+			"translate": "advancements.pbenchants.sword.tier_5.description"
+		},
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
+		"hidden": false
+	},
+	"criteria": {
+		"unlocked": {
+			"trigger": "minecraft:impossible"
+		}
+	},
+	"requirements": [
+		[
+			"unlocked"
+		]
+	],
+	"sends_telemetry_event": false
+}

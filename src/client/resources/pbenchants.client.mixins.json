@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "dev.pbenchants.client.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"AnvilScreenMixin",
+		"ContainerScreenAccessor",
+		"EnchantmentScreenMixin",
+		"LightmapExtractorMixin",
+		"LocalPlayerMixin",
+		"MerchantOfferMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

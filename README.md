@@ -4,7 +4,9 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Version **0.4.0** · internal mod id: `toolmastery` · package `dev.toolmastery`
+> Version **1.0.0** · internal mod id: `pbenchants` · package `dev.pbenchants`
+>
+> **Download page: [pedrolucasgb.github.io/PB-Enchantments-Mod](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)**
 
 ---
 
@@ -15,7 +17,7 @@ Every tool class has its own skill tree. You earn access by **playing the class*
 3. **Pay the access cost** — unlocking a tier consumes XP levels (5 / 10 / 15 / 20 / 30).
 4. **Unlock nodes** — a one-off purchase: a few XP levels plus materials. Passives switch on immediately; enchantments join your enchanting-table pool.
 5. **Enchant your tools** — an unlocked enchantment can be stamped onto the item in your hand for whole XP levels, as often as you like.
-6. **Or buy the book** — librarians sell Tool Mastery enchanted books to anyone who has already unlocked the rank on the label.
+6. **Or buy the book** — librarians sell PB Enchantments enchanted books to anyone who has already unlocked the rank on the label.
 
 ### Unlock vs. Enchant
 
@@ -39,7 +41,7 @@ Both buttons explain themselves before they charge you: clicking either swaps th
 
 Enchant refuses impossible combinations before spending anything, and says why: Smelt on an axe (wrong tool class), or an enchantment that conflicts with something already on the item (Silk Touch, say). The same check runs on the client, so the button is greyed out with the reason in its tooltip.
 
-Every tier you unlock is also a **vanilla advancement**: open the advancements screen (**L**) and the *Tool Mastery* tab shows one branch per class, five tiers each — earned tiers lit up, the rest as goals ahead.
+Every tier you unlock is also a **vanilla advancement**: open the advancements screen (**L**) and the *PB Enchantments* tab shows one branch per class, five tiers each — earned tiers lit up, the rest as goals ahead.
 
 Progress is **per player**, persisted with the world, and survives death.
 
@@ -51,9 +53,20 @@ Progress is **per player**, persisted with the world, and survives death.
 
 ## Download & install
 
+### Latest release
+
+The **[landing page](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)** always offers the newest build, and
+[`releases/latest/download/pbenchants.jar`](https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar)
+is a stable URL that follows it. Every version ever released lives on the
+[releases page](https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases).
+
+Releases are cut by tag: pushing a `vX.Y.Z` tag makes the [Release workflow](.github/workflows/release.yml)
+build the jar from that commit (the tag supplies the mod version) and publish it as a GitHub Release with
+generated notes — the landing page and the stable URL pick it up with no further step.
+
 ### Quick download (no toolchain)
 
-Grab [`Quick-Download/ToolMastery-Installer.zip`](Quick-Download/ToolMastery-Installer.zip), unzip it anywhere and double-click **Install Tool Mastery.bat**. It installs Fabric Loader and Fabric API if they are missing, removes any older Tool Mastery jar (two copies of one mod id crash the game) and drops the current one into `.minecraft/mods`. The same files sit loose in [`Quick-Download/`](Quick-Download) if you would rather read them first.
+Grab [`Quick-Download/PBEnchants-Installer.zip`](Quick-Download/PBEnchants-Installer.zip), unzip it anywhere and double-click **Install PB Enchantments.bat**. It installs Fabric Loader and Fabric API if they are missing, removes any older PB Enchantments jar (two copies of one mod id crash the game) and drops the current one into `.minecraft/mods`. The same files sit loose in [`Quick-Download/`](Quick-Download) if you would rather read them first.
 
 ### From source
 
@@ -65,7 +78,7 @@ cd PB-Enchantments-Mod
 ./gradlew build
 ```
 
-The mod jar lands in `build/libs/toolmastery-<version>.jar`. Drop it into your `.minecraft/mods` folder (Fabric Loader + Fabric API required).
+The mod jar lands in `build/libs/pbenchants-<version>.jar`. Drop it into your `.minecraft/mods` folder (Fabric Loader + Fabric API required).
 
 For development, `./gradlew runClient` launches a ready-to-play instance with the mod loaded. On Windows, make sure `JAVA_HOME` points to a JDK 25.
 
@@ -73,32 +86,32 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 | Action | How |
 |---|---|
-| Open the skill trees | Press **K** (rebindable) — or the `/mastery` command |
-| Check progress / gates | `/mastery status <tree>` or click a tier header in the GUI |
-| Unlock the next tier | GUI button, or `/mastery unlock <tree>` |
-| Unlock a node | Click the node → **Unlock** → Confirm, or `/mastery unlock <tree> <node>` |
-| Enchant the held item | Click the node → **Enchant** → Confirm, or `/mastery enchant <tree> <node>` |
-| Other ways in | Enchanting table (any unlocked enchantment) · `/enchant @s toolmastery:<id> <level>` |
+| Open the skill trees | Press **K** (rebindable) — or the `/pbenchants` command |
+| Check progress / gates | `/pbenchants status <tree>` or click a tier header in the GUI |
+| Unlock the next tier | GUI button, or `/pbenchants unlock <tree>` |
+| Unlock a node | Click the node → **Unlock** → Confirm, or `/pbenchants unlock <tree> <node>` |
+| Enchant the held item | Click the node → **Enchant** → Confirm, or `/pbenchants enchant <tree> <node>` |
+| Other ways in | Enchanting table (any unlocked enchantment) · `/enchant @s pbenchants:<id> <level>` |
 
 ### Debug commands (operators)
 
 ```
-/mastery debug maxall               # complete every gate + unlock every tier
-/mastery debug unlockall            # unlock every node (enchantments unlocked, not applied)
-/mastery debug kit                  # full kit: one enchanted tool per tier of every tree
-/mastery debug kit pickaxe          # tier kit for one tree
-/mastery debug kit pickaxe smelt    # one tool per level of a single enchantment
-/mastery debug unlocktier pickaxe 3 # gates + tier + every node of exactly that tier
-/mastery debug unlocktier all 1     # ...for every tree at once
-/mastery debug add <tree> <counter> <amount>   # bump a gate counter
+/pbenchants debug maxall               # complete every gate + unlock every tier
+/pbenchants debug unlockall            # unlock every node (enchantments unlocked, not applied)
+/pbenchants debug kit                  # full kit: one enchanted tool per tier of every tree
+/pbenchants debug kit pickaxe          # tier kit for one tree
+/pbenchants debug kit pickaxe smelt    # one tool per level of a single enchantment
+/pbenchants debug unlocktier pickaxe 3 # gates + tier + every node of exactly that tier
+/pbenchants debug unlocktier all 1     # ...for every tree at once
+/pbenchants debug add <tree> <counter> <amount>   # bump a gate counter
 
 # ...and the same thing backwards, to re-test a feature from a clean slate
-/mastery debug reset                # everything to zero: no tiers, no nodes, no counters
-/mastery debug reset pickaxe        # wipe one tree only
-/mastery debug tier pickaxe 2       # open exactly 2 tiers (re-locks nodes above)
-/mastery debug lock pickaxe smelt_1 # re-lock one node, leaving tiers and counters alone
-/mastery debug strip                # take every Tool Mastery enchantment off the held item
-/mastery debug speed                # measure the speed passives on the held tool, in ticks
+/pbenchants debug reset                # everything to zero: no tiers, no nodes, no counters
+/pbenchants debug reset pickaxe        # wipe one tree only
+/pbenchants debug tier pickaxe 2       # open exactly 2 tiers (re-locks nodes above)
+/pbenchants debug lock pickaxe smelt_1 # re-lock one node, leaving tiers and counters alone
+/pbenchants debug strip                # take every PB Enchantments enchantment off the held item
+/pbenchants debug speed                # measure the speed passives on the held tool, in ticks
 ```
 
 ---
@@ -111,9 +124,9 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ Two-price economy: tier access costs, per-node unlock (XP levels + materials) and a repeatable per-node enchant price — all validated server-side
 - ✅ Enchant-time compatibility checks (supported item + exclusive sets), mirrored on the client so the button explains itself before you spend
 - ✅ Skill tree GUI (key **K**): class tabs with class icons, one column per named tier, item-icon nodes coloured by state, prerequisite connectors, type badges, gate and material checklists, unlock/enchant with a confirmation card, and the player XP bar along the bottom — future classes shown as *Coming soon*
-- ✅ Every tier mirrored as a vanilla advancement in the **L** screen (*Tool Mastery* tab), with toast + chat announce on unlock
+- ✅ Every tier mirrored as a vanilla advancement in the **L** screen (*PB Enchantments* tab), with toast + chat announce on unlock
 - ✅ Client–server sync via custom payloads; all actions validated on the server
-- ✅ `/mastery` command suite with tab completion
+- ✅ `/pbenchants` command suite with tab completion
 
 ### Real enchantments (data-driven, era 26.x)
 | Enchantment | Tool | Levels | Effect |
@@ -271,7 +284,7 @@ The combat class, and the first tree that is **seven tiers** rather than five. I
 Its scope is deliberately narrow. It changes *what Smite considers undead*, on your hits alone: not drops, not Bane of Arthropods, not zombie behaviour, not sunlight, and not what another player's weapon sees. Vanilla drives Smite off the `#minecraft:sensitive_to_smite` entity-type tag, and widening that tag in a data pack would hand the bonus to everyone on the server — so unlike Fortune IV and Looting IV, this one cannot be a data-pack trick with a clamp. The Smite bonus is recomputed on the damage path for the holder instead, and targets vanilla already counts as undead are skipped so nothing is paid twice.
 
 ### Server config
-`config/toolmastery.json`, written on first run. Two switches, read by the Sword and Bow trees — everything else in the mod plays the same in a solo world and on a server.
+`config/pbenchants.json`, written on first run. Two switches, read by the Sword and Bow trees — everything else in the mod plays the same in a solo world and on a server.
 
 | Key | Default | What it does |
 |---|---|---|
@@ -355,7 +368,7 @@ The ranged class ([#27](../../issues/27)): bow, crossbow and everything that lea
 
 **Damage attribution.** Arrow damage is applied by the projectile, not the player, so the whole tree reads the arrow at impact: the weapon it left travels on the arrow entity, and so does the point it was launched from — distance is measured from the *shot*, not from wherever the archer backpedalled to. An arrow already in flight when the tree changes is judged at impact, same as a sword changing mid-swing.
 
-**Shared items grew their ranged branch.** A lent Long Shot III bow is not a hole: a bow carrying an unearned Tool Mastery enchantment skips the entire enchantment pass at impact — it *fires*, because a bow that refuses to shoot reads as a bug, but the arrow lands at bare-bow damage with no Power, no Flame, no Punch behind it. Partial ownership clamps rank by rank, exactly like tools.
+**Shared items grew their ranged branch.** A lent Long Shot III bow is not a hole: a bow carrying an unearned PB Enchantments enchantment skips the entire enchantment pass at impact — it *fires*, because a bow that refuses to shoot reads as a bug, but the arrow lands at bare-bow damage with no Power, no Flame, no Punch behind it. Partial ownership clamps rank by rank, exactly like tools.
 
 **Gates.** The trackers the class needed and vanilla never had: arrows fired vs. landed (per projectile — a Multishot volley is honestly three), shot distance at impact, kills at 30+/60+ blocks, phantoms killed in the air, Multishot volley kills, and a checklist of tipped-arrow types fired.
 
@@ -374,7 +387,7 @@ Enchanted books are the third way onto a tool, next to the enchanting table and 
 - ✅ **Refused, not clamped.** A *Dig Range III* book offered to someone who owns only rank I is blocked outright. The enchanting table clamps because the roll is invisible until it lands; a trade puts the rank and the price on the label, so quietly handing over a weaker book for the full price would be a bug.
 - ✅ **No click-into-refusal.** The offer renders with vanilla's barred arrow and the book's tooltip names the rank you still owe.
 - ✅ **One book per librarian.** The offer joins the vanilla *apprentice* pool, from which a librarian draws two trades for life — so mod books never crowd the vanilla book trades out of a village.
-- ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#toolmastery:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
+- ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#pbenchants:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
 
 **Price.** 24 emeralds flat plus vanilla's own rank-scaled book price, so a rank I lands around 30 and a rank III up near the 64 ceiling. Books are deliberately expensive: emeralds are a currency the progression does not otherwise touch, and a cheap book would make the skill screen's Enchant button dead UI.
 
@@ -409,7 +422,7 @@ Environmental modifiers still apply on top: a locked pickaxe swung underwater is
 ## Extending the tree
 
 Everything the skill screen draws comes off the data in
-[`SkillTrees.java`](src/main/java/dev/toolmastery/skill/SkillTrees.java) — the GUI has no per-class code in it.
+[`SkillTrees.java`](src/main/java/dev/pbenchants/skill/SkillTrees.java) — the GUI has no per-class code in it.
 
 **A new node** is one line in its tree's node list, plus its lang keys:
 
@@ -421,7 +434,7 @@ SkillNode.chained("smelt_4", 3, 12, "smelt_3", SkillType.ENCHANTMENT).icon(Items
 
 The screen picks it up on its own: the icon goes on the tile, the type decides the badge colour and the
 stripe under the icon, and `requires` draws the connector back to `smelt_3`. Add
-`node.toolmastery.smelt_4.desc` to `en_us.json` (and `node.toolmastery.smelt` once per family, for the
+`node.pbenchants.smelt_4.desc` to `en_us.json` (and `node.pbenchants.smelt` once per family, for the
 name). `.future()` marks a node that is designed but not built yet: it shows up starred and orange and
 refuses to be unlocked. `.icon(...)` is optional — a node without one falls back to the first item of
 its price. `.pve()` marks a node whose effect never applies to another player, which the card says out
@@ -436,9 +449,9 @@ public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXP
 ```
 
 That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
-the class from `SkillTrees.PLANNED` (the greyed "coming soon" tabs), add `tree.toolmastery.sword`,
-`tree.toolmastery.sword.short` and one `tier.toolmastery.sword.<n>` per tier to `en_us.json`, and one
-advancement JSON per tier under `data/toolmastery/advancement/sword/` if they should show up in the **L**
+the class from `SkillTrees.PLANNED` (the greyed "coming soon" tabs), add `tree.pbenchants.sword`,
+`tree.pbenchants.sword.short` and one `tier.pbenchants.sword.<n>` per tier to `en_us.json`, and one
+advancement JSON per tier under `data/pbenchants/advancement/sword/` if they should show up in the **L**
 screen. A tree is as many tiers as its list is long — the Sword tree is seven, and the GUI reads the
 count rather than assuming five. Gate counters still need a tracker feeding them and perks still need their own code — but
 nothing about *displaying* the class does.

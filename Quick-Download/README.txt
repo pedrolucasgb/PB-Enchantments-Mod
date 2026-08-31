@@ -1,17 +1,17 @@
-TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.5.0
+PB ENCHANTMENTS - a mod for Minecraft 26.2 (Fabric)
+Version 1.0.0
 ================================================
 
 HOW TO INSTALL
 --------------
 1. Have Minecraft Java Edition installed (official launcher) and run it at
    least once.
-2. Double-click "Install Tool Mastery.bat".
+2. Double-click "Install PB Enchantments.bat".
    The installer will automatically:
      - install Fabric Loader (if you do not have it yet);
      - download Fabric API (if you do not have it yet);
-     - remove an older Tool Mastery version, if there is one;
-     - copy the Tool Mastery mod into your mods folder.
+     - remove an older PB Enchantments version, if there is one;
+     - copy the PB Enchantments mod into your mods folder.
 3. Open the Minecraft launcher, pick the "fabric-loader-26.2" profile and
    hit Play.
 4. In game, press K to open the skill trees.
@@ -42,6 +42,20 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 1.0.0
+--------------------
+- THE MOD HAS A NEW NAME: Tool Mastery is now PB ENCHANTMENTS. Same mod,
+  same skill trees, new identity - the internal id changed from
+  "toolmastery" to "pbenchants".
+- The /mastery command is now /pbenchants. Typing /mastery still answers,
+  with a pointer to the new command.
+- IMPORTANT if you played Tool Mastery before: because the internal id
+  changed, an existing world does not carry your skill progress over, and
+  items enchanted with the old Tool Mastery enchantments lose them. Best
+  enjoyed on a fresh world (or accept the reset).
+- Official download page: https://pedrolucasgb.github.io/PB-Enchantments-Mod/
+  New versions are published there and on the GitHub releases page.
 
 WHAT IS NEW IN 0.5.0
 --------------------
@@ -100,10 +114,10 @@ WHAT IS NEW IN 0.5.0
   against mobs, so eleven of the class's nodes never fire at a player:
   Long Shot, Ricochet, Piercing Sight, Multishot Focus, Alchemist's
   Quiver, Pinning Shot, Aerial Hunter and Deadeye. The card says so in
-  the skill screen, and config/toolmastery.json flips them for servers
+  the skill screen, and config/pbenchants.json flips them for servers
   that disagree.
 
-- A BORROWED BOW IS INERT: carrying an unearned Tool Mastery enchantment,
+- A BORROWED BOW IS INERT: carrying an unearned PB Enchantments enchantment,
   it still fires - a bow that refuses to shoot reads as a bug - but the
   arrow lands at bare-bow damage with no enchantment effects behind it.
 
@@ -144,7 +158,7 @@ WHAT IS NEW IN 0.4.0
 - MOBS ONLY. Armour penetration, execute damage and stacking damage per
   kill are fine against a zombie and would rewrite PvP, so those nodes
   simply do not fire at a player. The skill screen says so on the card.
-  config/toolmastery.json has the two switches if your server disagrees.
+  config/pbenchants.json has the two switches if your server disagrees.
 
 - THE ARMOR CLASS (Path of the Bulwark) - the class that cannot level from
   doing something, because wearing armour is not an action. It levels from
@@ -285,8 +299,8 @@ WHAT IS NEW IN 0.3.0
   two Axe finishers, Everbloom and Bountiful Grove.
 WHAT IS NEW IN 0.2.0
 --------------------
-- LIBRARIANS SELL TOOL MASTERY BOOKS (new): from apprentice onwards a
-  librarian may offer one Tool Mastery enchanted book, whatever stage you
+- LIBRARIANS SELL PB ENCHANTMENTS BOOKS (new): from apprentice onwards a
+  librarian may offer one PB Enchantments enchanted book, whatever stage you
   are at - a brand new player can see Dig Range III on day one. Buying it
   is another matter: the trade is refused unless you have already unlocked
   that skill at that rank or higher. The offer shows up barred and the book
@@ -341,7 +355,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.5.0.jar" have to stay in the same folder
+- "install.ps1" and the "pbenchants-*.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
