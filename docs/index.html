@@ -18,6 +18,7 @@
     --gold: #e5c065;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { scroll-behavior: smooth; }
   body {
     background: var(--bg);
@@ -37,7 +38,30 @@
     border-bottom: 1px solid var(--border);
   }
 
-  /* The little GitHub gadget: mark + Star + live count. */
+  /* Corner gadgets: language pills on the left, GitHub stars on the right. */
+  .lang-picker {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    display: inline-flex;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .lang-picker button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .lang-picker button + button { border-left: 1px solid var(--border); }
+  .lang-picker button.on { background: var(--accent-dark); color: #0c130c; }
+
   .gh-btn {
     position: absolute;
     top: 16px;
@@ -64,6 +88,7 @@
     font-size: 0.78rem;
     color: var(--muted);
   }
+
   h1 {
     font-size: clamp(2.2rem, 6vw, 3.4rem);
     letter-spacing: -0.02em;
@@ -129,6 +154,18 @@
     font-size: 0.9em;
   }
   .hint { color: var(--muted); font-size: 0.95rem; margin-top: 16px; }
+  .hint a { color: var(--accent); }
+
+  /* ---------- The versions screen ---------- */
+  #versions-view { min-height: 70vh; padding: 40px 0 56px; }
+  .back-link {
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .back-link:hover { text-decoration: underline; }
 
   #releases .release {
     background: var(--panel);
@@ -137,8 +174,8 @@
     padding: 18px 20px;
     margin-bottom: 12px;
   }
-  .release .head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-  .release .head b { font-size: 1.1rem; color: var(--accent); }
+  .release .head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .release .head b { font-size: 1.15rem; color: var(--accent); }
   .release .head time { color: var(--muted); font-size: 0.9rem; }
   .release .head .latest {
     background: rgba(125, 216, 125, 0.15);
@@ -148,11 +185,45 @@
     font-size: 0.78rem;
     font-weight: 600;
   }
-  .release .body { color: var(--muted); font-size: 0.95rem; margin-top: 8px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow-y: auto; }
-  .release .get { margin-top: 10px; }
-  .release .get a { color: var(--accent); text-decoration: none; font-weight: 600; }
-  .release .get a:hover { text-decoration: underline; }
+  .release .head .get-btn {
+    margin-left: auto;
+    background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+    color: #0c130c;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 7px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .release .head .get-btn:hover { filter: brightness(1.08); }
+  .release .size { color: var(--muted); font-size: 0.85rem; }
+  .release .body {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-top: 10px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  .release .body a { color: var(--accent); text-decoration: none; }
+  .release .body a:hover { text-decoration: underline; }
   #releases .empty { color: var(--muted); }
+  #releases .empty a { color: var(--accent); }
+  .load-more {
+    display: block;
+    margin: 20px auto 0;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+    padding: 9px 26px;
+    cursor: pointer;
+  }
+  .load-more:hover { border-color: var(--accent-dark); }
 
   footer {
     border-top: 1px solid var(--border);
@@ -161,12 +232,17 @@
     color: var(--muted);
     font-size: 0.9rem;
   }
-  footer a { color: var(--accent); text-decoration: none; }
 </style>
 </head>
 <body>
 
+<div id="main-view">
 <header>
+  <div class="lang-picker" role="group" aria-label="Language">
+    <button data-lang="en">EN</button>
+    <button data-lang="pt">PT</button>
+    <button data-lang="es">ES</button>
+  </div>
   <a class="gh-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod" title="PB Enchantments on GitHub">
     <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
     Star
@@ -174,53 +250,45 @@
   </a>
   <div class="wrap">
     <h1><span class="pb">PB</span> Enchantments</h1>
-    <p class="tagline">Progressive quality-of-life skill trees for every tool. Earn achievements, spend XP, master your craft.</p>
-    <a id="download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar">Download for Minecraft 26.2</a>
-    <p class="dl-meta" id="dl-meta">
-      <a href="#releases-section">All versions</a>
-    </p>
+    <p class="tagline" data-i18n="tagline"></p>
+    <a id="download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar" data-i18n="download"></a>
+    <p class="dl-meta" id="dl-meta"><a href="#versions" data-i18n="allVersions"></a></p>
     <div class="badges">
       <span class="badge">Minecraft 26.2</span>
       <span class="badge">Fabric</span>
-      <span class="badge">Requires Fabric API</span>
-      <span class="badge">Client &amp; Server</span>
+      <span class="badge" data-i18n="badgeApi"></span>
+      <span class="badge" data-i18n="badgeSide"></span>
     </div>
   </div>
 </header>
 
 <section>
   <div class="wrap">
-    <h2>Eight <span>skill trees</span></h2>
-    <div class="trees">
-      <div class="tree"><b>Pickaxe</b><small>Vein mining, smelting, deep haste</small></div>
-      <div class="tree"><b>Axe</b><small>Timber felling, harvest, kindling</small></div>
-      <div class="tree"><b>Sword</b><small>Cleave, bloodthirst, executioner</small></div>
-      <div class="tree"><b>Bow</b><small>Path of the Arrow, seven tiers</small></div>
-      <div class="tree"><b>Armor</b><small>Bulwark, thorned plate, last stand</small></div>
-      <div class="tree"><b>Enchanter</b><small>Ancient knowledge, arcane insight</small></div>
-      <div class="tree"><b>Explorer</b><small>Waypoints, cartographer, sea legs</small></div>
-      <div class="tree"><b>Artisan</b><small>Storage magic, sorting, restock</small></div>
-    </div>
-    <p class="hint">Every tree gates behind real in-game achievements — mine the ores, fell the trees, land the shots — then spend XP levels to unlock perks and stamp exclusive enchantments on your gear. Press <code>K</code> in game to open the trees, or use <code>/pbenchants</code>.</p>
+    <h2 data-i18n-html="treesTitle"></h2>
+    <div class="trees" id="trees"></div>
+    <p class="hint" data-i18n-html="treesHint"></p>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <h2>How to <span>install</span></h2>
+    <h2 data-i18n-html="installTitle"></h2>
     <ol class="steps">
-      <li>Install the <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> for Minecraft 26.2 (run the installer, pick 26.2, done).</li>
-      <li>Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants.jar</code> into your <code>.minecraft/mods</code> folder.</li>
-      <li>Launch the <code>fabric-loader-26.2</code> profile and press <code>K</code> in game.</li>
+      <li data-i18n-html="step1"></li>
+      <li data-i18n-html="step2"></li>
+      <li data-i18n-html="step3"></li>
     </ol>
-    <p class="hint">Prefer one click? Grab the <a style="color:var(--accent)" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/raw/main/Quick-Download/PBEnchants-Installer.zip">automatic installer</a> — it sets up Fabric, Fabric API and the mod for you.</p>
+    <p class="hint" data-i18n-html="installerHint"></p>
   </div>
 </section>
+</div>
 
-<section id="releases-section">
+<section id="versions-view" hidden>
   <div class="wrap">
-    <h2>Version <span>history</span></h2>
-    <div id="releases"><p class="empty">Loading releases…</p></div>
+    <a class="back-link" href="#" data-i18n="back"></a>
+    <h2 data-i18n-html="versionsTitle"></h2>
+    <div id="releases"><p class="empty" data-i18n="loading"></p></div>
+    <button id="load-more" class="load-more" hidden data-i18n="loadMore"></button>
   </div>
 </section>
 
@@ -231,38 +299,232 @@
 </footer>
 
 <script>
-(async function () {
+(function () {
   const repo = "pedrolucasgb/PB-Enchantments-Mod";
+  const PAGE_SIZE = 10;
 
-  // The star count on the GitHub gadget. Best-effort: a failed fetch (rate
-  // limit, private repo) just leaves the button without a number.
-  try {
-    const info = await fetch("https://api.github.com/repos/" + repo);
-    if (info.ok) {
-      const stars = document.getElementById("gh-stars");
-      stars.textContent = (await info.json()).stargazers_count;
-      stars.hidden = false;
+  // ---------- Languages ----------
+  const I18N = {
+    en: {
+      locale: "en-US",
+      tagline: "Progressive quality-of-life skill trees for every tool. Earn achievements, spend XP, master your craft.",
+      download: "Download for Minecraft 26.2",
+      allVersions: "All versions",
+      badgeApi: "Requires Fabric API",
+      badgeSide: "Client & Server",
+      treesTitle: 'Eight <span>skill trees</span>',
+      trees: [
+        ["Pickaxe", "Vein mining, smelting, deep haste"],
+        ["Axe", "Timber felling, harvest, double drops"],
+        ["Sword", "Cleave, bloodthirst, executioner"],
+        ["Bow", "Path of the Arrow, seven tiers"],
+        ["Armor", "Bulwark, thorned plate, last stand"],
+        ["Enchanter", "Ancient knowledge, arcane insight"],
+        ["Explorer", "Waypoints, biome charts, sea legs"],
+        ["Artisan", "Storage magic, sorting, auto block"]
+      ],
+      treesHint: 'Every tree gates behind real in-game achievements — mine the ores, fell the trees, land the shots — then spend XP to unlock perks and stamp exclusive enchantments on your gear. Press <code>K</code> in game to open the trees, or use <code>/pbenchants</code>.',
+      installTitle: 'How to <span>install</span>',
+      step1: 'Install the <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> for Minecraft 26.2 (run the installer, pick 26.2, done).',
+      step2: 'Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants.jar</code> into your <code>.minecraft/mods</code> folder.',
+      step3: 'Launch the <code>fabric-loader-26.2</code> profile and press <code>K</code> in game.',
+      installerHint: 'Prefer one click? Grab the <a href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/raw/main/Quick-Download/PBEnchants-Installer.zip">automatic installer</a> — it sets up Fabric, Fabric API and the mod for you.',
+      versionsTitle: 'All <span>versions</span>',
+      back: "← Back",
+      latest: "latest",
+      downloadShort: "Download",
+      loadMore: "Load more",
+      loading: "Loading versions…",
+      empty: "No versions yet — check back soon.",
+      error: "Could not load the version list. Try again in a minute."
+    },
+    pt: {
+      locale: "pt-BR",
+      tagline: "Árvores de habilidades progressivas para cada ferramenta. Conquiste desafios, gaste XP, domine seu ofício.",
+      download: "Baixar para Minecraft 26.2",
+      allVersions: "Todas as versões",
+      badgeApi: "Requer Fabric API",
+      badgeSide: "Cliente e Servidor",
+      treesTitle: 'Oito <span>árvores de habilidades</span>',
+      trees: [
+        ["Picareta", "Mineração em veio, fundição, pressa das profundezas"],
+        ["Machado", "Derrubada de árvores, colheita, drops em dobro"],
+        ["Espada", "Cleave, sede de sangue, executor"],
+        ["Arco", "Caminho da Flecha, sete patamares"],
+        ["Armadura", "Baluarte, placas com espinhos, última defesa"],
+        ["Encantador", "Conhecimento antigo, visão arcana"],
+        ["Explorador", "Waypoints, cartas de bioma, pernas de marujo"],
+        ["Artesão", "Magia de armazenamento, organização, bloco automático"]
+      ],
+      treesHint: 'Cada árvore se abre com conquistas reais dentro do jogo — minere os minérios, derrube as árvores, acerte os tiros — e então gaste XP para desbloquear vantagens e gravar encantamentos exclusivos no seu equipamento. Aperte <code>K</code> no jogo para abrir as árvores, ou use <code>/pbenchants</code>.',
+      installTitle: 'Como <span>instalar</span>',
+      step1: 'Instale o <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para o Minecraft 26.2 (rode o instalador, escolha 26.2, pronto).',
+      step2: 'Coloque o <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> e o <code>pbenchants.jar</code> baixado na sua pasta <code>.minecraft/mods</code>.',
+      step3: 'Inicie o perfil <code>fabric-loader-26.2</code> e aperte <code>K</code> no jogo.',
+      installerHint: 'Prefere um clique só? Baixe o <a href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/raw/main/Quick-Download/PBEnchants-Installer.zip">instalador automático</a> — ele configura o Fabric, o Fabric API e o mod para você.',
+      versionsTitle: 'Todas as <span>versões</span>',
+      back: "← Voltar",
+      latest: "mais recente",
+      downloadShort: "Baixar",
+      loadMore: "Carregar mais",
+      loading: "Carregando versões…",
+      empty: "Nenhuma versão ainda — volte em breve.",
+      error: "Não foi possível carregar a lista de versões. Tente de novo em um minuto."
+    },
+    es: {
+      locale: "es-ES",
+      tagline: "Árboles de habilidades progresivos para cada herramienta. Gana logros, gasta XP, domina tu oficio.",
+      download: "Descargar para Minecraft 26.2",
+      allVersions: "Todas las versiones",
+      badgeApi: "Requiere Fabric API",
+      badgeSide: "Cliente y Servidor",
+      treesTitle: 'Ocho <span>árboles de habilidades</span>',
+      trees: [
+        ["Pico", "Minado en veta, fundición, prisa de las profundidades"],
+        ["Hacha", "Tala de árboles, cosecha, drops dobles"],
+        ["Espada", "Hendidura, sed de sangre, ejecutor"],
+        ["Arco", "Senda de la Flecha, siete rangos"],
+        ["Armadura", "Baluarte, placas con espinas, última defensa"],
+        ["Encantador", "Conocimiento antiguo, visión arcana"],
+        ["Explorador", "Puntos de ruta, cartas de bioma, piernas de marino"],
+        ["Artesano", "Magia de almacenamiento, orden, bloque automático"]
+      ],
+      treesHint: 'Cada árbol se abre con logros reales dentro del juego — mina las menas, tala los árboles, acierta los disparos — y luego gasta XP para desbloquear ventajas y grabar encantamientos exclusivos en tu equipo. Pulsa <code>K</code> en el juego para abrir los árboles, o usa <code>/pbenchants</code>.',
+      installTitle: 'Cómo <span>instalar</span>',
+      step1: 'Instala el <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para Minecraft 26.2 (ejecuta el instalador, elige 26.2, listo).',
+      step2: 'Copia el <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> y el <code>pbenchants.jar</code> descargado en tu carpeta <code>.minecraft/mods</code>.',
+      step3: 'Lanza el perfil <code>fabric-loader-26.2</code> y pulsa <code>K</code> en el juego.',
+      installerHint: '¿Prefieres un solo clic? Descarga el <a href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/raw/main/Quick-Download/PBEnchants-Installer.zip">instalador automático</a> — configura Fabric, Fabric API y el mod por ti.',
+      versionsTitle: 'Todas las <span>versiones</span>',
+      back: "← Volver",
+      latest: "última",
+      downloadShort: "Descargar",
+      loadMore: "Cargar más",
+      loading: "Cargando versiones…",
+      empty: "Aún no hay versiones — vuelve pronto.",
+      error: "No se pudo cargar la lista de versiones. Inténtalo de nuevo en un minuto."
     }
-  } catch (e) { /* button works without the count */ }
+  };
 
-  const box = document.getElementById("releases");
+  let lang = "en";
   try {
-    const res = await fetch("https://api.github.com/repos/" + repo + "/releases");
-    if (!res.ok) throw new Error(res.status);
-    const releases = (await res.json()).filter(r => !r.draft && !r.prerelease);
+    lang = localStorage.getItem("pbe-lang")
+      || (navigator.language || "en").toLowerCase().split("-")[0];
+  } catch (e) { /* storage blocked: default by browser language below */
+    lang = (navigator.language || "en").toLowerCase().split("-")[0];
+  }
+  if (!I18N[lang]) lang = "en";
+
+  const t = key => I18N[lang][key];
+
+  function applyLanguage() {
+    document.documentElement.lang = I18N[lang].locale;
+    document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    const trees = document.getElementById("trees");
+    trees.innerHTML = "";
+    for (const [name, desc] of t("trees")) {
+      const card = document.createElement("div");
+      card.className = "tree";
+      const b = document.createElement("b");
+      b.textContent = name;
+      const s = document.createElement("small");
+      s.textContent = desc;
+      card.appendChild(b);
+      card.appendChild(s);
+      trees.appendChild(card);
+    }
+    document.querySelectorAll(".lang-picker button").forEach(btn =>
+      btn.classList.toggle("on", btn.dataset.lang === lang));
+    renderReleases();
+    updateMeta();
+  }
+
+  document.querySelectorAll(".lang-picker button").forEach(btn =>
+    btn.addEventListener("click", () => {
+      lang = btn.dataset.lang;
+      try { localStorage.setItem("pbe-lang", lang); } catch (e) { /* per-view only */ }
+      applyLanguage();
+    }));
+
+  // ---------- The versions screen (hash-routed) ----------
+  const mainView = document.getElementById("main-view");
+  const versionsView = document.getElementById("versions-view");
+
+  function applyRoute() {
+    const showVersions = location.hash === "#versions";
+    mainView.hidden = showVersions;
+    versionsView.hidden = !showVersions;
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", applyRoute);
+
+  // ---------- Releases: latest first, growing page by page ----------
+  const releasesBox = document.getElementById("releases");
+  const loadMoreBtn = document.getElementById("load-more");
+  let releases = [];
+  let nextPage = 1;
+  let morePages = false;
+  let failed = false;
+
+  async function loadPage() {
+    loadMoreBtn.disabled = true;
+    try {
+      const res = await fetch("https://api.github.com/repos/" + repo
+        + "/releases?per_page=" + PAGE_SIZE + "&page=" + nextPage);
+      if (!res.ok) throw new Error(res.status);
+      const batch = (await res.json()).filter(r => !r.draft);
+      releases = releases.concat(batch);
+      morePages = batch.length === PAGE_SIZE;
+      nextPage++;
+      failed = false;
+    } catch (e) {
+      failed = true;
+    }
+    loadMoreBtn.disabled = false;
+    renderReleases();
+    updateMeta();
+  }
+  loadMoreBtn.addEventListener("click", loadPage);
+
+  function updateMeta() {
+    const meta = document.getElementById("dl-meta");
+    const link = '<a href="#versions">' + t("allVersions") + "</a>";
     if (!releases.length) {
-      box.innerHTML = '<p class="empty">No releases yet — check back soon.</p>';
+      meta.innerHTML = link;
       return;
     }
-
-    // Header button: exact version + date of the latest release.
     const latest = releases[0];
-    const meta = document.getElementById("dl-meta");
-    const when = new Date(latest.published_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-    meta.innerHTML = latest.tag_name + " · " + when +
-      ' · <a href="#releases-section">All versions</a>';
+    const when = new Date(latest.published_at)
+      .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "short", day: "numeric" });
+    meta.innerHTML = escapeHtml(latest.tag_name) + " · " + when + " · " + link;
+  }
 
-    box.innerHTML = "";
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /** Release notes: escaped, with bare PR links shortened to #N. */
+  function notesHtml(body) {
+    let html = escapeHtml(body.trim());
+    html = html.replace(/https:\/\/github\.com\/([\w.-]+\/[\w.-]+)\/pull\/(\d+)/g,
+      '<a href="https://github.com/$1/pull/$2">#$2</a>');
+    html = html.replace(/^## .*$/gm, "").trim();
+    return html;
+  }
+
+  function renderReleases() {
+    if (failed && !releases.length) {
+      releasesBox.innerHTML = '<p class="empty">' + t("error") + "</p>";
+      loadMoreBtn.hidden = true;
+      return;
+    }
+    if (!releases.length) {
+      releasesBox.innerHTML = '<p class="empty">' + t(nextPage === 1 ? "loading" : "empty") + "</p>";
+      loadMoreBtn.hidden = true;
+      return;
+    }
+    releasesBox.innerHTML = "";
     for (const r of releases) {
       const jar = (r.assets || []).find(a => /^pbenchants-.*\.jar$/.test(a.name)) || (r.assets || [])[0];
       const div = document.createElement("div");
@@ -273,38 +535,55 @@
       const name = document.createElement("b");
       name.textContent = r.name || r.tag_name;
       head.appendChild(name);
-      if (r === latest) {
+      if (r === releases[0] && nextPage > 1) {
         const tag = document.createElement("span");
         tag.className = "latest";
-        tag.textContent = "latest";
+        tag.textContent = t("latest");
         head.appendChild(tag);
       }
-      const t = document.createElement("time");
-      t.textContent = new Date(r.published_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-      head.appendChild(t);
+      const time = document.createElement("time");
+      time.textContent = new Date(r.published_at)
+        .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "short", day: "numeric" });
+      head.appendChild(time);
+      if (jar) {
+        const size = document.createElement("span");
+        size.className = "size";
+        size.textContent = Math.round(jar.size / 1024) + " KB";
+        const get = document.createElement("a");
+        get.className = "get-btn";
+        get.href = jar.browser_download_url;
+        get.textContent = "⤓ " + t("downloadShort");
+        head.appendChild(get);
+        head.appendChild(size);
+      }
       div.appendChild(head);
 
       if (r.body) {
         const body = document.createElement("div");
         body.className = "body";
-        body.textContent = r.body.trim();
+        body.innerHTML = notesHtml(r.body);
         div.appendChild(body);
       }
-
-      if (jar) {
-        const get = document.createElement("div");
-        get.className = "get";
-        const a = document.createElement("a");
-        a.href = jar.browser_download_url;
-        a.textContent = "⤓ " + jar.name + " (" + Math.round(jar.size / 1024) + " KB)";
-        get.appendChild(a);
-        div.appendChild(get);
-      }
-      box.appendChild(div);
+      releasesBox.appendChild(div);
     }
-  } catch (e) {
-    box.innerHTML = '<p class="empty">Could not load the release list — see <a style="color:var(--accent)" href="https://github.com/' + repo + '/releases">the releases page on GitHub</a>.</p>';
+    loadMoreBtn.hidden = !morePages;
   }
+
+  // ---------- GitHub stars ----------
+  (async function () {
+    try {
+      const info = await fetch("https://api.github.com/repos/" + repo);
+      if (info.ok) {
+        const stars = document.getElementById("gh-stars");
+        stars.textContent = (await info.json()).stargazers_count;
+        stars.hidden = false;
+      }
+    } catch (e) { /* the button works without the count */ }
+  })();
+
+  applyLanguage();
+  applyRoute();
+  loadPage();
 })();
 </script>
 
