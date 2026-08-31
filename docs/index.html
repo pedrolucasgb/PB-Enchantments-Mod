@@ -214,6 +214,38 @@
   }
   .load-more:hover { border-color: var(--accent-dark); }
 
+  .server {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .server .addr {
+    font-family: Consolas, monospace;
+    font-size: 1.1rem;
+    color: var(--gold);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    user-select: all;
+  }
+  .server button {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .server button:hover { border-color: var(--accent); color: var(--accent); }
+
   footer {
     border-top: 1px solid var(--border);
     padding: 28px 0 40px;
@@ -269,6 +301,17 @@
     </ol>
   </div>
 </section>
+
+<section>
+  <div class="wrap">
+    <h2 data-i18n-html="serverTitle"></h2>
+    <div class="server">
+      <span class="addr" id="server-addr">jakarta-iraqi.tun.ply.gg</span>
+      <button type="button" id="copy-addr" data-i18n="copyAddr"></button>
+    </div>
+    <p class="hint" data-i18n-html="serverHint"></p>
+  </div>
+</section>
 </div>
 
 <section id="versions-view" hidden>
@@ -316,6 +359,10 @@
       step1: 'Install the <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> for Minecraft 26.2 (run the installer, pick 26.2, done).',
       step2: 'Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants.jar</code> into your <code>.minecraft/mods</code> folder.',
       step3: 'Launch the <code>fabric-loader-26.2</code> profile and press <code>K</code> in game.',
+      serverTitle: 'Play on the <span>official server</span>',
+      serverHint: 'Add it under Multiplayer &rarr; Add Server with the mod installed — same Minecraft 26.2 Fabric setup as above. No port needed.',
+      copyAddr: "Copy address",
+      copied: "Copied!",
       versionsTitle: 'All <span>versions</span>',
       back: "← Back",
       latest: "latest",
@@ -348,6 +395,10 @@
       step1: 'Instale o <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para o Minecraft 26.2 (rode o instalador, escolha 26.2, pronto).',
       step2: 'Coloque o <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> e o <code>pbenchants.jar</code> baixado na sua pasta <code>.minecraft/mods</code>.',
       step3: 'Inicie o perfil <code>fabric-loader-26.2</code> e aperte <code>K</code> no jogo.',
+      serverTitle: 'Jogue no <span>servidor oficial</span>',
+      serverHint: 'Adicione em Multijogador &rarr; Adicionar servidor com o mod instalado — a mesma configuração do Minecraft 26.2 com Fabric descrita acima. Não precisa de porta.',
+      copyAddr: "Copiar endereço",
+      copied: "Copiado!",
       versionsTitle: 'Todas as <span>versões</span>',
       back: "← Voltar",
       latest: "mais recente",
@@ -380,6 +431,10 @@
       step1: 'Instala el <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para Minecraft 26.2 (ejecuta el instalador, elige 26.2, listo).',
       step2: 'Copia el <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> y el <code>pbenchants.jar</code> descargado en tu carpeta <code>.minecraft/mods</code>.',
       step3: 'Lanza el perfil <code>fabric-loader-26.2</code> y pulsa <code>K</code> en el juego.',
+      serverTitle: 'Juega en el <span>servidor oficial</span>',
+      serverHint: 'Añádelo en Multijugador &rarr; Añadir servidor con el mod instalado — la misma configuración de Minecraft 26.2 con Fabric de arriba. No hace falta puerto.',
+      copyAddr: "Copiar dirección",
+      copied: "¡Copiado!",
       versionsTitle: 'Todas las <span>versiones</span>',
       back: "← Volver",
       latest: "última",
@@ -401,6 +456,27 @@
   if (!I18N[lang]) lang = "en";
 
   const t = key => I18N[lang][key];
+
+  const copyBtn = document.getElementById("copy-addr");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const text = document.getElementById("server-addr").textContent.trim();
+      const done = () => {
+        copyBtn.textContent = t("copied");
+        setTimeout(() => { copyBtn.textContent = t("copyAddr"); }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, () => {});
+      } else {
+        const box = document.createElement("textarea");
+        box.value = text;
+        document.body.appendChild(box);
+        box.select();
+        try { document.execCommand("copy"); done(); } catch (e) { /* clipboard blocked */ }
+        document.body.removeChild(box);
+      }
+    });
+  }
 
   function applyLanguage() {
     document.documentElement.lang = I18N[lang].locale;
