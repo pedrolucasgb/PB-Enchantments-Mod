@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 1.0.0
+Version 0.6.9-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,8 +43,8 @@ out, with the reason in the tooltip.
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
 
-WHAT IS NEW IN 1.0.0
---------------------
+WHAT IS NEW IN 0.6.9-beta
+-------------------------
 - TOOL MASTERY IS NOW PB ENCHANTMENTS. New name, new command
   (/pbenchants - /mastery still answers with a pointer), new jar name
   (pbenchants-x.y.z.jar). YOUR WORLDS ARE SAFE: everything a save
@@ -54,7 +54,8 @@ WHAT IS NEW IN 1.0.0
 
 - RELEASES ARE PUBLIC NOW: every version is published on the GitHub
   Releases page with a permanent download link, and the project has a
-  landing page. 1.0.0 is the first release under the new name.
+  landing page. This is the beta of the rename - 1.0.0 follows once
+  it has settled.
 
 WHAT IS NEW IN 0.6.8
 --------------------
