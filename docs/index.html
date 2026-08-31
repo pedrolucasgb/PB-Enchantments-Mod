@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PB Enchantments — skill trees for Minecraft</title>
+<meta name="description" content="PB Enchantments: progressive quality-of-life skill trees for every tool. A Fabric mod for Minecraft 26.2.">
+<style>
+  :root {
+    --bg: #0f1210;
+    --panel: #171c18;
+    --panel-2: #1d241f;
+    --border: #2b352d;
+    --text: #e8efe9;
+    --muted: #9db2a1;
+    --accent: #7dd87d;
+    --accent-dark: #4caf50;
+    --gold: #e5c065;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+
+  header {
+    padding: 72px 0 48px;
+    text-align: center;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(125, 216, 125, 0.10), transparent),
+      var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  h1 {
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    letter-spacing: -0.02em;
+  }
+  h1 .pb { color: var(--accent); }
+  .tagline { color: var(--muted); font-size: 1.15rem; margin: 12px auto 32px; max-width: 560px; }
+
+  .dl-btn {
+    display: inline-block;
+    background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+    color: #0c130c;
+    font-weight: 700;
+    font-size: 1.15rem;
+    padding: 14px 40px;
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.35);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .dl-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 26px rgba(76, 175, 80, 0.5); }
+  .dl-meta { margin-top: 14px; color: var(--muted); font-size: 0.95rem; }
+  .dl-meta a { color: var(--accent); text-decoration: none; }
+  .dl-meta a:hover { text-decoration: underline; }
+
+  .badges { margin-top: 20px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .badge {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 0.85rem;
+  }
+
+  section { padding: 48px 0; }
+  section + section { border-top: 1px solid var(--border); }
+  h2 { font-size: 1.5rem; margin-bottom: 20px; }
+  h2 span { color: var(--accent); }
+
+  .trees {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+  }
+  .tree {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .tree b { display: block; color: var(--gold); margin-bottom: 2px; }
+  .tree small { color: var(--muted); }
+
+  ol.steps { padding-left: 22px; }
+  ol.steps li { margin-bottom: 10px; }
+  ol.steps a { color: var(--accent); }
+  code {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-family: Consolas, monospace;
+    font-size: 0.9em;
+  }
+  .hint { color: var(--muted); font-size: 0.95rem; margin-top: 16px; }
+
+  #releases .release {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+  .release .head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .release .head b { font-size: 1.1rem; color: var(--accent); }
+  .release .head time { color: var(--muted); font-size: 0.9rem; }
+  .release .head .latest {
+    background: rgba(125, 216, 125, 0.15);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 1px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .release .body { color: var(--muted); font-size: 0.95rem; margin-top: 8px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 180px; overflow-y: auto; }
+  .release .get { margin-top: 10px; }
+  .release .get a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .release .get a:hover { text-decoration: underline; }
+  #releases .empty { color: var(--muted); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 0 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1><span class="pb">PB</span> Enchantments</h1>
+    <p class="tagline">Progressive quality-of-life skill trees for every tool. Earn achievements, spend XP, master your craft.</p>
+    <a id="download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar">Download for Minecraft 26.2</a>
+    <p class="dl-meta" id="dl-meta">
+      <a href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases">All versions on GitHub</a>
+    </p>
+    <div class="badges">
+      <span class="badge">Minecraft 26.2</span>
+      <span class="badge">Fabric</span>
+      <span class="badge">Requires Fabric API</span>
+      <span class="badge">Client &amp; Server</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Eight <span>skill trees</span></h2>
+    <div class="trees">
+      <div class="tree"><b>Pickaxe</b><small>Vein mining, smelting, deep haste</small></div>
+      <div class="tree"><b>Axe</b><small>Timber felling, harvest, kindling</small></div>
+      <div class="tree"><b>Sword</b><small>Cleave, bloodthirst, executioner</small></div>
+      <div class="tree"><b>Bow</b><small>Path of the Arrow, seven tiers</small></div>
+      <div class="tree"><b>Armor</b><small>Bulwark, thorned plate, last stand</small></div>
+      <div class="tree"><b>Enchanter</b><small>Ancient knowledge, arcane insight</small></div>
+      <div class="tree"><b>Explorer</b><small>Waypoints, cartographer, sea legs</small></div>
+      <div class="tree"><b>Artisan</b><small>Storage magic, sorting, restock</small></div>
+    </div>
+    <p class="hint">Every tree gates behind real in-game achievements — mine the ores, fell the trees, land the shots — then spend XP levels to unlock perks and stamp exclusive enchantments on your gear. Press <code>K</code> in game to open the trees, or use <code>/pbenchants</code>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>How to <span>install</span></h2>
+    <ol class="steps">
+      <li>Install the <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> for Minecraft 26.2 (run the installer, pick 26.2, done).</li>
+      <li>Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants.jar</code> into your <code>.minecraft/mods</code> folder.</li>
+      <li>Launch the <code>fabric-loader-26.2</code> profile and press <code>K</code> in game.</li>
+    </ol>
+    <p class="hint">Prefer one click? Grab the <a style="color:var(--accent)" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/raw/main/Quick-Download/PBEnchants-Installer.zip">automatic installer</a> — it sets up Fabric, Fabric API and the mod for you.</p>
+  </div>
+</section>
+
+<section id="releases-section">
+  <div class="wrap">
+    <h2>Version <span>history</span></h2>
+    <div id="releases"><p class="empty">Loading releases…</p></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Made by Pedro · <a href="https://github.com/pedrolucasgb/PB-Enchantments-Mod">Source on GitHub</a>
+  </div>
+</footer>
+
+<script>
+(async function () {
+  const repo = "pedrolucasgb/PB-Enchantments-Mod";
+  const box = document.getElementById("releases");
+  try {
+    const res = await fetch("https://api.github.com/repos/" + repo + "/releases");
+    if (!res.ok) throw new Error(res.status);
+    const releases = (await res.json()).filter(r => !r.draft && !r.prerelease);
+    if (!releases.length) {
+      box.innerHTML = '<p class="empty">No releases yet — check back soon.</p>';
+      return;
+    }
+
+    // Header button: exact version + date of the latest release.
+    const latest = releases[0];
+    const meta = document.getElementById("dl-meta");
+    const when = new Date(latest.published_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    meta.innerHTML = latest.tag_name + " · " + when +
+      ' · <a href="https://github.com/' + repo + '/releases">All versions</a>';
+
+    box.innerHTML = "";
+    for (const r of releases) {
+      const jar = (r.assets || []).find(a => /^pbenchants-.*\.jar$/.test(a.name)) || (r.assets || [])[0];
+      const div = document.createElement("div");
+      div.className = "release";
+
+      const head = document.createElement("div");
+      head.className = "head";
+      const name = document.createElement("b");
+      name.textContent = r.name || r.tag_name;
+      head.appendChild(name);
+      if (r === latest) {
+        const tag = document.createElement("span");
+        tag.className = "latest";
+        tag.textContent = "latest";
+        head.appendChild(tag);
+      }
+      const t = document.createElement("time");
+      t.textContent = new Date(r.published_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+      head.appendChild(t);
+      div.appendChild(head);
+
+      if (r.body) {
+        const body = document.createElement("div");
+        body.className = "body";
+        body.textContent = r.body.trim();
+        div.appendChild(body);
+      }
+
+      if (jar) {
+        const get = document.createElement("div");
+        get.className = "get";
+        const a = document.createElement("a");
+        a.href = jar.browser_download_url;
+        a.textContent = "⤓ " + jar.name + " (" + Math.round(jar.size / 1024) + " KB)";
+        get.appendChild(a);
+        div.appendChild(get);
+      }
+      box.appendChild(div);
+    }
+  } catch (e) {
+    box.innerHTML = '<p class="empty">Could not load the release list — see <a style="color:var(--accent)" href="https://github.com/' + repo + '/releases">the releases page on GitHub</a>.</p>';
+  }
+})();
+</script>
+
+</body>
+</html>

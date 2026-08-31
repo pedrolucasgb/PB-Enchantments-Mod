@@ -1,10 +1,10 @@
-# Tool Mastery lang parity checker (see SKILL.md next to this file).
+# PB Enchantments lang parity checker (see SKILL.md next to this file).
 # Fails (exit 1) when a locale drifts from en_us.json:
 #   - missing keys / extra keys
 #   - a value whose %s / %n$s placeholder multiset differs from English
 #   - es_mx.json not byte-identical to es_es.json
 param(
-    [string]$LangDir = "src/main/resources/assets/toolmastery/lang"
+    [string]$LangDir = "src/main/resources/assets/pbenchants/lang"
 )
 
 $ErrorActionPreference = 'Stop'

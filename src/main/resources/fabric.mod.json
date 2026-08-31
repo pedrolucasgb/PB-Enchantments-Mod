@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "toolmastery",
+	"id": "pbenchants",
 	"version": "${version}",
-	"name": "Tool Mastery",
+	"name": "PB Enchantments",
 	"description": "Progressive quality-of-life skill trees for every tool. Earn achievements, spend XP, master your craft.",
 	"authors": [
 		"Pedro"
@@ -12,16 +12,16 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"dev.toolmastery.ToolMastery"
+			"dev.pbenchants.PBEnchants"
 		],
 		"client": [
-			"dev.toolmastery.client.ToolMasteryClient"
+			"dev.pbenchants.client.PBEnchantsClient"
 		]
 	},
 	"mixins": [
-		"toolmastery.mixins.json",
+		"pbenchants.mixins.json",
 		{
-			"config": "toolmastery.client.mixins.json",
+			"config": "pbenchants.client.mixins.json",
 			"environment": "client"
 		}
 	],
