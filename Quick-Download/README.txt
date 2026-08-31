@@ -1,17 +1,17 @@
-TOOL MASTERY - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.8
+PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
+Version 0.6.9-beta
 ================================================
 
 HOW TO INSTALL
 --------------
 1. Have Minecraft Java Edition installed (official launcher) and run it at
    least once.
-2. Double-click "Install Tool Mastery.bat".
+2. Double-click "Install PB Enchantments.bat".
    The installer will automatically:
      - install Fabric Loader (if you do not have it yet);
      - download Fabric API (if you do not have it yet);
      - remove an older Tool Mastery version, if there is one;
-     - copy the Tool Mastery mod into your mods folder.
+     - copy the PB Enchantments mod into your mods folder.
 3. Open the Minecraft launcher, pick the "fabric-loader-26.2" profile and
    hit Play.
 4. In game, press K to open the skill trees.
@@ -42,6 +42,20 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.6.9-beta
+-------------------------
+- TOOL MASTERY IS NOW PB ENCHANTMENTS. New name, new command
+  (/pbenchants - /mastery still answers with a pointer), new jar name
+  (pbenchants-x.y.z.jar). YOUR WORLDS ARE SAFE: everything a save
+  stores - your skill progress, the enchantments on your tools, your
+  advancements - kept its old internal name on purpose, so existing
+  worlds load with everything exactly where you left it.
+
+- RELEASES ARE PUBLIC NOW: every version is published on the GitHub
+  Releases page with a permanent download link, and the project has a
+  landing page. This is the beta of the rename - 1.0.0 follows once
+  it has settled.
 
 WHAT IS NEW IN 0.6.8
 --------------------
@@ -186,7 +200,7 @@ WHAT IS NEW IN 0.6.0
   live as you play - no need to reopen the tree. One goal at a time;
   Track something else to switch, or Untrack to clear it.
 
-- For testers: "/mastery debug master true" (op only) makes every unlock
+- For testers: "/pbenchants debug master true" (op only) makes every unlock
   free - no XP, no materials, no gates, no tier locks. Rank chains still
   unlock in order. "false" turns it back off; the flag survives relogs.
 
@@ -250,7 +264,7 @@ WHAT IS NEW IN 0.5.0
   the skill screen, and config/toolmastery.json flips them for servers
   that disagree.
 
-- A BORROWED BOW IS INERT: carrying an unearned Tool Mastery enchantment,
+- A BORROWED BOW IS INERT: carrying an unearned PB Enchantments enchantment,
   it still fires - a bow that refuses to shoot reads as a bug - but the
   arrow lands at bare-bow damage with no enchantment effects behind it.
 
@@ -488,7 +502,7 @@ WHAT IS NEW IN 0.2.0
 IMPORTANT
 ---------
 - The mod only works on Minecraft 26.2.
-- "install.ps1" and "toolmastery-0.6.8.jar" have to stay in the same folder
+- "install.ps1" and "pbenchants-1.0.0.jar" have to stay in the same folder
   as the .bat.
 - You need an internet connection the first time (to download Fabric Loader
   and Fabric API).
