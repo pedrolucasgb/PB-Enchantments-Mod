@@ -53,7 +53,11 @@ public final class ModNetworking {
 			ServerPlayer player = context.player();
 			switch (payload.action()) {
 				case REQUEST_STATE -> {
-					// nothing to do — state is sent below
+					// The screen asks for a snapshot exactly when it opens, so
+					// this is also where the tab's root advancement is earned:
+					// the mod's first step is finding the tree at all. State
+					// itself is sent below, for every action alike.
+					dev.pbenchants.advancement.ModAdvancements.grantRoot(player);
 				}
 				case UNLOCK_TIER -> {
 					SkillTree tree = SkillTrees.byId(payload.treeId());

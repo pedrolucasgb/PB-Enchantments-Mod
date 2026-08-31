@@ -34,6 +34,9 @@ public final class GoalTracker {
 	public static void toggle(String treeId, @Nullable String nodeId, int tier) {
 		Pin next = new Pin(treeId, nodeId, tier);
 		pin = next.equals(pin) ? null : next;
+		// Take the new goal's standing as the baseline, or pinning something
+		// already finished would chime for a grind that happened days ago.
+		ProgressChimes.pinChanged();
 	}
 
 	/** On disconnect: a pin from one world means nothing in the next. */

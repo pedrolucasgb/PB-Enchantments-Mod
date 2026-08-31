@@ -87,7 +87,8 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 | Action | How |
 |---|---|
-| Open the skill trees | Press **K** (rebindable) — or the `/pbenchants` command |
+| Open the skill trees | Press **K** (rebindable) — the same key closes them again — or the `/pbenchants` command |
+| See the world while the tree is open | The backdrop button in the screen's top-right corner switches between a solid and a see-through backdrop (remembered in `config/pbenchants-client.json`) |
 | Check progress / gates | `/pbenchants status <tree>` or click a tier header in the GUI |
 | Unlock the next tier | GUI button, or `/pbenchants unlock <tree>` |
 | Unlock a node | Click the node → **Unlock** → Confirm, or `/pbenchants unlock <tree> <node>` |
@@ -125,7 +126,8 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ Two-price economy: tier access costs, per-node unlock (XP levels + materials) and a repeatable per-node enchant price — all validated server-side
 - ✅ Enchant-time compatibility checks (supported item + exclusive sets), mirrored on the client so the button explains itself before you spend
 - ✅ Skill tree GUI (key **K**): class tabs with class icons, one column per named tier, item-icon nodes coloured by state, prerequisite connectors, type badges, gate and material checklists, unlock/enchant with a confirmation card, and the player XP bar along the bottom — future classes shown as *Coming soon*
-- ✅ Every tier mirrored as a vanilla advancement in the **L** screen (*PB Enchantments* tab), with toast + chat announce on unlock
+- ✅ Every tier mirrored as a vanilla advancement in the **L** screen (*PB Enchantments* tab), with toast + chat announce on unlock — the tab's root is earned by opening the skill screen for the first time, and a one-line hint in chat on join points at the key that does it
+- ✅ A level-up chime when a tier opens, and a lighter one when the goal pinned to the HUD scoreboard is finally ready to buy (never both for the same event)
 - ✅ Client–server sync via custom payloads; all actions validated on the server
 - ✅ `/pbenchants` command suite with tab completion
 
@@ -135,7 +137,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Dig Range** | Pickaxe | I–III | Breaks extra **pickaxe-mineable** blocks of **about the same hardness**: below → cross → 3×3 on the facing plane. Dirt and wood are skipped; stone next to obsidian leaves the obsidian standing — until your mining speed makes both near-instant |
 | **Smelt** | Pickaxe | I–III | Chance to smelt ore drops on the spot: 25% / 50% / 100% |
 | **Rich Vein** | Pickaxe | I–II | Vein miner: up to 8 / 16 connected ores |
-| **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a slower chop, III clears the canopy too (requires real trees — log houses are safe) |
+| **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a fixed, tool-blind chop (about 4s per log; Efficiency and the axe's own tier count for nothing), III clears the canopy too (requires real trees — log houses are safe) |
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
 | **Indestructible** | Enchanter, any damageable item | I | The item never breaks — damage stops one point short, like an Elytra. Spent, it works like an empty hand until repaired |
 | **Slipstream** | Explorer, Elytra | I–III | 10% / 25% / 50% of a firework's push carries over past the point where the boost would normally have died — same rocket, more distance |

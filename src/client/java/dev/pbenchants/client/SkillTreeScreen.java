@@ -152,6 +152,9 @@ public class SkillTreeScreen extends Screen {
 	@Override
 	protected void init() {
 		ClientSkillState.setChangeListener(this::scheduleRebuild);
+		// The backdrop choice lives on disk, not on the screen: reopening the
+		// tree must not quietly go back to solid.
+		SkillTreeStyle.setTranslucent(ClientSettings.translucentTree());
 		rebuild();
 	}
 
@@ -200,6 +203,8 @@ public class SkillTreeScreen extends Screen {
 		panelX = width - panelWidth - MARGIN;
 		treeRight = panelX - MARGIN;
 
+		buildBackdropToggle();
+
 		treeTop = buildTabs() + 6;
 		treeBottom = height - 20;
 
@@ -237,6 +242,32 @@ public class SkillTreeScreen extends Screen {
 				.bounds(panelX + 6, height - 26, panelWidth - 12, 18)
 				.build());
 		}
+	}
+
+	/**
+	 * The backdrop switch, in the strip of title bar directly above the details
+	 * panel — the one piece of the bar nothing else claims, and close enough to
+	 * the panel it changes to read as part of it.
+	 *
+	 * <p>Solid is the default and the one to come back to for reading the tree;
+	 * see-through is for checking the tree against the world you are standing
+	 * in without closing it first.
+	 */
+	private void buildBackdropToggle() {
+		boolean clear = SkillTreeStyle.translucent();
+		Button toggle = Button.builder(
+				Component.translatable(clear
+					? "screen.pbenchants.backdrop.clear"
+					: "screen.pbenchants.backdrop.solid"),
+				button -> {
+					ClientSettings.toggleTranslucentTree();
+					SkillTreeStyle.setTranslucent(ClientSettings.translucentTree());
+					scheduleRebuild();
+				})
+			.bounds(panelX, 1, panelWidth, 14)
+			.build();
+		toggle.setTooltip(Tooltip.create(Component.translatable("screen.pbenchants.backdrop.tip")));
+		addRenderableWidget(toggle);
 	}
 
 	/**
@@ -464,8 +495,14 @@ public class SkillTreeScreen extends Screen {
 	 */
 	@Override
 	public boolean keyPressed(KeyEvent event) {
-		if (PBEnchantsClient.OPEN_TREE_KEY.matches(event)
-			|| (minecraft != null && minecraft.options.keyInventory.matches(event))) {
+		if (PBEnchantsClient.OPEN_TREE_KEY.matches(event)) {
+			// Tell the key handler this press has been spent, or the same press
+			// still queued on the mapping reopens the screen on this tick.
+			PBEnchantsClient.treeClosedByKey();
+			onClose();
+			return true;
+		}
+		if (minecraft != null && minecraft.options.keyInventory.matches(event)) {
 			onClose();
 			return true;
 		}
@@ -805,7 +842,7 @@ public class SkillTreeScreen extends Screen {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		graphics.fill(0, 0, width, height, SkillTreeStyle.BACKDROP);
+		graphics.fill(0, 0, width, height, SkillTreeStyle.backdrop());
 
 		SkillTree tree = SkillTrees.byId(treeId);
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
@@ -814,7 +851,7 @@ public class SkillTreeScreen extends Screen {
 		drawTreeCanvas(graphics, tree, state, mouseX, mouseY, delta);
 		drawScrollbar(graphics);
 		SkillTreeStyle.panel(graphics, panelX, TITLE_BAR + 3, panelWidth, height - TITLE_BAR - 7,
-			SkillTreeStyle.PANEL, SkillTreeStyle.BORDER);
+			SkillTreeStyle.panelFill(), SkillTreeStyle.BORDER);
 
 		// Widgets (tabs, buttons) draw over the frame; the details text goes on
 		// last, clipped to its panel.
@@ -843,7 +880,7 @@ public class SkillTreeScreen extends Screen {
 		int boxHeight = lines.size() * 10 + 8;
 		int x = panelX + 3;
 		int y = height - 72 - boxHeight;
-		SkillTreeStyle.panel(graphics, x, y, panelWidth - 6, boxHeight, SkillTreeStyle.PANEL_DEEP,
+		SkillTreeStyle.panel(graphics, x, y, panelWidth - 6, boxHeight, SkillTreeStyle.panelDeepFill(),
 			feedbackOk ? SkillTreeStyle.GREEN : SkillTreeStyle.BAD);
 		int textY = y + 4;
 		for (FormattedCharSequence line : lines) {
@@ -853,7 +890,7 @@ public class SkillTreeScreen extends Screen {
 	}
 
 	private void drawTitleBar(GuiGraphicsExtractor graphics, @Nullable SkillTree tree) {
-		graphics.fill(0, 0, width, TITLE_BAR, SkillTreeStyle.PANEL_DEEP);
+		graphics.fill(0, 0, width, TITLE_BAR, SkillTreeStyle.panelDeepFill());
 		graphics.fill(0, TITLE_BAR, width, TITLE_BAR + 1, SkillTreeStyle.BORDER);
 		graphics.text(font, title, MARGIN, 4, SkillTreeStyle.GOLD);
 		if (tree != null) {
@@ -870,7 +907,7 @@ public class SkillTreeScreen extends Screen {
 			return;
 		}
 		SkillTreeStyle.panel(graphics, MARGIN - 3, treeTop - 3, treeRight - MARGIN + 6,
-			treeBottom - treeTop + 6, SkillTreeStyle.PANEL_DEEP, SkillTreeStyle.BORDER);
+			treeBottom - treeTop + 6, SkillTreeStyle.panelDeepFill(), SkillTreeStyle.BORDER);
 
 		// Everything inside the frame is scrolled and clipped to it: the column
 		// strips, the wiring, and the tiles themselves. The tree widgets are
@@ -882,7 +919,7 @@ public class SkillTreeScreen extends Screen {
 		for (int tier = 0; tier < tree.tiers().size(); tier++) {
 			int x = MARGIN + tier * (columnWidth + COLUMN_GAP) - scrollX;
 			graphics.fill(x - 2, treeTop - 1, x + columnWidth + 2, treeBottom + 1,
-				tier < unlocked ? SkillTreeStyle.COLUMN_OPEN : SkillTreeStyle.COLUMN_LOCKED);
+				SkillTreeStyle.columnFill(tier < unlocked));
 		}
 		drawConnectors(graphics, state);
 		for (Positioned positioned : treeWidgets) {
@@ -902,7 +939,7 @@ public class SkillTreeScreen extends Screen {
 			return;
 		}
 		int top = scrollbarTop();
-		graphics.fill(MARGIN, top, treeRight, top + SCROLLBAR_HEIGHT, SkillTreeStyle.PANEL_DEEP);
+		graphics.fill(MARGIN, top, treeRight, top + SCROLLBAR_HEIGHT, SkillTreeStyle.panelDeepFill());
 		int thumb = thumbX();
 		graphics.fill(thumb, top, thumb + thumbWidth(), top + SCROLLBAR_HEIGHT,
 			draggingScrollbar ? SkillTreeStyle.GOLD : SkillTreeStyle.BORDER_LIT);

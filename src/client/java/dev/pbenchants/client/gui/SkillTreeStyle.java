@@ -27,6 +27,61 @@ public final class SkillTreeStyle {
 	public static final int BORDER = 0xFF2E3542;
 	public static final int BORDER_LIT = 0xFF4A5666;
 
+	/**
+	 * The same three surfaces with most of their alpha taken away, for players
+	 * who would rather keep an eye on the world while the tree is open — the
+	 * cave they are standing in, the mob walking up behind them, or just the
+	 * map they are reading the tree against.
+	 *
+	 * <p>Only the big flat areas thin out. Node tiles, tier headers and class
+	 * tabs stay solid on purpose: they carry the text, and text over grass is
+	 * text nobody can read.
+	 */
+	private static final int BACKDROP_CLEAR = 0x400B0D11;
+	private static final int PANEL_CLEAR = 0xA01A1E25;
+	private static final int PANEL_DEEP_CLEAR = 0x9012151B;
+	private static final int COLUMN_OPEN_CLEAR = 0x18202634;
+	private static final int COLUMN_LOCKED_CLEAR = 0x18000000;
+
+	/**
+	 * Whether the screen is currently drawing its see-through set. Held here
+	 * rather than passed down because every shape below would otherwise need
+	 * the flag threaded through it; the screen sets it from the saved
+	 * preference on open and on every press of the backdrop button.
+	 */
+	private static boolean translucent = false;
+
+	public static void setTranslucent(boolean value) {
+		translucent = value;
+	}
+
+	public static boolean translucent() {
+		return translucent;
+	}
+
+	/** Full-window wash behind the whole screen. */
+	public static int backdrop() {
+		return translucent ? BACKDROP_CLEAR : BACKDROP;
+	}
+
+	/** The details panel on the right. */
+	public static int panelFill() {
+		return translucent ? PANEL_CLEAR : PANEL;
+	}
+
+	/** The recessed surfaces: title bar, tree frame, scrollbar trough, banner. */
+	public static int panelDeepFill() {
+		return translucent ? PANEL_DEEP_CLEAR : PANEL_DEEP;
+	}
+
+	/** The stripe behind one tier column. */
+	public static int columnFill(boolean open) {
+		if (translucent) {
+			return open ? COLUMN_OPEN_CLEAR : COLUMN_LOCKED_CLEAR;
+		}
+		return open ? COLUMN_OPEN : COLUMN_LOCKED;
+	}
+
 	// --- text ---
 	public static final int TEXT = 0xFFE8E6DF;
 	public static final int MUTED = 0xFF9AA1AD;

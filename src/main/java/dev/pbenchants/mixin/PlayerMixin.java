@@ -83,7 +83,21 @@ public abstract class PlayerMixin {
 	@Redirect(method = "getDestroySpeed", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/item/ItemStack;getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"))
 	private float pbenchants$lockedDigsLikeAHand(ItemStack stack, BlockState state) {
-		return ItemAuthority.locked((Player) (Object) this, stack) ? 1.0F : stack.getDestroySpeed(state);
+		Player self = (Player) (Object) this;
+		// Two very different rules, one redirect, because both answer the same
+		// question: what is this item worth on this block? A locked tool is
+		// worth nothing to a holder who has not earned it, and a Logic I axe is
+		// worth nothing on a log — that is the price of felling the tree whole.
+		//
+		// Handing back the bare-hand 1.0 rather than cancelling the method is
+		// what makes the Logic price Efficiency-proof: vanilla only adds the
+		// MINING_EFFICIENCY bonus when the item's own speed is already above
+		// 1.0, so an Efficiency V diamond axe and a fresh wooden one now chop a
+		// log at exactly the same rate. MiningSpeed then slows both down.
+		if (ItemAuthority.locked(self, stack) || MiningSpeed.isLogicChop(self, stack, state)) {
+			return 1.0F;
+		}
+		return stack.getDestroySpeed(state);
 	}
 
 	/** ...and drops nothing from blocks that need a tool. */

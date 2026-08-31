@@ -10,18 +10,19 @@
 			"translate": "advancements.toolmastery.root.description"
 		},
 		"background": "minecraft:gui/advancements/backgrounds/stone",
-		"show_toast": false,
-		"announce_to_chat": false,
+		"frame": "task",
+		"show_toast": true,
+		"announce_to_chat": true,
 		"hidden": false
 	},
 	"criteria": {
-		"in_game": {
-			"trigger": "minecraft:tick"
+		"unlocked": {
+			"trigger": "minecraft:impossible"
 		}
 	},
 	"requirements": [
 		[
-			"in_game"
+			"unlocked"
 		]
 	],
 	"sends_telemetry_event": false
