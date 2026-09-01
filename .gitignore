@@ -28,3 +28,6 @@ remappedSrc/
 # but project skills (.claude/skills) ship with it.
 .claude/*
 !.claude/skills/
+
+# windows/msys crash dumps
+*.stackdump
