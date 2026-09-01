@@ -4,7 +4,7 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Version **0.6.9-beta** · mod id: `pbenchants` · package `dev.pbenchants` · save-data namespace: `toolmastery`
+> Version **0.7.0-beta** · mod id: `pbenchants` · package `dev.pbenchants` · save-data namespace: `toolmastery`
 > (the mod shipped as *Tool Mastery* before the rename — everything a world persists kept the old namespace on purpose, so existing worlds carry all progress, advancements and enchanted items across the rename)
 >
 > **Download page: [pedrolucasgb.github.io/PB-Enchantments-Mod](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)**
