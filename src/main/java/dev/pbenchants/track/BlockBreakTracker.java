@@ -45,12 +45,29 @@ public final class BlockBreakTracker {
 		if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
 			return;
 		}
+		// Leaves are counted for whatever broke them - axe, shears, sword or a
+		// bare hand. The gate asks how much canopy you have cleared, not which
+		// tool you cleared it with, and only a player break reaches this event,
+		// so natural decay never counts.
+		if (state.is(BlockTags.LEAVES)) {
+			countLeaf(serverPlayer);
+		}
+
 		ItemStack held = serverPlayer.getMainHandItem();
 		if (held.is(ItemTags.PICKAXES)) {
 			trackPickaxe(serverPlayer, serverLevel, pos, state);
 		} else if (held.is(ItemTags.AXES)) {
 			trackAxe(serverPlayer, state);
 		}
+	}
+
+	/**
+	 * One leaf block cleared by this player. Public because Timber fells its
+	 * canopy through {@code Level.destroyBlock}, which never raises the break
+	 * event this class otherwise listens to.
+	 */
+	public static void countLeaf(ServerPlayer player) {
+		SkillService.progress(player, SkillTrees.AXE).addCount("break_leaves", 1);
 	}
 
 	private static void trackPickaxe(ServerPlayer player, ServerLevel level, BlockPos pos, BlockState state) {
@@ -133,9 +150,6 @@ public final class BlockBreakTracker {
 			if (netherBit >= 0) {
 				updateChecklist(progress, "nether_wood_checklist", netherBit, NETHER_WOOD_BITS);
 			}
-		}
-		if (state.is(BlockTags.LEAVES)) {
-			progress.addCount("break_leaves", 1);
 		}
 	}
 

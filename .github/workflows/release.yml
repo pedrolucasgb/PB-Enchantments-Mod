@@ -1,10 +1,16 @@
 name: Release
 
 # Every tag that looks like a version (v1.0.0, v1.2.3...) becomes a GitHub
-# Release: the jar is built from that exact commit, the tag supplies the mod
-# version, and the release carries two copies of the jar - the versioned one
-# and a stable "pbenchants.jar" so /releases/latest/download/pbenchants.jar
-# always points at the newest build (the landing page download button).
+# Release: the jar is built from that exact commit and the tag supplies the mod
+# version.
+#
+# ONE asset, named "pbenchants-<version>.jar". It used to ship a second,
+# identical copy called "pbenchants.jar" so that
+# /releases/latest/download/pbenchants.jar always resolved to the newest build -
+# but that is the file the landing page handed people, so everyone downloaded a
+# jar with no version in its name and had no way to tell which build was already
+# in their mods folder. The landing page now asks the releases API for the
+# latest versioned asset instead, which needs no stable filename.
 on:
   push:
     tags:
@@ -37,12 +43,33 @@ jobs:
       - name: Stage release assets
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
+          NOTES="docs/patchnotes/${VERSION}.md"
+
+          # Every tag ships written notes, in English, Portuguese and Spanish.
+          # Failing here is the point: a release with no notes is a release
+          # nobody can read. See .claude/skills/patch-notes/SKILL.md.
+          if [ ! -f "$NOTES" ]; then
+            echo "::error::No patch notes at $NOTES - write them before tagging (see .claude/skills/patch-notes/SKILL.md)"
+            exit 1
+          fi
+
           mkdir staging
           cp "build/libs/pbenchants-${VERSION}.jar" staging/
-          cp "build/libs/pbenchants-${VERSION}.jar" staging/pbenchants.jar
+          cp "$NOTES" "staging/patchnotes-${VERSION}.md"
+
+          # The release body is the English block of the same file, so the page
+          # and the GitHub release never drift apart. The generated commit list
+          # is appended below it.
+          awk '/^## en[[:space:]]*$/ { on = 1; next }
+               /^## [a-z][a-z][[:space:]]*$/ { on = 0 }
+               on' "$NOTES" > staging/body.md
+          test -s staging/body.md || { echo "::error::$NOTES has no '## en' block"; exit 1; }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: staging/*
+          files: |
+            staging/pbenchants-*.jar
+            staging/patchnotes-*.md
+          body_path: staging/body.md
           generate_release_notes: true

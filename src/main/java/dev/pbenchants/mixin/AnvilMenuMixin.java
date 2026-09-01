@@ -7,8 +7,10 @@ import dev.pbenchants.perk.CombatPerks;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
+import dev.pbenchants.skill.XpMath;
 import dev.pbenchants.track.EnchantTracker;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
@@ -69,6 +71,10 @@ public class AnvilMenuMixin {
 	@Unique
 	private Player pbenchants$player;
 
+	/** The taker's experience wallet as onTake was entered — see below. */
+	@Unique
+	private int pbenchants$pointsBefore;
+
 	@Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V",
 		at = @At("RETURN"))
 	private void pbenchants$capturePlayer(int containerId, Inventory inventory, ContainerLevelAccess access,
@@ -78,13 +84,46 @@ public class AnvilMenuMixin {
 
 	@Inject(method = "onTake", at = @At("HEAD"))
 	private void pbenchants$trackCombine(Player player, ItemStack result, CallbackInfo ci) {
+		// The bill is paid inside onTake, in levels. What the gate wants is the
+		// experience those levels were worth to this player, so the wallet is
+		// read on both sides of the call and the difference is the answer.
+		this.pbenchants$pointsBefore = XpMath.totalPoints(player);
+
 		if (!(player.containerMenu instanceof AnvilMenu menu)) {
 			return;
 		}
+		ItemStack base = menu.getSlot(AnvilMenu.INPUT_SLOT).getItem();
 		ItemStack sacrifice = menu.getSlot(AnvilMenu.ADDITIONAL_SLOT).getItem();
-		if (!sacrifice.isEmpty() && !EnchantmentHelper.getEnchantmentsForCrafting(sacrifice).isEmpty()) {
+		if (pbenchants$isCombine(base, sacrifice)) {
 			EnchantTracker.onAnvilCombine(player);
 		}
+	}
+
+	@Inject(method = "onTake", at = @At("RETURN"))
+	private void pbenchants$trackAnvilSpend(Player player, ItemStack result, CallbackInfo ci) {
+		EnchantTracker.onXpPointsSpent(player, this.pbenchants$pointsBefore - XpMath.totalPoints(player));
+	}
+
+	/**
+	 * Whether this take was a merge rather than a repair with raw material —
+	 * vanilla's own fork in {@code createResult}, read back off the slots.
+	 *
+	 * <p>Anything that puts two items together counts: pickaxe on pickaxe,
+	 * book on pickaxe, book on book, enchanted or not. A pickaxe fed diamonds
+	 * does not, and neither does a bare rename, which leaves the second slot
+	 * empty. Vanilla tests the material repair first and the merge second, so
+	 * this reads in the same order — a tool is never both.
+	 */
+	@Unique
+	private static boolean pbenchants$isCombine(ItemStack base, ItemStack sacrifice) {
+		if (base.isEmpty() || sacrifice.isEmpty()) {
+			return false;
+		}
+		if (base.isDamageableItem() && base.isValidRepairItem(sacrifice)) {
+			return false;
+		}
+		return sacrifice.has(DataComponents.STORED_ENCHANTMENTS)
+			|| (base.is(sacrifice.getItem()) && base.isDamageableItem());
 	}
 
 	/** Anvil Adept: the whole bill, discounted and then capped, in one place. */

@@ -227,7 +227,7 @@ public final class SkillTrees {
 			)),
 			// Tier 4 — Master Enchanter
 			new SkillTier(20, List.of(
-				new GateRequirement("spend_levels", 150),
+				new GateRequirement("spend_points", 10000),
 				new GateRequirement("collect_xp", 10000),
 				new GateRequirement("grindstone_disenchants", 20),
 				new GateRequirement("buy_enchanted_books", 12)

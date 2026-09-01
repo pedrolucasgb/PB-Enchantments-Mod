@@ -5,6 +5,7 @@ import dev.pbenchants.enchant.EnchantCompat;
 import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.progress.ModAttachments;
 import dev.pbenchants.progress.TreeProgress;
+import dev.pbenchants.track.EnchantTracker;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -101,6 +102,7 @@ public final class SkillService {
 		}
 		if (cost > 0) {
 			player.giveExperiencePoints(-cost);
+			EnchantTracker.onXpPointsSpent(player, cost);
 		}
 		progress.unlockedTiers = next + 1;
 		ModAdvancements.grantTier(player, tree.id(), next);
@@ -144,6 +146,7 @@ public final class SkillService {
 			}
 			MaterialCost.consume(player, node.materials());
 			player.giveExperiencePoints(-cost);
+			EnchantTracker.onXpPointsSpent(player, cost);
 		}
 		progress.purchased.add(node.id());
 		return new Result.Ok(unlockMessage(node));
@@ -225,6 +228,7 @@ public final class SkillService {
 
 		if (cost > 0) {
 			player.giveExperiencePoints(-cost);
+			EnchantTracker.onXpPointsSpent(player, cost);
 		}
 		EnchantmentHelper.updateEnchantments(stack, mutable -> mutable.set(holder, grant.level()));
 		return ok("msg.pbenchants.enchant.ok",

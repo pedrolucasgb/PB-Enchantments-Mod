@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.7.0-beta
+Version 0.7.1-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,40 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.7.1-beta
+-------------------------
+- LEAVES COUNT WHATEVER BREAKS THEM. The Axe tree's leaf gate only
+  ever saw leaves cleared with an axe. Shears, a sword, a bare hand
+  and the canopy Timber III sweeps away all count now. Leaves that
+  rot away on their own still do not - that was never the point.
+
+- THE SEARCH BOX KEEPS YOUR KEYS. Typing an item name with an E in it
+  used to slam the inventory shut, and Q threw the stack you were
+  hovering. While the caret is in the Seeker's Eye field, the screen
+  stops reading your typing as shortcuts. Clicking the magnifier now
+  also puts the caret straight in the field - it used to take a
+  second click.
+
+- XP LEVELS SPENT IS NOW XP POINTS SPENT. Levels are not a fixed
+  price - three levels off a level-40 player is several times the
+  experience it is off a level-15 one - so the gate asked a different
+  question of everybody. It counts experience points now, and it
+  counts every way you spend them: the enchanting table, the anvil,
+  and every tier, node and enchant bought in the skill tree. Progress
+  already made is carried over, generously.
+
+- ANVIL COMBINES MEANS ANY COMBINE. It only counted a sacrifice that
+  carried enchantments, so two plain pickaxes were invisible to it.
+  Anything that merges two items counts now - tool on tool, book on
+  tool, book on book, enchanted or not. Repairing with raw material
+  still does not, and neither does a bare rename.
+
+- THE DOWNLOAD HAS ITS VERSION IN ITS NAME. Releases used to carry
+  two copies of the same jar, and the one the download button handed
+  you was the unversioned "pbenchants.jar" - so there was no way to
+  tell which build was in your mods folder. There is one asset now,
+  "pbenchants-<version>.jar", and the button points at it.
 
 WHAT IS NEW IN 0.7.0-beta
 -------------------------

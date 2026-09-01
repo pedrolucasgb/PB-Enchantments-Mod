@@ -198,6 +198,50 @@
   }
   .release .head .get-btn:hover { filter: brightness(1.08); }
   .release .size { color: var(--muted); font-size: 0.85rem; }
+  /* ---------- Patch notes ---------- */
+  .notes {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    text-align: left;
+  }
+  .notes .notes-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .notes .notes-head b { font-size: 1.2rem; color: var(--accent); }
+  .notes .notes-head time { color: var(--muted); font-size: 0.9rem; }
+  .notes .lead { color: var(--muted); margin: 10px 0 0; line-height: 1.6; }
+  .notes h4 {
+    margin: 22px 0 8px;
+    font-size: 0.82rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin: 7px 0; line-height: 1.6; }
+  .notes li b { color: var(--text); }
+  .notes code {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+  }
+  .notes .empty { color: var(--muted); margin: 0; }
+  .release .notes { margin-top: 14px; padding: 0 0 0 2px; border: 0; background: none; }
+  .release .notes h4 { margin-top: 16px; }
+  .release .notes-toggle {
+    background: none;
+    border: 0;
+    color: var(--accent);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+    order: 99;
+  }
+  .release .notes-toggle:hover { text-decoration: underline; }
+
   #releases .empty { color: var(--muted); }
   #releases .empty a { color: var(--accent); }
   .load-more {
@@ -272,7 +316,7 @@
   <div class="wrap">
     <h1><span class="pb">PB</span> Enchantments</h1>
     <p class="tagline" data-i18n="tagline"></p>
-    <a id="download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar" data-i18n="download"></a>
+    <a id="download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest" data-i18n="download"></a>
     <p class="dl-meta" id="dl-meta"><a href="#versions" data-i18n="allVersions"></a></p>
     <div class="badges">
       <span class="badge">Minecraft 26.2</span>
@@ -288,6 +332,14 @@
     <h2 data-i18n-html="treesTitle"></h2>
     <div class="trees" id="trees"></div>
     <p class="hint" data-i18n-html="treesHint"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 data-i18n-html="patchTitle"></h2>
+    <div class="notes" id="patch-notes"><p class="empty" data-i18n="notesLoading"></p></div>
+    <p class="hint"><a href="#versions" data-i18n="allVersions"></a></p>
   </div>
 </section>
 
@@ -355,9 +407,15 @@
         ["Artisan", "Storage magic, sorting, auto block"]
       ],
       treesHint: 'Every tree gates behind real in-game achievements — mine the ores, fell the trees, land the shots — then spend XP to unlock perks and stamp exclusive enchantments on your gear. Press <code>K</code> in game to open the trees, or use <code>/pbenchants</code>.',
+      patchTitle: 'What is <span>new</span>',
+      notesLoading: "Loading the notes…",
+      notesNone: "This version shipped before written notes did — the GitHub release page has its commit log.",
+      notesError: "Could not load the notes. The GitHub release page has them too.",
+      notesShow: "Patch notes",
+      notesHide: "Hide notes",
       installTitle: 'How to <span>install</span>',
       step1: 'Install the <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> for Minecraft 26.2 (run the installer, pick 26.2, done).',
-      step2: 'Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants.jar</code> into your <code>.minecraft/mods</code> folder.',
+      step2: 'Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants-&lt;version&gt;.jar</code> into your <code>.minecraft/mods</code> folder.',
       step3: 'Launch the <code>fabric-loader-26.2</code> profile and press <code>K</code> in game.',
       serverTitle: 'Play on the <span>official server</span>',
       serverHint: 'Add it under Multiplayer &rarr; Add Server with the mod installed — same Minecraft 26.2 Fabric setup as above. No port needed.',
@@ -391,9 +449,15 @@
         ["Artesão", "Magia de armazenamento, organização, bloco automático"]
       ],
       treesHint: 'Cada árvore se abre com conquistas reais dentro do jogo — minere os minérios, derrube as árvores, acerte os tiros — e então gaste XP para desbloquear vantagens e gravar encantamentos exclusivos no seu equipamento. Aperte <code>K</code> no jogo para abrir as árvores, ou use <code>/pbenchants</code>.',
+      patchTitle: 'O que há de <span>novo</span>',
+      notesLoading: "Carregando as notas…",
+      notesNone: "Esta versão saiu antes das notas escritas — a página do lançamento no GitHub traz o histórico de commits.",
+      notesError: "Não foi possível carregar as notas. A página do lançamento no GitHub também as tem.",
+      notesShow: "Notas da versão",
+      notesHide: "Ocultar notas",
       installTitle: 'Como <span>instalar</span>',
       step1: 'Instale o <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para o Minecraft 26.2 (rode o instalador, escolha 26.2, pronto).',
-      step2: 'Coloque o <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> e o <code>pbenchants.jar</code> baixado na sua pasta <code>.minecraft/mods</code>.',
+      step2: 'Coloque o <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> e o <code>pbenchants-&lt;versao&gt;.jar</code> baixado na sua pasta <code>.minecraft/mods</code>.',
       step3: 'Inicie o perfil <code>fabric-loader-26.2</code> e aperte <code>K</code> no jogo.',
       serverTitle: 'Jogue no <span>servidor oficial</span>',
       serverHint: 'Adicione em Multijogador &rarr; Adicionar servidor com o mod instalado — a mesma configuração do Minecraft 26.2 com Fabric descrita acima. Não precisa de porta.',
@@ -427,9 +491,15 @@
         ["Artesano", "Magia de almacenamiento, orden, bloque automático"]
       ],
       treesHint: 'Cada árbol se abre con logros reales dentro del juego — mina las menas, tala los árboles, acierta los disparos — y luego gasta XP para desbloquear ventajas y grabar encantamientos exclusivos en tu equipo. Pulsa <code>K</code> en el juego para abrir los árboles, o usa <code>/pbenchants</code>.',
+      patchTitle: 'Qué hay de <span>nuevo</span>',
+      notesLoading: "Cargando las notas…",
+      notesNone: "Esta versión salió antes que las notas escritas — la página del lanzamiento en GitHub tiene su historial de commits.",
+      notesError: "No se pudieron cargar las notas. La página del lanzamiento en GitHub también las tiene.",
+      notesShow: "Notas de la versión",
+      notesHide: "Ocultar notas",
       installTitle: 'Cómo <span>instalar</span>',
       step1: 'Instala el <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para Minecraft 26.2 (ejecuta el instalador, elige 26.2, listo).',
-      step2: 'Copia el <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> y el <code>pbenchants.jar</code> descargado en tu carpeta <code>.minecraft/mods</code>.',
+      step2: 'Copia el <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> y el <code>pbenchants-&lt;version&gt;.jar</code> descargado en tu carpeta <code>.minecraft/mods</code>.',
       step3: 'Lanza el perfil <code>fabric-loader-26.2</code> y pulsa <code>K</code> en el juego.',
       serverTitle: 'Juega en el <span>servidor oficial</span>',
       serverHint: 'Añádelo en Multijugador &rarr; Añadir servidor con el mod instalado — la misma configuración de Minecraft 26.2 con Fabric de arriba. No hace falta puerto.',
@@ -499,6 +569,7 @@
       btn.classList.toggle("on", btn.dataset.lang === lang));
     renderReleases();
     updateMeta();
+    renderLatestNotes();
   }
 
   document.querySelectorAll(".lang-picker button").forEach(btn =>
@@ -545,8 +616,191 @@
     loadMoreBtn.disabled = false;
     renderReleases();
     updateMeta();
+    renderLatestNotes();
   }
   loadMoreBtn.addEventListener("click", loadPage);
+
+  // ---------- Patch notes ----------
+  //
+  // One file per released version, written in the repo at
+  // docs/patchnotes/<version>.md and published alongside the jar on the
+  // release. It carries all three languages in one file, under "## en",
+  // "## pt" and "## es"; this reads the block for the language the reader
+  // picked. The format and how to write one are in
+  // .claude/skills/patch-notes/SKILL.md.
+  //
+  // Fetched from this site rather than from the release asset: the notes sit
+  // in docs/, so on GitHub Pages the request is same-origin - no CORS, no API
+  // rate limit, and it still works when the releases API is having a bad day.
+  const NOTE_LANGS = ["en", "pt", "es"];
+  const noteCache = new Map();
+
+  function notesUrl(version) {
+    return "patchnotes/" + encodeURIComponent(version) + ".md";
+  }
+
+  // "v0.7.1-beta" -> "0.7.1-beta"; the file is named after the mod version.
+  function versionOf(release) {
+    return String(release.tag_name || "").replace(/^v/, "");
+  }
+
+  async function loadNotes(version) {
+    if (!noteCache.has(version)) {
+      noteCache.set(version, (async () => {
+        const res = await fetch(notesUrl(version), { cache: "no-cache" });
+        // A version with no notes file 404s, and that is a normal answer for
+        // anything released before 0.7.1-beta - not an error to report.
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(res.status);
+        const text = await res.text();
+        // Pages serves index.html for unknown paths on some setups; a notes
+        // file that is really HTML is a miss, not a document.
+        if (/^\s*</.test(text)) return null;
+        return parseNotes(text);
+      })());
+    }
+    return noteCache.get(version);
+  }
+
+  /**
+   * The whole format, and deliberately no more than this:
+   *   # <title>                     the version heading (optional)
+   *   <!-- released: YYYY-MM-DD --> the date (optional)
+   *   ## en | ## pt | ## es         starts a language block
+   *   ### <heading>                 a group inside the block
+   *   - <text>                      a bullet; **bold** and `code` work
+   *   <anything else>               a lead paragraph, before the first group
+   * Returns { date, byLang: { en: {lead, groups:[{title, items}]}, ... } }.
+   */
+  function parseNotes(text) {
+    const out = { date: "", byLang: {} };
+    const dateMatch = text.match(/<!--\s*released:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})\s*-->/);
+    if (dateMatch) out.date = dateMatch[1];
+
+    let block = null;
+    let group = null;
+    let bullet = null;
+
+    const flush = () => { bullet = null; };
+
+    for (const raw of text.split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!line || line.startsWith("<!--")) { flush(); continue; }
+
+      const langHead = line.match(/^##\s+([a-z]{2})\s*$/i);
+      if (langHead && NOTE_LANGS.includes(langHead[1].toLowerCase())) {
+        flush();
+        group = null;
+        block = { lead: "", groups: [] };
+        out.byLang[langHead[1].toLowerCase()] = block;
+        continue;
+      }
+      // Group headings are tested before the generic "#" skip, or "### Fixed"
+      // would be swallowed as just another heading and every bullet would land
+      // in one unlabelled list.
+      const groupHead = line.match(/^###\s+(.*)$/);
+      if (groupHead && block) {
+        flush();
+        group = { title: groupHead[1].trim(), items: [] };
+        block.groups.push(group);
+        continue;
+      }
+      if (line.startsWith("#")) { flush(); continue; }
+      if (!block) continue;
+
+      if (line.startsWith("- ")) {
+        bullet = { text: line.slice(2).trim() };
+        if (!group) {
+          group = { title: "", items: [] };
+          block.groups.push(group);
+        }
+        group.items.push(bullet);
+        continue;
+      }
+      // A wrapped line continues whatever it is sitting under.
+      if (bullet) bullet.text += " " + line;
+      else if (!group) block.lead += (block.lead ? " " : "") + line;
+    }
+    return out;
+  }
+
+  // Markdown, to the extent the notes use it. Escaped first, so a stray
+  // angle bracket in a version string can never become markup.
+  function inline(md) {
+    return escapeHtml(md)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+  }
+
+  function renderNotes(box, notes, release, withHead) {
+    box.innerHTML = "";
+    const block = notes && (notes.byLang[lang] || notes.byLang.en);
+    if (!block) {
+      const p = document.createElement("p");
+      p.className = "empty";
+      p.textContent = t("notesNone");
+      box.appendChild(p);
+      return;
+    }
+    if (withHead) {
+      const head = document.createElement("div");
+      head.className = "notes-head";
+      const name = document.createElement("b");
+      name.textContent = release.name || release.tag_name;
+      head.appendChild(name);
+      const when = notes.date || (release.published_at || "").slice(0, 10);
+      if (when) {
+        const time = document.createElement("time");
+        time.textContent = new Date(when + "T00:00:00")
+          .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "long", day: "numeric" });
+        head.appendChild(time);
+      }
+      box.appendChild(head);
+    }
+    if (block.lead) {
+      const lead = document.createElement("p");
+      lead.className = "lead";
+      lead.innerHTML = inline(block.lead);
+      box.appendChild(lead);
+    }
+    for (const group of block.groups) {
+      if (group.title) {
+        const h = document.createElement("h4");
+        h.textContent = group.title;
+        box.appendChild(h);
+      }
+      const ul = document.createElement("ul");
+      for (const item of group.items) {
+        const li = document.createElement("li");
+        li.innerHTML = inline(item.text);
+        ul.appendChild(li);
+      }
+      box.appendChild(ul);
+    }
+  }
+
+  // The front-page section: always the newest release's notes.
+  async function renderLatestNotes() {
+    const box = document.getElementById("patch-notes");
+    if (!box) return;
+    if (!releases.length) {
+      box.innerHTML = '<p class="empty">' + escapeHtml(t(failed ? "notesError" : "notesLoading")) + "</p>";
+      return;
+    }
+    const latest = releases[0];
+    try {
+      renderNotes(box, await loadNotes(versionOf(latest)), latest, true);
+    } catch (e) {
+      box.innerHTML = '<p class="empty">' + escapeHtml(t("notesError")) + "</p>";
+    }
+  }
+
+  // The jar a release actually ships. Every release carries exactly one, named
+  // pbenchants-<version>.jar - the version is in the filename on purpose, so a
+  // player can see at a glance which build is sitting in their mods folder.
+  function jarAsset(r) {
+    return (r.assets || []).find(a => /^pbenchants-.*\.jar$/.test(a.name)) || (r.assets || [])[0];
+  }
 
   function updateMeta() {
     const meta = document.getElementById("dl-meta");
@@ -556,6 +810,13 @@
       return;
     }
     const latest = releases[0];
+    // The big button downloads the newest versioned jar. Until the API answers
+    // it points at the releases page, which is the honest fallback: there is no
+    // stable filename to link to, and there should not be one.
+    const jar = jarAsset(latest);
+    if (jar) {
+      document.getElementById("download").href = jar.browser_download_url;
+    }
     const when = new Date(latest.published_at)
       .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "short", day: "numeric" });
     meta.innerHTML = escapeHtml(latest.tag_name) + " · " + when + " · " + link;
@@ -578,7 +839,7 @@
     }
     releasesBox.innerHTML = "";
     for (const r of releases) {
-      const jar = (r.assets || []).find(a => /^pbenchants-.*\.jar$/.test(a.name)) || (r.assets || [])[0];
+      const jar = jarAsset(r);
       const div = document.createElement("div");
       div.className = "release";
 
@@ -609,6 +870,33 @@
         head.appendChild(size);
       }
       div.appendChild(head);
+
+      // Every release row can open its own notes, so "all versions" is also
+      // the changelog archive. Fetched only when someone asks for it.
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "notes-toggle";
+      toggle.textContent = t("notesShow");
+      const notesBox = document.createElement("div");
+      notesBox.className = "notes";
+      notesBox.hidden = true;
+      toggle.addEventListener("click", async () => {
+        if (!notesBox.hidden) {
+          notesBox.hidden = true;
+          toggle.textContent = t("notesShow");
+          return;
+        }
+        notesBox.hidden = false;
+        toggle.textContent = t("notesHide");
+        notesBox.innerHTML = '<p class="empty">' + escapeHtml(t("notesLoading")) + "</p>";
+        try {
+          renderNotes(notesBox, await loadNotes(versionOf(r)), r, false);
+        } catch (e) {
+          notesBox.innerHTML = '<p class="empty">' + escapeHtml(t("notesError")) + "</p>";
+        }
+      });
+      head.appendChild(toggle);
+      div.appendChild(notesBox);
       releasesBox.appendChild(div);
     }
     loadMoreBtn.hidden = !morePages;
