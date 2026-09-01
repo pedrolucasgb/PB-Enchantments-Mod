@@ -15,10 +15,20 @@ import net.minecraft.server.level.ServerPlayer;
  * advancements screen ("L"). The data pack entries live in
  * {@code data/PBEnchants/advancement/<tree>/tier_<n>.json} and use the
  * impossible trigger — they are only ever awarded from here.
+ *
+ * <p>The root of that tab is the mod's own first step: opening the skill
+ * screen. It used to tick itself in on the first server tick, which put a tree
+ * of locked advancements in front of a player who had no idea the mod was
+ * there; now the first press of the tree key earns it, and the join hint in
+ * chat points at that key.
  */
 public final class ModAdvancements {
-	/** Criterion name shared by every tier advancement. */
+	/** Criterion name shared by the root and every tier advancement. */
 	private static final String CRITERION = "unlocked";
+
+	/** The tab's root: earned by opening the skill screen for the first time. */
+	private static final Identifier ROOT =
+		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "root");
 
 	private ModAdvancements() {
 	}
@@ -28,16 +38,29 @@ public final class ModAdvancements {
 		return Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, treeId + "/tier_" + (tierIndex + 1));
 	}
 
+	/**
+	 * Awards the root advancement — the mod's "you found me" step. Called every
+	 * time the skill screen asks the server for a snapshot, which is every time
+	 * it opens; vanilla ignores an award the player already holds, so there is
+	 * nothing to guard against here.
+	 */
+	public static void grantRoot(ServerPlayer player) {
+		award(player, ROOT);
+	}
+
 	/** Awards the advancement for one tier. Silent no-op when it is already earned. */
 	public static void grantTier(ServerPlayer player, String treeId, int tierIndex) {
+		award(player, tierId(treeId, tierIndex));
+	}
+
+	private static void award(ServerPlayer player, Identifier id) {
 		MinecraftServer server = player.level().getServer();
 		if (server == null) {
 			return;
 		}
-		Identifier id = tierId(treeId, tierIndex);
 		AdvancementHolder advancement = server.getAdvancements().get(id);
 		if (advancement == null) {
-			PBEnchants.LOGGER.warn("Missing tier advancement '{}' — is the mod's data pack loaded?", id);
+			PBEnchants.LOGGER.warn("Missing advancement '{}' — is the mod's data pack loaded?", id);
 			return;
 		}
 		player.getAdvancements().award(advancement, CRITERION);

@@ -1,6 +1,6 @@
 # Prebuilt jars
 
-`pbenchants-0.6.9-beta.jar` is the jar produced by `./gradlew build` at the tip of this
+`pbenchants-0.7.0-beta.jar` is the jar produced by `./gradlew build` at the tip of this
 branch — dropped here so a review can be play-tested without a local toolchain.
 
 Install: Fabric Loader >= 0.19.3 + Fabric API 0.157.0+26.2 on Minecraft 26.2, then

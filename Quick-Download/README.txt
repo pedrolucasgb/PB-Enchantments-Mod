@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.6.9-beta
+Version 0.7.0-beta
 ================================================
 
 HOW TO INSTALL
@@ -14,7 +14,8 @@ HOW TO INSTALL
      - copy the PB Enchantments mod into your mods folder.
 3. Open the Minecraft launcher, pick the "fabric-loader-26.2" profile and
    hit Play.
-4. In game, press K to open the skill trees.
+4. In game, press K to open the skill trees - and K again to close them.
+   A line in the chat reminds you of the key every time you join a world.
 
 HOW IT WORKS
 ------------
@@ -42,6 +43,31 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.7.0-beta
+-------------------------
+- IT TELLS YOU IT IS THERE. Joining a world puts one line in the chat,
+  in your own language, naming the key that opens the skill trees -
+  and pressing that key for the first time earns the first
+  advancement of the PB Enchantments tab.
+
+- K OPENS AND K CLOSES. Whatever you have the skill-tree key bound to,
+  it now works both ways, like E does for the inventory.
+
+- SEE THE WORLD THROUGH THE TREE. A button in the top-right corner of
+  the skill screen switches the backdrop between solid and
+  see-through, so you can read the tree against the cave or the map
+  you are standing on. The choice is remembered.
+
+- YOU CAN HEAR PROGRESS. A tier opening plays a chime, and so does the
+  moment the goal you pinned to the HUD scoreboard finally becomes
+  buyable - never both for the same event.
+
+- LOGIC I COSTS WHAT IT SHOULD. Felling a whole tree in one swing is
+  paid for with a fixed, slow chop on the first log - about four
+  seconds, the same on every axe. Efficiency and the axe's own tier
+  no longer buy that price back. Logic II and III chop at full speed
+  as before.
 
 WHAT IS NEW IN 0.6.9-beta
 -------------------------
