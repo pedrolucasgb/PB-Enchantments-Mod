@@ -272,7 +272,7 @@
   <div class="wrap">
     <h1><span class="pb">PB</span> Enchantments</h1>
     <p class="tagline" data-i18n="tagline"></p>
-    <a id="download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar" data-i18n="download"></a>
+    <a id="download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest" data-i18n="download"></a>
     <p class="dl-meta" id="dl-meta"><a href="#versions" data-i18n="allVersions"></a></p>
     <div class="badges">
       <span class="badge">Minecraft 26.2</span>
@@ -357,7 +357,7 @@
       treesHint: 'Every tree gates behind real in-game achievements — mine the ores, fell the trees, land the shots — then spend XP to unlock perks and stamp exclusive enchantments on your gear. Press <code>K</code> in game to open the trees, or use <code>/pbenchants</code>.',
       installTitle: 'How to <span>install</span>',
       step1: 'Install the <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> for Minecraft 26.2 (run the installer, pick 26.2, done).',
-      step2: 'Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants.jar</code> into your <code>.minecraft/mods</code> folder.',
+      step2: 'Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants-&lt;version&gt;.jar</code> into your <code>.minecraft/mods</code> folder.',
       step3: 'Launch the <code>fabric-loader-26.2</code> profile and press <code>K</code> in game.',
       serverTitle: 'Play on the <span>official server</span>',
       serverHint: 'Add it under Multiplayer &rarr; Add Server with the mod installed — same Minecraft 26.2 Fabric setup as above. No port needed.',
@@ -393,7 +393,7 @@
       treesHint: 'Cada árvore se abre com conquistas reais dentro do jogo — minere os minérios, derrube as árvores, acerte os tiros — e então gaste XP para desbloquear vantagens e gravar encantamentos exclusivos no seu equipamento. Aperte <code>K</code> no jogo para abrir as árvores, ou use <code>/pbenchants</code>.',
       installTitle: 'Como <span>instalar</span>',
       step1: 'Instale o <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para o Minecraft 26.2 (rode o instalador, escolha 26.2, pronto).',
-      step2: 'Coloque o <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> e o <code>pbenchants.jar</code> baixado na sua pasta <code>.minecraft/mods</code>.',
+      step2: 'Coloque o <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> e o <code>pbenchants-&lt;versao&gt;.jar</code> baixado na sua pasta <code>.minecraft/mods</code>.',
       step3: 'Inicie o perfil <code>fabric-loader-26.2</code> e aperte <code>K</code> no jogo.',
       serverTitle: 'Jogue no <span>servidor oficial</span>',
       serverHint: 'Adicione em Multijogador &rarr; Adicionar servidor com o mod instalado — a mesma configuração do Minecraft 26.2 com Fabric descrita acima. Não precisa de porta.',
@@ -429,7 +429,7 @@
       treesHint: 'Cada árbol se abre con logros reales dentro del juego — mina las menas, tala los árboles, acierta los disparos — y luego gasta XP para desbloquear ventajas y grabar encantamientos exclusivos en tu equipo. Pulsa <code>K</code> en el juego para abrir los árboles, o usa <code>/pbenchants</code>.',
       installTitle: 'Cómo <span>instalar</span>',
       step1: 'Instala el <a href="https://fabricmc.net/use/installer/">Fabric Loader</a> para Minecraft 26.2 (ejecuta el instalador, elige 26.2, listo).',
-      step2: 'Copia el <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> y el <code>pbenchants.jar</code> descargado en tu carpeta <code>.minecraft/mods</code>.',
+      step2: 'Copia el <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> y el <code>pbenchants-&lt;version&gt;.jar</code> descargado en tu carpeta <code>.minecraft/mods</code>.',
       step3: 'Lanza el perfil <code>fabric-loader-26.2</code> y pulsa <code>K</code> en el juego.',
       serverTitle: 'Juega en el <span>servidor oficial</span>',
       serverHint: 'Añádelo en Multijugador &rarr; Añadir servidor con el mod instalado — la misma configuración de Minecraft 26.2 con Fabric de arriba. No hace falta puerto.',
@@ -548,6 +548,13 @@
   }
   loadMoreBtn.addEventListener("click", loadPage);
 
+  // The jar a release actually ships. Every release carries exactly one, named
+  // pbenchants-<version>.jar - the version is in the filename on purpose, so a
+  // player can see at a glance which build is sitting in their mods folder.
+  function jarAsset(r) {
+    return (r.assets || []).find(a => /^pbenchants-.*\.jar$/.test(a.name)) || (r.assets || [])[0];
+  }
+
   function updateMeta() {
     const meta = document.getElementById("dl-meta");
     const link = '<a href="#versions">' + t("allVersions") + "</a>";
@@ -556,6 +563,13 @@
       return;
     }
     const latest = releases[0];
+    // The big button downloads the newest versioned jar. Until the API answers
+    // it points at the releases page, which is the honest fallback: there is no
+    // stable filename to link to, and there should not be one.
+    const jar = jarAsset(latest);
+    if (jar) {
+      document.getElementById("download").href = jar.browser_download_url;
+    }
     const when = new Date(latest.published_at)
       .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "short", day: "numeric" });
     meta.innerHTML = escapeHtml(latest.tag_name) + " · " + when + " · " + link;
@@ -578,7 +592,7 @@
     }
     releasesBox.innerHTML = "";
     for (const r of releases) {
-      const jar = (r.assets || []).find(a => /^pbenchants-.*\.jar$/.test(a.name)) || (r.assets || [])[0];
+      const jar = jarAsset(r);
       const div = document.createElement("div");
       div.className = "release";
 

@@ -8,6 +8,7 @@ import dev.pbenchants.perk.ArmorPerks;
 import dev.pbenchants.perk.BowPerks;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
+import dev.pbenchants.skill.XpMath;
 import dev.pbenchants.track.EnchantTracker;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
@@ -70,6 +71,10 @@ public abstract class EnchantmentMenuMixin {
 
 	@Unique
 	private Player pbenchants$player;
+
+	/** The enchanter's experience wallet just before the table charges for it. */
+	@Unique
+	private int pbenchants$pointsBefore;
 
 	/**
 	 * The slot the offer being built belongs to, and how many bookshelves the
@@ -272,12 +277,29 @@ public abstract class EnchantmentMenuMixin {
 		lapisStack.consume(amount, entity);
 	}
 
-	/** Enchanter gates: count each successful table enchant, server-side. */
+	/**
+	 * Enchanter gates: count each successful table enchant, server-side.
+	 *
+	 * <p>Two injections around the one call that charges for it. The gate is
+	 * measured in XP points, and {@code onEnchantmentPerformed} spends
+	 * <em>levels</em> — worth wildly different amounts of experience depending
+	 * on where the player is standing on the curve — so the wallet is read
+	 * before and after and the difference is what gets counted.
+	 */
+	@Inject(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/entity/player/Player;onEnchantmentPerformed(Lnet/minecraft/world/item/ItemStack;I)V"))
+	private void pbenchants$readWalletBeforeEnchant(ItemStack itemStack, int id, Player player, int levels,
+	                                                 ItemStack lapisStack, Level level, BlockPos pos,
+	                                                 CallbackInfo ci) {
+		this.pbenchants$pointsBefore = XpMath.totalPoints(player);
+	}
+
 	@Inject(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/player/Player;onEnchantmentPerformed(Lnet/minecraft/world/item/ItemStack;I)V",
 		shift = At.Shift.AFTER))
 	private void pbenchants$trackTableEnchant(ItemStack itemStack, int id, Player player, int levels,
 	                                           ItemStack lapisStack, Level level, BlockPos pos, CallbackInfo ci) {
-		EnchantTracker.onTableEnchant(player, itemStack, id, levels);
+		EnchantTracker.onTableEnchant(player, itemStack, id,
+			this.pbenchants$pointsBefore - XpMath.totalPoints(player));
 	}
 }

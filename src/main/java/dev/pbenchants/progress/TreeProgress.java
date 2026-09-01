@@ -33,6 +33,9 @@ public final class TreeProgress {
 	private static final String RARE_MASK = "rare_wood_checklist_mask";
 	private static final int OVERWORLD_WOOD_BITS = 0b1_1111_1111;
 
+	/** Conversion rate for the pre-0.7.1 "levels spent" counter — see {@link #convertSpentLevels}. */
+	private static final int POINTS_PER_SPENT_LEVEL = 100;
+
 	/** How many tiers are unlocked (0 = none; 1 = tier 1 open, ...). */
 	public int unlockedTiers;
 	public final Set<String> purchased = new HashSet<>();
@@ -71,6 +74,7 @@ public final class TreeProgress {
 		this.seen.addAll(seen);
 		this.lockedSlots = lockedSlots;
 		mergeWoodChecklist();
+		convertSpentLevels();
 	}
 
 	/**
@@ -89,6 +93,22 @@ public final class TreeProgress {
 		int merged = (counters.getOrDefault(WOOD_MASK, 0) | (rare << 6)) & OVERWORLD_WOOD_BITS;
 		counters.put(WOOD_MASK, merged);
 		counters.put("overworld_wood_checklist", Integer.bitCount(merged));
+	}
+
+	/**
+	 * The Enchanter's spending gate counted XP <em>levels</em> until 0.7.1 and
+	 * counts XP <em>points</em> now — a level is not a fixed price, so the old
+	 * number asked a different question of every player. There is no exact
+	 * conversion (the answer depends on which levels were spent), so a saved
+	 * total is carried over at {@value #POINTS_PER_SPENT_LEVEL} points a level,
+	 * roughly what one costs in the band players enchant in. Nobody's grind is
+	 * reset to zero, and the estimate errs in the player's favour.
+	 */
+	private void convertSpentLevels() {
+		Integer levels = counters.remove("spend_levels");
+		if (levels != null && levels > 0) {
+			counters.merge("spend_points", levels * POINTS_PER_SPENT_LEVEL, Integer::sum);
+		}
 	}
 
 	public int count(String counterId) {

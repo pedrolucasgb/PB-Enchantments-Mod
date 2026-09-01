@@ -57,13 +57,15 @@ Progress is **per player**, persisted with the world, and survives death.
 ### Latest release
 
 The **[landing page](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)** always offers the newest build, and
-[`releases/latest/download/pbenchants.jar`](https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar)
-is a stable URL that follows it. Every version ever released lives on the
+every version ever released lives on the
 [releases page](https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases).
+
+Each release ships exactly one asset, `pbenchants-<version>.jar` — the version is in the filename so you can
+tell at a glance which build is already in your `mods` folder, and replacing it is unambiguous.
 
 Releases are cut by tag: pushing a `vX.Y.Z` tag makes the [Release workflow](.github/workflows/release.yml)
 build the jar from that commit (the tag supplies the mod version) and publish it as a GitHub Release with
-generated notes — the landing page and the stable URL pick it up with no further step.
+generated notes — the landing page reads the releases API live, so it picks the new jar up with no further step.
 
 ### Quick download (no toolchain)
 

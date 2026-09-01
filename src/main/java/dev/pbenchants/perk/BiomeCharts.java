@@ -6,6 +6,7 @@ import dev.pbenchants.skill.SkillNode;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.XpMath;
+import dev.pbenchants.track.EnchantTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -122,6 +123,7 @@ public final class BiomeCharts {
 
 			if (cost > 0) {
 				player.giveExperiencePoints(-cost);
+				EnchantTracker.onXpPointsSpent(player, cost);
 			}
 			if (!player.addItem(map)) {
 				player.drop(map, false);

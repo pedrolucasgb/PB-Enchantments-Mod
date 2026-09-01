@@ -5,6 +5,7 @@
 	"client": [
 		"AnvilScreenMixin",
 		"ContainerScreenAccessor",
+		"ContainerScreenSearchMixin",
 		"EnchantmentScreenMixin",
 		"LightmapExtractorMixin",
 		"LocalPlayerMixin",

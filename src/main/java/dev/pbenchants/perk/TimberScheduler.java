@@ -3,6 +3,7 @@ package dev.pbenchants.perk;
 import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
+import dev.pbenchants.track.BlockBreakTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -200,6 +201,10 @@ public final class TimberScheduler {
 					BlockPos next = scan.leaves().poll();
 					if (level.getBlockState(next).is(BlockTags.LEAVES)) {
 						level.destroyBlock(next, true, player, 512);
+						// destroyBlock raises no break event, so the canopy this
+						// perk clears has to be counted by hand or Timber III
+						// would stall the very gate it is helping fill.
+						BlockBreakTracker.countLeaf(player);
 					}
 				}
 			}

@@ -223,7 +223,26 @@ public final class ArtisanScreenHooks {
 		search = box;
 	}
 
-	/** The magnifier is a switch: it shows the field, hands it the caret, and clears it again. */
+	/**
+	 * Whether the search field currently holds the caret. The container screen
+	 * mixin asks this before it lets vanilla read a key as a shortcut.
+	 */
+	public static boolean searchHasFocus() {
+		return search != null && search.visible && search.isFocused();
+	}
+
+	/**
+	 * The magnifier is a switch: it shows the field, hands it the caret, and
+	 * clears it again.
+	 *
+	 * <p>The caret has to be handed over <em>after</em> this click finishes.
+	 * {@code ContainerEventHandler.mouseClicked} focuses whichever child claimed
+	 * the click the moment the press handler returns, so focusing the field from
+	 * inside the press handler was immediately undone in favour of the button —
+	 * which is why opening the search used to take one click to show it and a
+	 * second to type in it. Deferring to the client's task queue puts the focus
+	 * after that, so one click does both.
+	 */
 	private static void toggleSearch(AbstractContainerScreen<?> screen) {
 		boolean opening = !ArtisanSearch.isOpen();
 		ArtisanSearch.setOpen(opening);
@@ -231,10 +250,15 @@ public final class ArtisanScreenHooks {
 			return;
 		}
 		if (opening) {
-			search.visible = true;
-			search.active = true;
-			search.setFocused(true);
-			screen.setFocused(search);
+			EditBox opened = search;
+			opened.visible = true;
+			opened.active = true;
+			Minecraft.getInstance().execute(() -> {
+				if (search == opened && opened.visible) {
+					screen.setFocused(opened);
+					opened.setFocused(true);
+				}
+			});
 		} else {
 			search.setValue("");
 			search.setFocused(false);

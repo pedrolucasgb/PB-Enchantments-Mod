@@ -1,10 +1,16 @@
 name: Release
 
 # Every tag that looks like a version (v1.0.0, v1.2.3...) becomes a GitHub
-# Release: the jar is built from that exact commit, the tag supplies the mod
-# version, and the release carries two copies of the jar - the versioned one
-# and a stable "pbenchants.jar" so /releases/latest/download/pbenchants.jar
-# always points at the newest build (the landing page download button).
+# Release: the jar is built from that exact commit and the tag supplies the mod
+# version.
+#
+# ONE asset, named "pbenchants-<version>.jar". It used to ship a second,
+# identical copy called "pbenchants.jar" so that
+# /releases/latest/download/pbenchants.jar always resolved to the newest build -
+# but that is the file the landing page handed people, so everyone downloaded a
+# jar with no version in its name and had no way to tell which build was already
+# in their mods folder. The landing page now asks the releases API for the
+# latest versioned asset instead, which needs no stable filename.
 on:
   push:
     tags:
@@ -39,7 +45,6 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           mkdir staging
           cp "build/libs/pbenchants-${VERSION}.jar" staging/
-          cp "build/libs/pbenchants-${VERSION}.jar" staging/pbenchants.jar
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
