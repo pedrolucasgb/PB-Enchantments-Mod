@@ -2,6 +2,7 @@ package dev.pbenchants.track;
 
 import dev.pbenchants.PBEnchants;
 import dev.pbenchants.progress.TreeProgress;
+import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.core.BlockPos;
@@ -20,16 +21,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Feeds gate counters from block-break events. Checklist gates (distinct ore
- * types, wood types) are tracked as bitmasks in a companion "<id>_mask"
- * counter; the visible counter holds the popcount.
+ * Feeds gate counters from block-break events. The checklist gates it feeds —
+ * distinct ores, distinct woods — hand their bits to {@link GateChecklists},
+ * which owns both the roster and the mask counter behind the visible count.
  */
 public final class BlockBreakTracker {
-	/** Widths of the checklist masks, so a stale bit cannot leak into a popcount. */
-	public static final int ORE_BITS = 0b111_1111_1111;
-	public static final int OVERWORLD_WOOD_BITS = 0b1_1111_1111;
-	public static final int NETHER_WOOD_BITS = 0b11;
-
 	/**
 	 * Every biome that grows emerald ore. Vanilla's {@code #is_mountain} is not
 	 * that list: it leaves out the groves and the windswept hills, which is where
@@ -124,7 +120,7 @@ public final class BlockBreakTracker {
 			oreBit = 10;
 		}
 		if (oreBit >= 0) {
-			updateChecklist(progress, "ore_checklist", oreBit, ORE_BITS);
+			GateChecklists.tick(progress, "ore_checklist", oreBit);
 		}
 	}
 
@@ -144,11 +140,11 @@ public final class BlockBreakTracker {
 
 			int woodBit = overworldWoodBit(state);
 			if (woodBit >= 0) {
-				updateChecklist(progress, "overworld_wood_checklist", woodBit, OVERWORLD_WOOD_BITS);
+				GateChecklists.tick(progress, "overworld_wood_checklist", woodBit);
 			}
 			int netherBit = netherWoodBit(state);
 			if (netherBit >= 0) {
-				updateChecklist(progress, "nether_wood_checklist", netherBit, NETHER_WOOD_BITS);
+				GateChecklists.tick(progress, "nether_wood_checklist", netherBit);
 			}
 		}
 	}
@@ -174,16 +170,5 @@ public final class BlockBreakTracker {
 		if (state.is(Blocks.CRIMSON_STEM)) return 0;
 		if (state.is(Blocks.WARPED_STEM)) return 1;
 		return -1;
-	}
-
-	/**
-	 * Bits above the checklist width are dropped: a mask saved under an older
-	 * split of the list cannot inflate the popcount past its new target.
-	 */
-	private static void updateChecklist(TreeProgress progress, String id, int bit, int width) {
-		String maskId = id + "_mask";
-		int mask = (progress.count(maskId) | (1 << bit)) & width;
-		progress.counters.put(maskId, mask);
-		progress.counters.put(id, Integer.bitCount(mask));
 	}
 }

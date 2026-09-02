@@ -2,15 +2,20 @@ package dev.pbenchants.track;
 
 import dev.pbenchants.perk.ArmorPerks;
 import dev.pbenchants.progress.TreeProgress;
+import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
+import java.util.List;
 
 /**
  * Feeds the Armor tree's gates. This is the one class that cannot level from
@@ -32,6 +37,11 @@ public final class ArmorTracker {
 
 	/** Below this share of max health, a kill counts for the tier 3 gate. */
 	private static final float LOW_HEALTH = 0.3F;
+
+	/** The two armour checklists, in the bit order {@link GateChecklists} declares. */
+	private static final List<String> IRON_PIECES = List.of("helmet", "chestplate", "leggings", "boots");
+	private static final List<String> MATERIALS =
+		List.of("leather", "chainmail", "iron", "gold", "diamond", "netherite");
 
 	private ArmorTracker() {
 	}
@@ -109,19 +119,60 @@ public final class ArmorTracker {
 	 * helmets is not a set.
 	 */
 	public static void onCraft(ServerPlayer player, ItemStack stack) {
-		String piece = null;
+		int bit = -1;
 		if (stack.is(Items.IRON_HELMET)) {
-			piece = "helmet";
+			bit = 0;
 		} else if (stack.is(Items.IRON_CHESTPLATE)) {
-			piece = "chestplate";
+			bit = 1;
 		} else if (stack.is(Items.IRON_LEGGINGS)) {
-			piece = "leggings";
+			bit = 2;
 		} else if (stack.is(Items.IRON_BOOTS)) {
-			piece = "boots";
+			bit = 3;
 		}
-		if (piece != null) {
-			SkillService.progress(player, SkillTrees.ARMOR).see("iron_armor", piece, "craft_iron_armor");
+		if (bit >= 0) {
+			TreeProgress progress = SkillService.progress(player, SkillTrees.ARMOR);
+			migrate(progress, "craft_iron_armor", "iron_armor/", IRON_PIECES);
+			GateChecklists.tick(progress, "craft_iron_armor", bit);
 		}
+	}
+
+	/**
+	 * All four pieces on, and every one of them trimmed. Pattern and material
+	 * are the wearer's business — the gate asks that the set was decorated, not
+	 * that it matches.
+	 */
+	private static boolean wearsTrimmedSet(ServerPlayer player) {
+		for (EquipmentSlot slot : ArmorPerks.ARMOR_SLOTS) {
+			ItemStack piece = player.getItemBySlot(slot);
+			if (piece.isEmpty() || !piece.has(DataComponents.TRIM)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Both armour checklists were name lists before they were bitmasks, so a
+	 * save written before the switch has its entries in {@code seen} and no
+	 * mask at all. Seeding the mask from those names once, the first time
+	 * either gate is touched, is what keeps a player's crafted set and worn
+	 * materials from resetting to zero under the new counter.
+	 */
+	private static void migrate(TreeProgress progress, String gateId, String prefix, List<String> roster) {
+		if (progress.counters.containsKey(GateChecklists.maskId(gateId))) {
+			return;
+		}
+		int mask = 0;
+		for (String entry : progress.seen) {
+			if (entry.startsWith(prefix)) {
+				int bit = roster.indexOf(entry.substring(prefix.length()));
+				if (bit >= 0) {
+					mask |= 1 << bit;
+				}
+			}
+		}
+		progress.counters.put(GateChecklists.maskId(gateId), mask);
+		progress.counters.put(gateId, Integer.bitCount(mask));
 	}
 
 	/** Called once a second per online player: everything measured in time worn. */
@@ -132,11 +183,19 @@ public final class ArmorTracker {
 			progress.addCount("survive_fire_seconds", 1);
 		}
 
+		if (wearsTrimmedSet(player)) {
+			progress.counters.put("trim_full_set", 1);
+		}
+
 		String material = ArmorPerks.fullSetMaterial(player);
 		if (material == null) {
 			return;
 		}
-		progress.see("armor_set", material, "armor_checklist");
+		int materialBit = MATERIALS.indexOf(material);
+		if (materialBit >= 0) {
+			migrate(progress, "armor_checklist", "armor_set/", MATERIALS);
+			GateChecklists.tick(progress, "armor_checklist", materialBit);
+		}
 		if (material.equals("diamond")) {
 			// Held in seconds and shown in minutes: an in-game day is twenty
 			// real minutes, so the gate line reads as a number a player can

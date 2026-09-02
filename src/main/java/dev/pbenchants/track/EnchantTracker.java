@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import dev.pbenchants.progress.TreeProgress;
+import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.core.Holder;
@@ -25,9 +26,6 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
  * disenchant and a shelf of distinct books all move different lines.
  */
 public final class EnchantTracker {
-	/** Width of the "which kinds of gear have you enchanted" mask. */
-	private static final int TYPE_BITS = 0b1_1111_1111;
-
 	private EnchantTracker() {
 	}
 
@@ -68,9 +66,7 @@ public final class EnchantTracker {
 		}
 		int typeBit = typeBit(stack);
 		if (typeBit >= 0) {
-			int mask = (progress.count("enchant_type_checklist_mask") | (1 << typeBit)) & TYPE_BITS;
-			progress.counters.put("enchant_type_checklist_mask", mask);
-			progress.counters.put("enchant_type_checklist", Integer.bitCount(mask));
+			GateChecklists.tick(progress, "enchant_type_checklist", typeBit);
 		}
 	}
 
