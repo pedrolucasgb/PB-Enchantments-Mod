@@ -24,7 +24,13 @@ import net.minecraft.world.item.Items;
  */
 public final class DiggyHud {
 	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "diggy_diggy_hole");
-	private static final ItemStack ICON = new ItemStack(Items.NETHERITE_SHOVEL);
+
+	/**
+	 * Built on demand, never in a static field: client init runs before item
+	 * components are bound, and an ItemStack made that early throws
+	 * "Components not bound yet" and takes the whole entrypoint with it.
+	 */
+	private static ItemStack icon;
 
 	private static boolean active;
 
@@ -58,7 +64,10 @@ public final class DiggyHud {
 		int x = graphics.guiWidth() / 2 - (width + 20) / 2;
 		int y = graphics.guiHeight() - 72;
 
-		graphics.item(ICON, x, y - 4);
+		if (icon == null) {
+			icon = new ItemStack(Items.NETHERITE_SHOVEL);
+		}
+		graphics.item(icon, x, y - 4);
 		graphics.text(client.font, label, x + 20, y, SkillTreeStyle.GOLD);
 	}
 }
