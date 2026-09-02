@@ -73,7 +73,22 @@ public final class TimberScheduler {
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.WARPED_STEM, net.minecraft.world.level.block.Blocks.WARPED_FUNGUS)
 	);
 
+	/**
+	 * True while this thread is inside a Logic fell. The fell may consume the
+	 * axe partway — that is the new deal — but every log of the fell was still
+	 * paid for by an axe swing, so the drop passives (Double Axe, Logger's
+	 * Magnet) must keep treating the nested breaks as axe chops even once the
+	 * hand is empty. {@link BreakGuard#busy()} is not enough: it is also true
+	 * inside shovel and pickaxe cascades, which are not axe swings.
+	 */
+	private static final ThreadLocal<Integer> FELL_DEPTH = ThreadLocal.withInitial(() -> 0);
+
 	private TimberScheduler() {
+	}
+
+	/** Is this break part of a Logic fell — an axe chop whatever the hand holds now? */
+	public static boolean felling() {
+		return FELL_DEPTH.get() > 0;
 	}
 
 	/** @deprecated superseded by {@link BreakGuard#busy()}; kept for older callers. */
@@ -301,6 +316,7 @@ public final class TimberScheduler {
 	 */
 	private static void fell(ServerPlayer player, ServerLevel level, Scan scan, boolean breakLeaves) {
 		BreakGuard.enter();
+		FELL_DEPTH.set(FELL_DEPTH.get() + 1);
 		try {
 			for (BlockPos next : scan.logs()) {
 				if (level.getBlockState(next).is(BlockTags.LOGS)) {
@@ -319,6 +335,7 @@ public final class TimberScheduler {
 				}
 			}
 		} finally {
+			FELL_DEPTH.set(FELL_DEPTH.get() - 1);
 			BreakGuard.exit();
 		}
 	}

@@ -111,8 +111,10 @@ public class PBEnchants implements ModInitializer {
 			// Same family as Dig Range, and mutually exclusive with it by tool.
 			FlatEarth.onBreak(level, player, pos, state);
 			HoeAreaHarvest.onBreak(level, player, pos, state);
-			TimberScheduler.onBreak(level, player, pos, state);
+			// Before Timber, or the origin log is judged after the fell — when
+			// the axe it was chopped with may already have broken with the tree.
 			AxeHarvest.onBreak(level, player, pos, state);
+			TimberScheduler.onBreak(level, player, pos, state);
 			// After Timber, which still needed to know whether the origin log
 			// was hand-placed: the record dies with the block.
 			if (state.is(net.minecraft.tags.BlockTags.LOGS)
