@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.8.1-beta
+Version 0.8.2-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,31 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.8.2-beta
+-------------------------
+- LOGIC FELLS ONE TREE PER SWING. Cherry groves and jungle tangles
+  whose trunks touched used to come down as one absurd harvest. Logic
+  now finds each trunk's base on the ground and fells only the tree
+  you hit. A 2x2 giant (jungle, spruce, dark oak) still counts as one
+  tree.
+
+- LOGIC III ONLY CLEARS ITS OWN CANOPY. A leaf that sits closer to a
+  standing trunk stays on it, so neighbouring trees keep their crowns
+  instead of being stripped to bare logs.
+
+- THE FELL ALWAYS FINISHES THE TREE. Logic used to stop a couple of
+  logs short of breaking the axe, leaving half a tree standing. Now
+  every log costs durability and the tree comes down whole - if the
+  wood outlasts the axe, the axe breaks mid-fell and the rest still
+  falls. An Indestructible axe survives on its last durability point,
+  spent, exactly as that enchantment already works.
+
+- ONLY GROWN TREES FALL. Logs you place are remembered by the world
+  and are never part of a tree: breaking one never triggers Logic, and
+  a fell never crosses into a build. Trees grown from saplings fell
+  normally. Logs placed before this update carry no memory - for
+  those, the old rule (a tree needs leaves) still stands guard.
 
 WHAT IS NEW IN 0.8.1-beta
 -------------------------

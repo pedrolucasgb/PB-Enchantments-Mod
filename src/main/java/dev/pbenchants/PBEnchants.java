@@ -72,6 +72,7 @@ public class PBEnchants implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModAttachments.init();
+		dev.pbenchants.track.PlacedLogs.init();
 		// The sword tree is the first part of the mod whose balance depends on
 		// what kind of server it is running on. Two switches, read once.
 		PBEnchantsConfig.load();
@@ -107,6 +108,12 @@ public class PBEnchants implements ModInitializer {
 			HoeAreaHarvest.onBreak(level, player, pos, state);
 			TimberScheduler.onBreak(level, player, pos, state);
 			AxeHarvest.onBreak(level, player, pos, state);
+			// After Timber, which still needed to know whether the origin log
+			// was hand-placed: the record dies with the block.
+			if (state.is(net.minecraft.tags.BlockTags.LOGS)
+				&& level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+				dev.pbenchants.track.PlacedLogs.clear(serverLevel, pos);
+			}
 			// Queue-only, so they go last: the cascades above re-enter this chain
 			// from the top and every extra block queues its own drop work.
 			GroundDrops.onBreak(level, player, pos, state);

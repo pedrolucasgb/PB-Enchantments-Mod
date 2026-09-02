@@ -4,7 +4,9 @@ import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import dev.pbenchants.track.BlockBreakTracker;
+import dev.pbenchants.track.PlacedLogs;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -12,34 +14,49 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Logic (timber) — driven by the Logic enchantment on the axe, inspired by
- * FallingTree/Treecapitator:
+ * FallingTree/Treecapitator, with the one-tree-at-a-time detection the
+ * tree-feller family of plugins converged on:
  *
  * - Only fells actual trees: the connected logs must touch enough leaves,
- *   so log-built houses stay standing.
- * - Every level fells all connected logs at once. Level 1 pays for it with a
- *   slower chop on the initial log (see PlayerMixin); levels 2+ chop at
- *   normal speed. Level 3 also clears the canopy's natural leaves.
- * - Stops before the axe would break; each log costs durability as usual.
- *   Leaves cost no durability.
+ *   and a log a player placed is never part of a tree — {@link PlacedLogs}
+ *   remembers placements, so log houses and pillars stay standing even when
+ *   a grown tree leans against them.
+ * - One swing fells ONE tree. Fused canopies (cherry groves, jungle tangles)
+ *   used to come down as a single connected component; now each rooted trunk
+ *   base claims the logs nearest to it, and only the origin's tree falls.
+ *   A 2x2 giant (jungle, spruce, dark oak) is still one tree — its four
+ *   bases touch, so they cluster into one trunk.
+ * - Level 1 pays with a slower chop on the initial log (see PlayerMixin);
+ *   levels 2+ chop at normal speed. Level 3 also clears the canopy — but only
+ *   the leaves this tree owns: a leaf is broken only when the felled logs are
+ *   its nearest logs (vanilla's own leaf DISTANCE says so), so a neighbouring
+ *   tree keeps its crown.
+ * - Every log costs durability, and the fell finishes the tree: if the wood
+ *   outlasts the axe, the axe breaks mid-fell and the rest comes down by
+ *   hand. Indestructible stops the loss the way it always does — the axe
+ *   survives on its last durability point, spent.
  * - Sneaking disables.
  */
 public final class TimberScheduler {
 	private static final int MAX_LOGS = 256;
 	private static final int MAX_LEAVES = 512;
 	private static final int MIN_LEAVES_FOR_TREE = 4;
-	/** How far leaves spread outward from the logs before we stop collecting. */
-	private static final int LEAF_SPREAD = 5;
+	/** Vanilla leaves track their distance to the nearest log up to 7. */
+	private static final int MAX_LEAF_DISTANCE = 7;
 
 	/** Which sapling regrows each log type (Environment enchantment). */
 	private static final java.util.Map<net.minecraft.world.level.block.Block, net.minecraft.world.level.block.Block> LOG_TO_SAPLING = java.util.Map.ofEntries(
@@ -83,6 +100,9 @@ public final class TimberScheduler {
 		if (logicLevel <= 0) {
 			return;
 		}
+		if (PlacedLogs.isPlaced(serverLevel, pos)) {
+			return; // a hand-placed log is a wall, not a tree
+		}
 
 		Scan scan = scanTree(serverLevel, pos);
 		if (scan.logs().isEmpty() || scan.leafCount() < MIN_LEAVES_FOR_TREE) {
@@ -101,27 +121,41 @@ public final class TimberScheduler {
 		}
 	}
 
-	private record Scan(ArrayDeque<BlockPos> logs, ArrayDeque<BlockPos> leaves, int leafCount) {
+	private record Scan(List<BlockPos> logs, List<BlockPos> leaves, int leafCount) {
 	}
 
 	/**
-	 * Flood-fills connected logs (26-neighborhood) from the broken block, then
-	 * grows outward from the log-adjacent leaves to cover the whole canopy.
+	 * Finds the one tree the broken log belongs to.
 	 *
-	 * The frontier is always drained completely: even when the log cap cuts
-	 * the fell short (2x2 giants, merged forests), every accepted log still
-	 * gets its neighbors checked for leaves, so the "is this actually a
-	 * tree?" test no longer fails just because the cap landed below the
-	 * canopy.
+	 * <p>First the whole connected component of grown logs is flood-filled
+	 * (26-neighbourhood) — hand-placed logs are not logs as far as Logic is
+	 * concerned, so the fill never crosses into a build. The frontier is always
+	 * drained completely: even when the log cap cuts the fill short, every
+	 * accepted log still gets its neighbours checked for leaves, so the "is
+	 * this actually a tree?" test does not fail just because the cap landed
+	 * below the canopy.
+	 *
+	 * <p>Then the component is split into trees. A log standing on ground
+	 * (dirt, nylium, mangrove roots) is a trunk base; touching bases cluster
+	 * into one trunk, which keeps a 2x2 giant whole. With more than one trunk
+	 * in the component — fused cherry or jungle neighbours — a breadth-first
+	 * wave grows out from every trunk at once and each log is claimed by the
+	 * nearest one. Only the origin's tree is felled.
+	 *
+	 * <p>Last, the felled tree's own canopy: walking outward from the felled
+	 * logs through orthogonal leaf steps, a leaf reached in {@code d} steps is
+	 * ours only when its vanilla DISTANCE property is exactly {@code d} — any
+	 * smaller and some standing log is closer, so the leaf (and everything
+	 * behind it) belongs to a tree that is not coming down.
 	 */
 	private static Scan scanTree(ServerLevel level, BlockPos origin) {
-		ArrayDeque<BlockPos> logs = new ArrayDeque<>();
-		Set<BlockPos> visitedLogs = new HashSet<>();
-		Set<BlockPos> visitedLeaves = new HashSet<>();
-		ArrayDeque<BlockPos> leaves = new ArrayDeque<>();
+		// --- The connected component of grown logs, plus its leaf shell ---
+		Set<BlockPos> component = new HashSet<>();
+		List<BlockPos> componentOrder = new ArrayList<>();
+		Set<BlockPos> shellLeaves = new HashSet<>();
 		ArrayDeque<BlockPos> frontier = new ArrayDeque<>();
+		component.add(origin);
 		frontier.add(origin);
-		visitedLogs.add(origin);
 
 		while (!frontier.isEmpty()) {
 			BlockPos current = frontier.poll();
@@ -132,49 +166,108 @@ public final class TimberScheduler {
 							continue;
 						}
 						BlockPos next = current.offset(dx, dy, dz);
+						if (component.contains(next)) {
+							continue;
+						}
 						BlockState nextState = level.getBlockState(next);
 						if (nextState.is(BlockTags.LOGS)) {
-							if (logs.size() < MAX_LOGS && visitedLogs.add(next)) {
-								logs.add(next);
+							if (componentOrder.size() < MAX_LOGS && !PlacedLogs.isPlaced(level, next)) {
+								component.add(next);
+								componentOrder.add(next);
 								frontier.add(next);
 							}
 						} else if (isNaturalLeaf(nextState)) {
-							if (visitedLeaves.add(next) && leaves.size() < MAX_LEAVES) {
-								leaves.add(next);
-							}
+							shellLeaves.add(next);
 						}
 					}
 				}
 			}
 		}
 
-		// The log-adjacent leaves are only the canopy's inner shell; walk
-		// outward through connected leaves so level 3 clears the whole crown.
-		List<BlockPos> layer = new ArrayList<>(leaves);
-		for (int depth = 0; depth < LEAF_SPREAD && !layer.isEmpty() && leaves.size() < MAX_LEAVES; depth++) {
-			List<BlockPos> nextLayer = new ArrayList<>();
-			for (BlockPos leaf : layer) {
+		// --- Trunk bases: logs standing on ground, clustered by touch ---
+		List<BlockPos> roots = new ArrayList<>();
+		for (BlockPos log : component) {
+			BlockPos below = log.below();
+			if (!component.contains(below) && isTreeGround(level.getBlockState(below))) {
+				roots.add(log);
+			}
+		}
+		Map<BlockPos, Integer> owner = new HashMap<>();
+		int clusters = 0;
+		for (BlockPos root : roots) {
+			if (owner.containsKey(root)) {
+				continue;
+			}
+			int id = clusters++;
+			ArrayDeque<BlockPos> cluster = new ArrayDeque<>();
+			owner.put(root, id);
+			cluster.add(root);
+			while (!cluster.isEmpty()) {
+				BlockPos current = cluster.poll();
+				for (BlockPos other : roots) {
+					if (!owner.containsKey(other) && touching(current, other)) {
+						owner.put(other, id);
+						cluster.add(other);
+					}
+				}
+			}
+		}
+
+		// --- One tree: every log claims the nearest trunk, origin's wins ---
+		List<BlockPos> felled = componentOrder;
+		if (clusters > 1) {
+			ArrayDeque<BlockPos> wave = new ArrayDeque<>(owner.keySet());
+			while (!wave.isEmpty()) {
+				BlockPos current = wave.poll();
+				Integer id = owner.get(current);
 				for (int dx = -1; dx <= 1; dx++) {
 					for (int dy = -1; dy <= 1; dy++) {
 						for (int dz = -1; dz <= 1; dz++) {
-							if (dx == 0 && dy == 0 && dz == 0) {
-								continue;
-							}
-							BlockPos next = leaf.offset(dx, dy, dz);
-							if (!visitedLeaves.add(next) || leaves.size() >= MAX_LEAVES) {
-								continue;
-							}
-							if (isNaturalLeaf(level.getBlockState(next))) {
-								leaves.add(next);
-								nextLayer.add(next);
+							BlockPos next = current.offset(dx, dy, dz);
+							if (component.contains(next) && !owner.containsKey(next)) {
+								owner.put(next, id);
+								wave.add(next);
 							}
 						}
 					}
 				}
 			}
+			Integer originTree = owner.get(origin);
+			if (originTree != null) {
+				felled = new ArrayList<>();
+				for (BlockPos log : componentOrder) {
+					if (originTree.equals(owner.get(log))) {
+						felled.add(log);
+					}
+				}
+			}
+		}
+
+		// --- This tree's own canopy, judged by vanilla's leaf DISTANCE ---
+		List<BlockPos> canopy = new ArrayList<>();
+		Set<BlockPos> visited = new HashSet<>(felled);
+		visited.add(origin);
+		List<BlockPos> layer = new ArrayList<>(felled);
+		layer.add(origin);
+		for (int depth = 1; depth <= MAX_LEAF_DISTANCE && !layer.isEmpty() && canopy.size() < MAX_LEAVES; depth++) {
+			List<BlockPos> nextLayer = new ArrayList<>();
+			for (BlockPos from : layer) {
+				for (Direction direction : Direction.values()) {
+					BlockPos next = from.relative(direction);
+					if (!visited.add(next) || canopy.size() >= MAX_LEAVES) {
+						continue;
+					}
+					BlockState nextState = level.getBlockState(next);
+					if (!isNaturalLeaf(nextState) || leafDistance(nextState) != depth) {
+						continue; // not ours: some log still standing is closer
+					}
+					canopy.add(next);
+					nextLayer.add(next);
+				}
+			}
 			layer = nextLayer;
 		}
-		return new Scan(logs, leaves, leaves.size());
+		return new Scan(felled, canopy, shellLeaves.size());
 	}
 
 	/** Natural (world-generated) leaves only — player-placed hedges are persistent. */
@@ -183,22 +276,39 @@ public final class TimberScheduler {
 			&& (!state.hasProperty(LeavesBlock.PERSISTENT) || !state.getValue(LeavesBlock.PERSISTENT));
 	}
 
-	/** Breaks the whole scan at once. Logs cost durability; leaves do not. */
+	/** Vanilla's own distance-to-nearest-log, 1..7 on every leaf. */
+	private static int leafDistance(BlockState state) {
+		return state.hasProperty(LeavesBlock.DISTANCE) ? state.getValue(LeavesBlock.DISTANCE) : Integer.MAX_VALUE;
+	}
+
+	/** What a tree trunk stands on: dirt family, nylium (huge fungi), mangrove roots. */
+	private static boolean isTreeGround(BlockState state) {
+		return state.is(BlockTags.DIRT) || state.is(BlockTags.NYLIUM) || state.is(Blocks.MANGROVE_ROOTS);
+	}
+
+	/** Chebyshev adjacency — diagonal counts, so a 2x2 base is one cluster. */
+	private static boolean touching(BlockPos a, BlockPos b) {
+		return Math.abs(a.getX() - b.getX()) <= 1
+			&& Math.abs(a.getY() - b.getY()) <= 1
+			&& Math.abs(a.getZ() - b.getZ()) <= 1;
+	}
+
+	/**
+	 * Breaks the whole scan at once. Logs cost durability and the fell does not
+	 * stop for a dying axe — the tree comes down whole, the axe with it if the
+	 * wood outlasts it (Indestructible clamps that loss to "spent", on the
+	 * durability path it already guards). Leaves cost nothing.
+	 */
 	private static void fell(ServerPlayer player, ServerLevel level, Scan scan, boolean breakLeaves) {
 		BreakGuard.enter();
 		try {
-			while (!scan.logs().isEmpty()) {
-				if (axeAboutToBreak(player)) {
-					return;
-				}
-				BlockPos next = scan.logs().poll();
+			for (BlockPos next : scan.logs()) {
 				if (level.getBlockState(next).is(BlockTags.LOGS)) {
 					player.gameMode.destroyBlock(next);
 				}
 			}
 			if (breakLeaves) {
-				while (!scan.leaves().isEmpty()) {
-					BlockPos next = scan.leaves().poll();
+				for (BlockPos next : scan.leaves()) {
 					if (level.getBlockState(next).is(BlockTags.LEAVES)) {
 						level.destroyBlock(next, true, player, 512);
 						// destroyBlock raises no break event, so the canopy this
@@ -211,12 +321,6 @@ public final class TimberScheduler {
 		} finally {
 			BreakGuard.exit();
 		}
-	}
-
-	private static boolean axeAboutToBreak(ServerPlayer player) {
-		ItemStack axe = player.getMainHandItem();
-		return !axe.is(ItemTags.AXES)
-			|| (axe.isDamageableItem() && axe.getDamageValue() >= axe.getMaxDamage() - 2);
 	}
 
 	/** Environment: puts a sapling back on the stump, consuming one from the player. */

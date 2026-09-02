@@ -2,7 +2,10 @@ package dev.pbenchants.mixin;
 
 import dev.pbenchants.track.FarmingTracker;
 import dev.pbenchants.track.PlaceTracker;
+import dev.pbenchants.track.PlacedLogs;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
@@ -45,5 +48,10 @@ public class BlockItemMixin {
 			FarmingTracker.onCropPlanted(serverPlayer);
 		}
 		PlaceTracker.onPlace(serverPlayer, state);
+		// A placed log is construction, not growth: remembered so Logic never
+		// mistakes a build for a tree.
+		if (state.is(BlockTags.LOGS) && level instanceof ServerLevel serverLevel) {
+			PlacedLogs.mark(serverLevel, context.getClickedPos());
+		}
 	}
 }
