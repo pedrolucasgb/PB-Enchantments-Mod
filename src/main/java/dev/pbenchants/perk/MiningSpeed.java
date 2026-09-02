@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
  *   Mason's Grip I-III      +20% / +40% / +60% on stone, deepslate and ores
  *   Obsidian Breaker        +50% on obsidian and crying obsidian
  *   Lumberjack's Arms I-III +25% / +50% / +75% on axe-mineable blocks
+ *   Spade's Grip I-III      +20% / +40% / +60% on shovel-mineable blocks
+ *   Soul Digger             +60% on soul sand and soul soil
  *   Logic I                 logs chop at a fixed, tool-blind crawl — see below
  *
  * <p>None of these can be a vanilla {@code block_break_speed} attribute: the
@@ -37,6 +39,9 @@ public final class MiningSpeed {
 	private static final float MASONS_GRIP_STEP = 0.20F;
 	private static final float OBSIDIAN_BREAKER_BONUS = 0.50F;
 	private static final float AXE_SPEED_PER_RANK = 0.25F;
+	/** Same step as Mason's Grip: the shovel's grip is the pickaxe's, on soft ground. */
+	private static final float SHOVEL_SPEED_PER_RANK = 0.20F;
+	private static final float SOUL_DIGGER_BONUS = 0.60F;
 
 	/**
 	 * What a Logic I axe pays for felling the whole tree in one swing, applied
@@ -56,6 +61,7 @@ public final class MiningSpeed {
 
 	private static final String[] MASONS_GRIP = {"masons_grip_1", "masons_grip_2", "masons_grip_3"};
 	private static final String[] LUMBERJACKS_ARMS = {"lumberjacks_arms_1", "lumberjacks_arms_2", "lumberjacks_arms_3"};
+	private static final String[] SPADES_GRIP = {"spades_grip_1", "spades_grip_2", "spades_grip_3"};
 
 	private MiningSpeed() {
 	}
@@ -68,7 +74,7 @@ public final class MiningSpeed {
 		if (isLogicChop(player, held, state)) {
 			return LOGIC_1_SLOWDOWN;
 		}
-		return pickaxe(player, held, state) * axe(player, held, state);
+		return pickaxe(player, held, state) * axe(player, held, state) * shovel(player, held, state);
 	}
 
 	/** Mason's Grip and Obsidian Breaker. The two target sets never overlap. */
@@ -85,6 +91,19 @@ public final class MiningSpeed {
 			return 1.0F;
 		}
 		return 1.0F + MASONS_GRIP_STEP * masonsGripRank(player);
+	}
+
+	/** Spade's Grip, and Soul Digger's answer to the slowest floor in the game. */
+	private static float shovel(Player player, ItemStack held, BlockState state) {
+		if (!held.is(ItemTags.SHOVELS) || !state.is(BlockTags.MINEABLE_WITH_SHOVEL)) {
+			return 1.0F;
+		}
+		float bonus = SHOVEL_SPEED_PER_RANK * spadesGripRank(player);
+		if ((state.is(Blocks.SOUL_SAND) || state.is(Blocks.SOUL_SOIL))
+			&& PerkAccess.owns(player, SkillTrees.GROUND, "soul_digger")) {
+			bonus += SOUL_DIGGER_BONUS;
+		}
+		return 1.0F + bonus;
 	}
 
 	private static float axe(Player player, ItemStack held, BlockState state) {
@@ -121,5 +140,9 @@ public final class MiningSpeed {
 
 	public static int lumberjacksArmsRank(Player player) {
 		return PerkAccess.rank(player, SkillTrees.AXE, LUMBERJACKS_ARMS);
+	}
+
+	public static int spadesGripRank(Player player) {
+		return PerkAccess.rank(player, SkillTrees.GROUND, SPADES_GRIP);
 	}
 }

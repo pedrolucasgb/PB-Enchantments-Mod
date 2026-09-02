@@ -61,6 +61,13 @@ public final class ModEnchantments {
 	public static final ResourceKey<Enchantment> RICOCHET = key("ricochet");
 	public static final ResourceKey<Enchantment> PINNING_SHOT = key("pinning_shot");
 
+	// Ground — Path of the Ground. Both are Java-effect area breaks under the
+	// same floor rule: neither ever takes a block below the Y the player is
+	// standing on, so the data files carry only identity, price and which tool
+	// accepts them.
+	public static final ResourceKey<Enchantment> FLAT_EARTH = key("flat_earth");
+	public static final ResourceKey<Enchantment> HARVEST_SWING = key("harvest_swing");
+
 	/** Which skill node grants which enchantment level. */
 	public record Grant(ResourceKey<Enchantment> enchantment, int level) {
 	}
@@ -119,7 +126,13 @@ public final class ModEnchantments {
 		Map.entry("gale_2", new Grant(GALE, 2)),
 		Map.entry("ricochet_1", new Grant(RICOCHET, 1)),
 		Map.entry("ricochet_2", new Grant(RICOCHET, 2)),
-		Map.entry("pinning_shot", new Grant(PINNING_SHOT, 1))
+		Map.entry("pinning_shot", new Grant(PINNING_SHOT, 1)),
+		Map.entry("flat_earth_1", new Grant(FLAT_EARTH, 1)),
+		Map.entry("flat_earth_2", new Grant(FLAT_EARTH, 2)),
+		Map.entry("flat_earth_3", new Grant(FLAT_EARTH, 3)),
+		Map.entry("harvest_swing_1", new Grant(HARVEST_SWING, 1)),
+		Map.entry("harvest_swing_2", new Grant(HARVEST_SWING, 2)),
+		Map.entry("harvest_swing_3", new Grant(HARVEST_SWING, 3))
 	);
 
 	/**
@@ -132,7 +145,7 @@ public final class ModEnchantments {
 		Set.of(DIG_RANGE, SMELT, LOGIC, RICH_VEIN, ENVIRONMENT, INDESTRUCTIBLE, SLIPSTREAM,
 			KEEN_EDGE, SWEEPING_ARC, EXECUTIONER, TIDECALLER, GRAVITY_WELL, PHALANX, NOSTALGY,
 			SUNDERING_BLOW, THERMAL_WEAVE, ABLATIVE_PLATING, THORNED_PLATE, BULWARK,
-			KINETIC_PLATING, LONG_SHOT, GALE, RICOCHET, PINNING_SHOT);
+			KINETIC_PLATING, LONG_SHOT, GALE, RICOCHET, PINNING_SHOT, FLAT_EARTH, HARVEST_SWING);
 
 	/**
 	 * Every enchantment the tree hands out, derived from {@link #NODE_GRANTS}

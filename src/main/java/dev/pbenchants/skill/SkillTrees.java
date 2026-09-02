@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 
 /**
  * Static definitions of every skill tree — the design document in code.
- * Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword, Armor and Bow are
- * playable; Rod is still coming.
+ * Pickaxe, Axe, Ground, Enchanter, Explorer, Artisan, Sword, Armor and Bow
+ * are playable; Builder is still coming.
  *
  * <p>Every node carries two prices. {@code of/chained/capstone} sets the XP half
  * of the <b>unlock</b>, {@code .costing(...)} its materials, and
@@ -197,6 +197,139 @@ public final class SkillTrees {
 			SkillNode.chained("environment", 4, 8, "logic_3", SkillType.ENCHANTMENT).icon(Items.BONE_MEAL)
 				.costing(mat(ItemTags.SAPLINGS, 64), mat(Items.BONE_MEAL, 32))
 				.enchantFor(25)
+		)
+	);
+
+	// ---------- Ground — Path of the Ground ----------
+
+	/**
+	 * The one class that carries two tools. The shovel and the hoe work the same
+	 * substance from opposite ends — one moves the soil, the other wakes it up —
+	 * and neither has enough of its own to fill five tiers without padding. So
+	 * every tier is read twice: a shovel gate beside a hoe gate, a shovel node
+	 * beside a hoe node, and a player who only ever farms still opens the tier
+	 * they are standing in.
+	 *
+	 * <p>Two rules of this class are <b>builtins, not nodes</b>, and no purchase
+	 * turns them on. Fortune only ever multiplies a crop when the tool doing the
+	 * harvesting is a hoe — a rule of the mod, on for everyone, and the reason
+	 * Full Ears is worth a slot at all. And nothing here digs below the floor the
+	 * player is standing on: Flat Earth and Diggy Diggy Hole both clip at the
+	 * player's own Y, so the class that moves the most earth per second is also
+	 * the one that cannot drop you into a cave you did not see.
+	 *
+	 * <p>Twenty-five nodes is wider per column than Pickaxe or Axe — the cost of
+	 * two tools in one tab — and the prices are not inflated to pay for it: every
+	 * node here is priced off its opposite number in one of those two trees.
+	 */
+	public static final SkillTree GROUND = new SkillTree(
+		"ground",
+		Items.DIAMOND_SHOVEL,
+		List.of(
+			// Tier 1 — Groundbreaker. Four lines rather than three: two tools
+			// means two "you have actually held this" checks.
+			new SkillTier(5, List.of(
+				new GateRequirement("dig_soft_blocks", 500),
+				new GateRequirement("craft_iron_shovel", 1),
+				new GateRequirement("craft_iron_hoe", 1),
+				new GateRequirement("harvest_crops", 128)
+			)),
+			// Tier 2 — Tiller
+			new SkillTier(10, List.of(
+				new GateRequirement("dig_sand", 256),
+				new GateRequirement("dig_gravel", 256),
+				new GateRequirement("till_farmland", 128),
+				new GateRequirement("harvest_wheat", 256)
+			)),
+			// Tier 3 — Earthmover
+			new SkillTier(15, List.of(
+				new GateRequirement("dig_soft_total", 3000),
+				new GateRequirement("dig_clay", 64),
+				new GateRequirement("plant_crops", 512),
+				new GateRequirement("crop_checklist", 5)
+			)),
+			// Tier 4 — Harvest Warden
+			new SkillTier(20, List.of(
+				new GateRequirement("dig_soul_soil", 128),
+				new GateRequirement("harvest_with_swing", 1000),
+				new GateRequirement("bone_meal_used", 256),
+				new GateRequirement("crop_checklist", 8)
+			)),
+			// Tier 5 — Landshaper. One grand total per tool, the whole crop list,
+			// and the replanting that proves the field was farmed and not stripped.
+			new SkillTier(30, List.of(
+				new GateRequirement("dig_soft_total", 10000),
+				new GateRequirement("harvest_crops_total", 5000),
+				new GateRequirement("crop_checklist", 11),
+				new GateRequirement("replant_with_green_thumb", 500)
+			))
+		),
+		List.of(
+			// Tier 1 — one grip, one replant, and a magnet per tool. Both magnets
+			// sit here on purpose: a player who only ever farms should not have to
+			// buy two tiers to stop chasing wheat across a field.
+			SkillNode.of("spades_grip_1", 0, 3, SkillType.PASSIVE).icon(Items.DIRT)
+				.costing(mat(Items.DIRT, 64), mat(Items.IRON_INGOT, 4)),
+			SkillNode.of("diggers_magnet", 0, 5, SkillType.PASSIVE).icon(Items.HOPPER)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.HOPPER, 1)),
+			SkillNode.of("green_thumb", 0, 4, SkillType.PASSIVE).icon(Items.WHEAT_SEEDS)
+				.costing(mat(Items.WHEAT_SEEDS, 32), mat(Items.BONE_MEAL, 16)),
+			SkillNode.of("harvesters_magnet", 0, 5, SkillType.PASSIVE).icon(Items.HOPPER)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.HOPPER, 1)),
+			SkillNode.of("furrow_hand", 0, 3, SkillType.PASSIVE).icon(Items.GOLDEN_HOE)
+				.costing(mat(Items.IRON_INGOT, 8), mat(Items.WHEAT_SEEDS, 16)),
+			// Tier 2 — the two area enchantments open, one per tool.
+			SkillNode.chained("spades_grip_2", 1, 5, "spades_grip_1", SkillType.PASSIVE).icon(Items.SAND)
+				.costing(mat(Items.SAND, 128), mat(Items.IRON_INGOT, 16)),
+			SkillNode.of("flat_earth_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.STONE_SHOVEL)
+				.costing(mat(Items.IRON_INGOT, 12), mat(Items.FLINT, 8))
+				.enchantFor(20),
+			SkillNode.of("harvest_swing_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.STONE_HOE)
+				.costing(mat(Items.IRON_INGOT, 12), mat(Items.WHEAT, 32))
+				.enchantFor(20),
+			SkillNode.of("sifter", 1, 5, SkillType.PASSIVE).icon(Items.FLINT)
+				.costing(mat(Items.GRAVEL, 64), mat(Items.FLINT, 16)),
+			SkillNode.of("bone_thrift", 1, 4, SkillType.PASSIVE).icon(Items.BONE_MEAL)
+				.costing(mat(Items.BONE_MEAL, 64), mat(Items.BONE_BLOCK, 4)),
+			// Tier 3 — rank II of both, and the first two crop-quality nodes.
+			SkillNode.chained("spades_grip_3", 2, 8, "spades_grip_2", SkillType.PASSIVE).icon(Items.CLAY)
+				.costing(mat(Items.SAND, 128), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.chained("flat_earth_2", 2, 9, "flat_earth_1", SkillType.ENCHANTMENT).icon(Items.IRON_SHOVEL)
+				.costing(mat(Items.DIAMOND, 6), mat(Items.FLINT, 32))
+				.enchantFor(35),
+			SkillNode.chained("harvest_swing_2", 2, 9, "harvest_swing_1", SkillType.ENCHANTMENT).icon(Items.IRON_HOE)
+				.costing(mat(Items.DIAMOND, 6), mat(Items.HAY_BLOCK, 8))
+				.enchantFor(35),
+			SkillNode.of("gravedigger", 2, 7, SkillType.PASSIVE).icon(Items.LADDER)
+				.costing(mat(Items.LADDER, 16), mat(Items.IRON_INGOT, 16)),
+			SkillNode.of("gilded_roots_1", 2, 7, SkillType.PASSIVE).icon(Items.CARROT)
+				.costing(mat(Items.CARROT, 64), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.of("clean_crop_1", 2, 6, SkillType.PASSIVE).icon(Items.POISONOUS_POTATO)
+				.costing(mat(Items.POTATO, 64), mat(Items.GOLDEN_APPLE, 1)),
+			// Tier 4 — the shovel's rank III, the Nether floor, and the crop
+			// quality nodes finishing their second rank.
+			SkillNode.chained("flat_earth_3", 3, 14, "flat_earth_2", SkillType.ENCHANTMENT).icon(Items.DIAMOND_SHOVEL)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.DIAMOND, 8))
+				.enchantFor(50),
+			SkillNode.of("soul_digger", 3, 8, SkillType.PASSIVE).icon(Items.SOUL_SAND)
+				.costing(mat(Items.SOUL_SAND, 64), mat(Items.BLAZE_POWDER, 8)),
+			SkillNode.of("concrete_setter", 3, 7, SkillType.PASSIVE).icon(Items.CONCRETE.lightBlue())
+				.costing(mat(Items.GRAVEL, 64), mat(Items.WATER_BUCKET, 1)),
+			SkillNode.chained("gilded_roots_2", 3, 9, "gilded_roots_1", SkillType.PASSIVE).icon(Items.GOLDEN_CARROT)
+				.costing(mat(Items.GOLDEN_CARROT, 16), mat(Items.GOLD_BLOCK, 1)),
+			SkillNode.chained("clean_crop_2", 3, 8, "clean_crop_1", SkillType.PASSIVE).icon(Items.POTATO)
+				.costing(mat(Items.BAKED_POTATO, 64), mat(Items.MILK_BUCKET, 1)),
+			SkillNode.of("full_ears", 3, 9, SkillType.PASSIVE).icon(Items.WHEAT)
+				.costing(mat(Items.WHEAT, 64), mat(Items.LAPIS_LAZULI, 32)),
+			// Tier 5 — three finishers, buyable together: the hoe's widest swing,
+			// what to do with the pile it leaves, and the shovel's aura.
+			SkillNode.chained("harvest_swing_3", 4, 14, "harvest_swing_2", SkillType.ENCHANTMENT).icon(Items.DIAMOND_HOE)
+				.costing(mat(Items.NETHERITE_INGOT, 1), mat(Items.HAY_BLOCK, 32))
+				.enchantFor(50),
+			SkillNode.of("field_press", 4, 12, SkillType.PASSIVE).icon(Items.HAY_BLOCK)
+				.costing(mat(Items.HAY_BLOCK, 32), mat(Items.MELON, 16), mat(Items.EMERALD, 16)),
+			SkillNode.of("diggy_diggy_hole", 4, 20, SkillType.ACTIVE).icon(Items.NETHERITE_SHOVEL)
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.DIAMOND_BLOCK, 1), mat(Items.AMETHYST_SHARD, 16))
 		)
 	);
 
@@ -925,14 +1058,14 @@ public final class SkillTrees {
 	 * commands, the advancements and the state packet all read this list.
 	 */
 	public static final List<SkillTree> ORDER =
-		List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR, BOW);
+		List.of(PICKAXE, AXE, GROUND, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR, BOW);
 
 	/**
 	 * Trees whose balance is still being play-tested. Fully playable — the
 	 * skill screen just stamps an "in testing" badge on their tabs and nodes
 	 * so nobody mistakes their numbers for final.
 	 */
-	public static final Set<String> IN_TESTING = Set.of("sword", "armor", "bow");
+	public static final Set<String> IN_TESTING = Set.of("sword", "armor", "bow", "ground");
 
 	/**
 	 * Classes the design calls for but that have no tree yet. They show up as
@@ -942,7 +1075,7 @@ public final class SkillTrees {
 	}
 
 	public static final List<PlannedTree> PLANNED = List.of(
-		new PlannedTree("Rod", Items.FISHING_ROD)
+		new PlannedTree("Builder", Items.SCAFFOLDING)
 	);
 
 	public static final Map<String, SkillTree> ALL = ORDER.stream()

@@ -4,7 +4,7 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Version **0.7.0-beta** · mod id: `pbenchants` · package `dev.pbenchants` · save-data namespace: `toolmastery`
+> Version **0.8.0-beta** · mod id: `pbenchants` · package `dev.pbenchants` · save-data namespace: `toolmastery`
 > (the mod shipped as *Tool Mastery* before the rename — everything a world persists kept the old namespace on purpose, so existing worlds carry all progress, advancements and enchanted items across the rename)
 >
 > **Download page: [pedrolucasgb.github.io/PB-Enchantments-Mod](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)**
@@ -118,7 +118,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ---
 
-## Implemented so far (Pickaxe, Axe, Enchanter, Explorer, Artisan, Sword, Armor & Bow)
+## Implemented so far (Pickaxe, Axe, Ground, Enchanter, Explorer, Artisan, Sword, Armor & Bow)
 
 ### Core systems
 - ✅ Per-player skill progress (tiers, nodes, counters) persisted via data attachments
@@ -139,6 +139,8 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Rich Vein** | Pickaxe | I–II | Vein miner: up to 8 / 16 connected ores |
 | **Logic** | Axe | I–III | Timber: fells the whole tree in one swing at every level — I pays for it with a fixed, tool-blind chop (about 4s per log; Efficiency and the axe's own tier count for nothing), III clears the canopy too (requires real trees — log houses are safe) |
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
+| **Flat Earth** | Ground, shovel | I–III | Area dig: the pair above and below, then 3x2, then a full 3x3 on the plane you face — and **never a block below the floor you are standing on** |
+| **Harvest Swing** | Ground, hoe | I–III | Area harvest: 3x3 / 5x5 / 7x7, **fully grown plants only** — seedlings are left to finish |
 | **Indestructible** | Enchanter, any damageable item | I | The item never breaks — damage stops one point short, like an Elytra. Spent, it works like an empty hand until repaired |
 | **Slipstream** | Explorer, Elytra | I–III | 10% / 25% / 50% of a firework's push carries over past the point where the boost would normally have died — same rocket, more distance |
 | **Keen Edge** | Sword | I–III | Up to +1 / +2 / +3 damage, scaled by how full the attack cooldown was. Measured against the *vanilla* cooldown, so Nostalgy cannot turn a timing reward into a flat bonus |
@@ -173,6 +175,34 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 **Tier 4, not built yet.** Four sides of the axe that have nothing to do with what it can hit: *Kindling* (logs come out as charcoal straight from the swing), *Woodcarver* (right-click cycles a wooden block through its stair, slab and fence forms in place), *Sap Tapper* (a stripped log weeps resin while the tree stands) and *Patina Hand* (sneak-scrape to age copper a stage instead of only scouring it back).
 
 **Tier 5, not built yet.** Two finishers ship starred and orange so the shape of the tier is visible before it is playable: *Everbloom* (a tree you fell replants itself and grows back where it stood) and *Bountiful Grove* (felled logs yield more than they should, scaling with how much of the tree you took in one go).
+
+### Ground nodes (Path of the Ground)
+
+The one class that carries two tools. The shovel and the hoe work the same substance from opposite ends — one moves the soil, the other wakes it up — and neither has enough of its own to fill five tiers without padding. Every tier is read twice: a shovel gate beside a hoe gate, a shovel node beside a hoe node, so a player who only ever farms still opens the tier they are standing in.
+
+| Node | Tier | Effect |
+|---|---|---|
+| **Spade's Grip** I–III | 1 / 2 / 3 | Shovel-mineable blocks dig +20% / +40% / +60% faster |
+| **Digger's Magnet** | 1 | Blocks dug with a shovel go straight into your inventory, Flat Earth swings included |
+| **Green Thumb** | 1 | Harvesting a ripe crop replants it, paying one seed out of the harvest itself |
+| **Harvester's Magnet** | 1 | Crops broken with a hoe go straight into your inventory, a whole Harvest Swing included |
+| **Furrow Hand** | 1 | A hoe tills the whole 3x3 around the block you clicked, free of durability |
+| **Sifter** | 2 | Gravel always gives its flint; a clay block gives five balls instead of four |
+| **Bone Thrift** | 2 | A third of the bone meal you spend is not consumed |
+| **Gravedigger** | 3 | No fall damage landing in a shaft your own shovel opened — only your own |
+| **Gilded Roots** I–II | 3 / 4 | 5% / 10% for a harvested carrot to turn up a golden one, rolled once per plant |
+| **Clean Crop** I–II | 3 / 4 | The poisonous potato roll is halved, then cut to a tenth |
+| **Soul Digger** | 4 | Soul sand and soul soil dig +60% faster and have a 10% chance to drop twice |
+| **Concrete Setter** | 4 | Concrete powder broken with a shovel comes up as the hardened block |
+| **Full Ears** | 4 | Fortune on your hoe multiplies the wheat as well as the seeds |
+| **Field Press** | 5 | Wheat bales itself and melon slices press into blocks — the first 64 of each stay loose |
+| **Diggy Diggy Hole** | 5 capstone | Held ability: sneak + right-click a shovel and everything in reach comes apart around you |
+
+**Two builtins, not nodes.** *Fortune only ever multiplies a crop when the tool doing the harvesting is a hoe* — a rule of the mod, on for everyone from the moment it loads, node or no node, and the reason Full Ears is worth a slot at all. Leaves are deliberately outside that rule: Fortune on leaves is how the Axe tree's Fair Harvest and Pruner scale, and hoe-gating apples would be a silent nerf to a class that already shipped.
+
+And *nothing in this tree digs below the floor you are standing on*. Flat Earth and Diggy Diggy Hole both clip at the player's own Y, so the class that moves the most earth per second is also the one that cannot drop you into a cave you did not see: you clear a layer, step down, and clear the next.
+
+**Gates.** The shovel half counts blocks broken with a shovel in hand, split by material (sand, gravel, clay, soul sand); the hoe half counts crops taken at full growth, farmland tilled and bone meal spent. The crop checklist is one eleven-bit mask read at three targets — five distinct crops at tier 3, eight at tier 4, all eleven at tier 5 — the same trick the ore and wood checklists use, so which five come first is the player's to choose.
 
 ### Enchanter nodes (Path of the Arcane)
 | Node | Tier | Effect |
@@ -448,7 +478,7 @@ loud; `.endOfTree()` marks the one node that opens only once everything else in 
 ```java
 public static final SkillTree SWORD = new SkillTree("sword", Items.DIAMOND_SWORD, TIERS, NODES);
 ...
-public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, ENCHANTER, EXPLORER, ARTISAN, SWORD);
+public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, GROUND, ENCHANTER, EXPLORER, ARTISAN, SWORD);
 ```
 
 That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
@@ -463,7 +493,7 @@ nothing about *displaying* the class does.
 
 **Seven-tier trees scroll.** A tier column never shrinks below a readable width, so the Sword and Armor trees are wider than the window and the tree pans sideways: the wheel over the tree, or the bar under it, whose thumb is as wide a share of the track as the viewport is of the tree. Five-tier trees are laid out exactly as they always were and show no bar at all.
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the one future class still greyed out in the tab strip (Rod).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the one future class still greyed out in the tab strip (Builder).
 
 ## License
 

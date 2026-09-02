@@ -20,17 +20,17 @@ import java.util.Set;
  * Stone and deepslate variants count as the same vein. Sneaking disables.
  */
 public final class VeinMiner {
-	private static boolean breakingNow = false;
-
 	private VeinMiner() {
 	}
 
+	/** @deprecated superseded by {@link BreakGuard#busy()}; kept for older callers. */
+	@Deprecated
 	public static boolean isVeinBreaking() {
-		return breakingNow;
+		return BreakGuard.busy();
 	}
 
 	public static void onBreak(Level level, Player player, BlockPos pos, BlockState state) {
-		if (breakingNow || AreaBreak.isAreaBreaking() || TimberScheduler.isTimberBreaking()) {
+		if (BreakGuard.busy()) {
 			return;
 		}
 		if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
@@ -80,7 +80,7 @@ public final class VeinMiner {
 			}
 		}
 
-		breakingNow = true;
+		BreakGuard.enter();
 		try {
 			for (BlockPos target : vein) {
 				ItemStack tool = serverPlayer.getMainHandItem();
@@ -91,7 +91,7 @@ public final class VeinMiner {
 				serverPlayer.gameMode.destroyBlock(target);
 			}
 		} finally {
-			breakingNow = false;
+			BreakGuard.exit();
 		}
 	}
 }

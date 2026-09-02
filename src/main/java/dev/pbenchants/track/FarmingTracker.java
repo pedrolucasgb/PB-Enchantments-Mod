@@ -12,7 +12,12 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-/** Feeds the farming gates of the axe tree: planting, apple pickups and the sapling checklist. */
+/**
+ * Feeds the farming gates of the two trees that farm: the Axe (saplings planted,
+ * apples picked up, the sapling checklist) and the Ground tree (crops planted,
+ * farmland tilled, bone meal spent). Harvesting itself is counted by
+ * {@code BlockBreakTracker}, where the broken block is.
+ */
 public final class FarmingTracker {
 	private FarmingTracker() {
 	}
@@ -23,6 +28,24 @@ public final class FarmingTracker {
 
 	public static void onApplePickup(ServerPlayer player, int amount) {
 		SkillService.addCount(player, SkillTrees.AXE, "harvest_apples", amount);
+	}
+
+	/** Ground: a seed, a tuber or a nether wart went into the ground. */
+	public static void onCropPlanted(ServerPlayer player) {
+		SkillService.addCount(player, SkillTrees.GROUND, "plant_crops", 1);
+	}
+
+	public static void onTilled(ServerPlayer player) {
+		onTilled(player, 1);
+	}
+
+	/** Furrow Hand tills eight extra tiles, and every one of them counts. */
+	public static void onTilled(ServerPlayer player, int amount) {
+		SkillService.addCount(player, SkillTrees.GROUND, "till_farmland", amount);
+	}
+
+	public static void onBoneMeal(ServerPlayer player) {
+		SkillService.addCount(player, SkillTrees.GROUND, "bone_meal_used", 1);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.7.0-beta
+Version 0.8.0-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,65 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.8.0-beta
+-------------------------
+- A NINTH CLASS: GROUND, THE PATH OF THE GROUND. One tab carrying two
+  tools. The shovel moves the soil, the hoe wakes it up, and every
+  tier is read twice - a shovel gate beside a hoe gate - so a player
+  who only ever farms still opens the tier they are standing in.
+  Twenty-five nodes across five tiers, badged "in testing" while its
+  numbers get played.
+
+- FLAT EARTH I-III, THE SHOVEL'S AREA DIG. A swing takes the pair
+  above and below what you hit, then a 3x2, then a full 3x3 on the
+  plane you are facing - and NEVER a block below the floor you are
+  standing on. Dug at your feet that is a 3x3 patch of floor per
+  swing: you clear one layer, step down, and clear the next. The hole
+  stays flat and you stay in it. Sneak to disable.
+
+- DIGGY DIGGY HOLE, THE FIRST HELD ABILITY IN THE MOD. Sneak and
+  right-click with a shovel and everything within reach comes apart
+  around you, block after block, until you switch it off. The name
+  sits on your screen while it runs. Same floor rule: never below the
+  block you are standing on, and never the one holding you up. It
+  stops by itself - and says why - when the shovel leaves your hand,
+  when it is about to break, when you get too hungry, or the moment
+  your feet leave the ground.
+
+- FORTUNE ON CROPS IS NOW THE HOE'S JOB, FOR EVERYBODY. A rule of the
+  mod rather than something you buy: a Fortune pickaxe, axe or shovel
+  no longer multiplies wheat, carrots, potatoes, beetroot, nether
+  wart, cocoa, melons, pumpkins, berries or sugar cane. Only a hoe
+  does. Ores and leaves are untouched, and Silk Touch is untouched -
+  a Silk Touch pickaxe still pops a whole melon.
+
+- HARVEST SWING I-III, AND THE FIELD REPLANTS ITSELF. A hoe harvests
+  3x3, 5x5 then 7x7 around the crop you broke, taking only what is
+  actually ripe and leaving seedlings to finish. Green Thumb puts
+  every one of them straight back in the ground, paying its seed out
+  of the harvest itself - so it works on the very first crop you cut,
+  with an empty inventory, magnet or no magnet.
+
+- THE REST OF THE FARM. Full Ears makes Fortune multiply the wheat and
+  not just the seed. Gilded Roots turns up a golden carrot 5% then 10%
+  of the time. Clean Crop cuts poisonous potatoes to a fiftieth.
+  Furrow Hand tills the whole 3x3 for free. Bone Thrift gives a third
+  of your bone meal back. Field Press bales wheat and presses melon
+  slices - and always leaves the first 64 of each loose, because a
+  farmer who baled all their wheat would have to break a bale to feed
+  a cow.
+
+- THE REST OF THE DIG. Spade's Grip I-III digs 20/40/60% faster.
+  Digger's Magnet and Harvester's Magnet pocket what you break. Sifter
+  makes gravel always give its flint and clay give a fifth ball. Soul
+  Digger speeds up the Nether floor and sometimes doubles it. Concrete
+  Setter brings concrete powder up already hardened. Gravedigger takes
+  the fall damage out of a shaft you dug yourself - yours only.
+
+- THE ROD TAB IS GONE, BUILDER TAKES ITS PLACE. The greyed "coming
+  soon" tab now names the class that is actually coming next. Nothing
+  was ever unlockable there, so no progress moved.
 
 WHAT IS NEW IN 0.7.0-beta
 -------------------------

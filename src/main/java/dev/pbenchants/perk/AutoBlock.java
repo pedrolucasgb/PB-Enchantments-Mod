@@ -31,8 +31,19 @@ import java.util.List;
  */
 public final class AutoBlock {
 	public static final String AUTO_BLOCK = "auto_block";
+	public static final String FIELD_PRESS = "field_press";
 
-	private record Packing(Item from, Item into) {
+	/**
+	 * {@code keepLoose} is how many stay unpacked. Zero for ore materials — nobody
+	 * wants nine loose iron. Not zero for food: wheat is bread, breeding and
+	 * trading, and a farmer who baled all of it would have to break a bale to feed
+	 * a cow. The Artisan slot lock already protects a pinned stack, but a Ground
+	 * player who never touched the Artisan tree has no slot lock to pin with.
+	 */
+	private record Packing(Item from, Item into, int keepLoose) {
+		Packing(Item from, Item into) {
+			this(from, into, 0);
+		}
 	}
 
 	/**
@@ -59,25 +70,39 @@ public final class AutoBlock {
 		new Packing(Items.NETHERITE_INGOT, Items.NETHERITE_BLOCK)
 	);
 
+	/** Field Press: the same idea for the things that grow, gated on Ground. */
+	private static final List<Packing> FARM_PACKINGS = List.of(
+		new Packing(Items.WHEAT, Items.HAY_BLOCK, 64),
+		new Packing(Items.MELON_SLICE, Items.MELON, 64)
+	);
+
 	private AutoBlock() {
 	}
 
 	/** Called once a second per online player. */
 	public static void slowTick(ServerPlayer player) {
-		if (!SkillService.owns(player, SkillTrees.ARTISAN, AUTO_BLOCK)) {
+		List<Packing> active = new java.util.ArrayList<>();
+		if (SkillService.owns(player, SkillTrees.ARTISAN, AUTO_BLOCK)) {
+			active.addAll(PACKINGS);
+		}
+		if (SkillService.owns(player, SkillTrees.GROUND, FIELD_PRESS)) {
+			active.addAll(FARM_PACKINGS);
+		}
+		if (active.isEmpty()) {
 			return;
 		}
+		// Still the Artisan progress: an unbought slot lock simply locks nothing.
 		TreeProgress artisan = SkillService.progress(player, SkillTrees.ARTISAN);
 		NonNullList<ItemStack> items = player.getInventory().getNonEquipmentItems();
 
-		for (Packing packing : PACKINGS) {
+		for (Packing packing : active) {
 			int count = 0;
 			for (int slot = 0; slot < items.size(); slot++) {
 				if (!artisan.slotLocked(slot) && plain(items.get(slot), packing.from())) {
 					count += items.get(slot).getCount();
 				}
 			}
-			while (count >= 9) {
+			while (count - packing.keepLoose() >= 9) {
 				int toRemove = 9;
 				for (int slot = 0; slot < items.size() && toRemove > 0; slot++) {
 					if (artisan.slotLocked(slot)) {
