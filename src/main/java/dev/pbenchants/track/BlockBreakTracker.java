@@ -1,6 +1,7 @@
 package dev.pbenchants.track;
 
 import dev.pbenchants.PBEnchants;
+import dev.pbenchants.perk.HoeCrops;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
@@ -54,6 +55,10 @@ public final class BlockBreakTracker {
 			trackPickaxe(serverPlayer, serverLevel, pos, state);
 		} else if (held.is(ItemTags.AXES)) {
 			trackAxe(serverPlayer, state);
+		} else if (held.is(ItemTags.SHOVELS)) {
+			trackShovel(serverPlayer, state);
+		} else if (held.is(ItemTags.HOES)) {
+			trackHoe(serverPlayer, state);
 		}
 	}
 
@@ -171,4 +176,69 @@ public final class BlockBreakTracker {
 		if (state.is(Blocks.WARPED_STEM)) return 1;
 		return -1;
 	}
+
+	/**
+	 * Ground, shovel half. Everything shovel-mineable feeds the two running
+	 * totals; the four materials with a gate of their own are counted on top.
+	 */
+	private static void trackShovel(ServerPlayer player, BlockState state) {
+		if (!state.is(BlockTags.MINEABLE_WITH_SHOVEL)) {
+			return;
+		}
+		TreeProgress progress = SkillService.progress(player, SkillTrees.GROUND);
+		progress.addCount("dig_soft_blocks", 1);
+		progress.addCount("dig_soft_total", 1);
+
+		if (state.is(BlockTags.SAND)) {
+			progress.addCount("dig_sand", 1);
+		} else if (state.is(Blocks.GRAVEL)) {
+			progress.addCount("dig_gravel", 1);
+		} else if (state.is(Blocks.CLAY)) {
+			progress.addCount("dig_clay", 1);
+		} else if (state.is(Blocks.SOUL_SAND) || state.is(Blocks.SOUL_SOIL)) {
+			progress.addCount("dig_soul_soil", 1);
+		}
+	}
+
+	/**
+	 * Ground, hoe half. Only a fully grown plant counts — a field stripped of
+	 * seedlings is not a harvest, and the gates should not reward doing it.
+	 */
+	private static void trackHoe(ServerPlayer player, BlockState state) {
+		if (!HoeCrops.isHarvestable(state)) {
+			return;
+		}
+		TreeProgress progress = SkillService.progress(player, SkillTrees.GROUND);
+		progress.addCount("harvest_crops", 1);
+		progress.addCount("harvest_crops_total", 1);
+
+		if (state.is(Blocks.WHEAT)) {
+			progress.addCount("harvest_wheat", 1);
+		}
+		int cropBit = cropBit(state);
+		if (cropBit >= 0) {
+			GateChecklists.tick(progress, "crop_checklist", cropBit);
+		}
+	}
+
+	/**
+	 * One checklist read three times: any five at tier 3, any eight at tier 4, all
+	 * eleven at tier 5. Which five come first is the player's to choose, the same
+	 * way the ore and wood lists work.
+	 */
+	private static int cropBit(BlockState state) {
+		if (state.is(Blocks.WHEAT)) return 0;
+		if (state.is(Blocks.CARROTS)) return 1;
+		if (state.is(Blocks.POTATOES)) return 2;
+		if (state.is(Blocks.BEETROOTS)) return 3;
+		if (state.is(Blocks.MELON)) return 4;
+		if (state.is(Blocks.PUMPKIN)) return 5;
+		if (state.is(Blocks.NETHER_WART)) return 6;
+		if (state.is(Blocks.COCOA)) return 7;
+		if (state.is(Blocks.SWEET_BERRY_BUSH)) return 8;
+		if (state.is(Blocks.SUGAR_CANE)) return 9;
+		if (state.is(Blocks.TORCHFLOWER_CROP)) return 10;
+		return -1;
+	}
+
 }

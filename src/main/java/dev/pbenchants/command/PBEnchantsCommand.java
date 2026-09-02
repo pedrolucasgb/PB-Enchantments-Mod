@@ -462,6 +462,7 @@ public final class PBEnchantsCommand {
 		if (treeId == null) {
 			giveTierTools(player, SkillTrees.PICKAXE, net.minecraft.world.item.Items.DIAMOND_PICKAXE, "Pickaxe");
 			giveTierTools(player, SkillTrees.AXE, net.minecraft.world.item.Items.DIAMOND_AXE, "Axe");
+			giveTierTools(player, SkillTrees.GROUND, net.minecraft.world.item.Items.DIAMOND_SHOVEL, "Ground");
 			giveTierTools(player, SkillTrees.SWORD, net.minecraft.world.item.Items.DIAMOND_SWORD, "Sword");
 			giveTierTools(player, SkillTrees.BOW, net.minecraft.world.item.Items.BOW, "Bow");
 			source.sendSystemMessage(Component.literal("Full kit delivered: one tool per tier of every tree.").withStyle(ChatFormatting.YELLOW));
@@ -524,12 +525,17 @@ public final class PBEnchantsCommand {
 					return net.minecraft.world.item.Items.DIAMOND_SPEAR;
 				case "pinning_shot":
 					return net.minecraft.world.item.Items.CROSSBOW;
+				case "harvest_swing":
+					return net.minecraft.world.item.Items.DIAMOND_HOE;
+				case "flat_earth":
+					return net.minecraft.world.item.Items.DIAMOND_SHOVEL;
 				default:
 					break;
 			}
 		}
 		return switch (treeId) {
 			case "axe" -> net.minecraft.world.item.Items.DIAMOND_AXE;
+			case "ground" -> net.minecraft.world.item.Items.DIAMOND_SHOVEL;
 			case "sword" -> net.minecraft.world.item.Items.DIAMOND_SWORD;
 			case "bow" -> net.minecraft.world.item.Items.BOW;
 			default -> net.minecraft.world.item.Items.DIAMOND_PICKAXE;

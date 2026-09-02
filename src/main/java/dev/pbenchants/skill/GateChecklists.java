@@ -77,6 +77,21 @@ public final class GateChecklists {
 			block(1, Blocks.WARPED_STEM));
 
 		// Enchanter — one of every kind of gear taken off the table.
+		// Ground — every plant a hoe harvests, in the order BlockBreakTracker
+		// assigns them. Read at three targets: any five at tier 3, any eight at
+		// tier 4, all eleven at tier 5.
+		put("crop_checklist",
+			block(0, Blocks.WHEAT),
+			block(1, Blocks.CARROTS),
+			block(2, Blocks.POTATOES),
+			block(3, Blocks.BEETROOTS),
+			block(4, Blocks.MELON),
+			block(5, Blocks.PUMPKIN),
+			block(6, Blocks.NETHER_WART),
+			block(7, Blocks.COCOA),
+			block(8, Blocks.SWEET_BERRY_BUSH),
+			block(9, Blocks.SUGAR_CANE),
+			block(10, Blocks.TORCHFLOWER_CROP));
 		put("enchant_type_checklist",
 			entry(0, "sword"),
 			entry(1, "pickaxe"),

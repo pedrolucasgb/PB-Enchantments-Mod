@@ -56,17 +56,17 @@ public final class TimberScheduler {
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.WARPED_STEM, net.minecraft.world.level.block.Blocks.WARPED_FUNGUS)
 	);
 
-	private static boolean breakingNow = false;
-
 	private TimberScheduler() {
 	}
 
+	/** @deprecated superseded by {@link BreakGuard#busy()}; kept for older callers. */
+	@Deprecated
 	public static boolean isTimberBreaking() {
-		return breakingNow;
+		return BreakGuard.busy();
 	}
 
 	public static void onBreak(Level level, Player player, BlockPos pos, BlockState state) {
-		if (breakingNow || AreaBreak.isAreaBreaking()) {
+		if (BreakGuard.busy()) {
 			return;
 		}
 		if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
@@ -185,7 +185,7 @@ public final class TimberScheduler {
 
 	/** Breaks the whole scan at once. Logs cost durability; leaves do not. */
 	private static void fell(ServerPlayer player, ServerLevel level, Scan scan, boolean breakLeaves) {
-		breakingNow = true;
+		BreakGuard.enter();
 		try {
 			while (!scan.logs().isEmpty()) {
 				if (axeAboutToBreak(player)) {
@@ -209,7 +209,7 @@ public final class TimberScheduler {
 				}
 			}
 		} finally {
-			breakingNow = false;
+			BreakGuard.exit();
 		}
 	}
 

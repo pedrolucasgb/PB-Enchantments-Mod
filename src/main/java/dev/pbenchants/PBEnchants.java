@@ -11,7 +11,13 @@ import dev.pbenchants.perk.CombatDrops;
 import dev.pbenchants.perk.CombatPerks;
 import dev.pbenchants.perk.AxeHarvest;
 import dev.pbenchants.perk.DeepHaste;
+import dev.pbenchants.perk.DiggyDiggyHole;
 import dev.pbenchants.perk.Flashpoint;
+import dev.pbenchants.perk.FlatEarth;
+import dev.pbenchants.perk.Gravedigger;
+import dev.pbenchants.perk.GroundDrops;
+import dev.pbenchants.perk.HoeAreaHarvest;
+import dev.pbenchants.perk.HoeHarvest;
 import dev.pbenchants.perk.ItemAuthority;
 import dev.pbenchants.perk.MinersMagnet;
 import dev.pbenchants.perk.Remember;
@@ -92,9 +98,28 @@ public class PBEnchants implements ModInitializer {
 			dev.pbenchants.perk.VeinMiner.onBreak(level, player, pos, state);
 			MinersMagnet.onBreak(level, player, pos, state);
 			AreaBreak.onBreak(level, player, pos, state);
+			// Same family as Dig Range, and mutually exclusive with it by tool.
+			FlatEarth.onBreak(level, player, pos, state);
+			HoeAreaHarvest.onBreak(level, player, pos, state);
 			TimberScheduler.onBreak(level, player, pos, state);
 			AxeHarvest.onBreak(level, player, pos, state);
+			// Queue-only, so they go last: the cascades above re-enter this chain
+			// from the top and every extra block queues its own drop work.
+			GroundDrops.onBreak(level, player, pos, state);
+			HoeHarvest.onBreak(level, player, pos, state);
+			Gravedigger.onBreak(level, player, pos, state);
 		});
+
+		// Ground: sneak + right-click with a shovel holds the Diggy Diggy Hole
+		// aura on. Both callbacks, because UseItemCallback only fires when the
+		// click misses every block — aim at the ground and a shovel goes to useOn
+		// and makes a dirt path instead. Reporting SUCCESS on the block callback
+		// cancels that path. Registered ahead of Indestructible, whose FAIL on a
+		// spent tool would otherwise swallow the toggle without saying why.
+		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
+			DiggyDiggyHole.onUseBlock(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
+		UseItemCallback.EVENT.register((player, level, hand) ->
+			DiggyDiggyHole.onUseItem(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
 
 		// Indestructible: a spent item is inert, and that has to include the
 		// right click — a bow that still draws, a crossbow that still loads and
@@ -154,12 +179,22 @@ public class PBEnchants implements ModInitializer {
 				BowPerks.featherBounty(killer, victim);
 			}
 		});
-		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> Remember.onRespawn(newPlayer));
+		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+			Remember.onRespawn(newPlayer);
+			// Respawn hands over a different ServerPlayer, and the aura is keyed by
+			// uuid — so it would otherwise survive a death.
+			DiggyDiggyHole.forget(oldPlayer);
+			DiggyDiggyHole.forget(newPlayer);
+			Gravedigger.forget(oldPlayer);
+			Gravedigger.forget(newPlayer);
+		});
 
 		// Armor levels from what happens to you, so both halves of a hit are
 		// read: ALLOW_DAMAGE is where Flashpoint drops the lava, AFTER_DAMAGE
 		// is where the difference between raw and applied becomes the gate.
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register(Flashpoint::allowDamage);
+		// Ground: a fall into a shaft you dug yourself is not a fall you pay for.
+		ServerLivingEntityEvents.ALLOW_DAMAGE.register(Gravedigger::allowDamage);
 		ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, base, taken, blocked) -> {
 			ArmorTracker.onDamage(entity, source, base, taken, blocked);
 			if (entity instanceof ServerPlayer hurt) {
@@ -184,6 +219,8 @@ public class PBEnchants implements ModInitializer {
 			ArmorUpkeep.forget(player);
 			StorageTracker.forget(player);
 			SteadyGrid.release(player);
+			DiggyDiggyHole.forget(player);
+			Gravedigger.forget(player);
 		});
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -192,6 +229,8 @@ public class PBEnchants implements ModInitializer {
 			MinersMagnet.tick(server);
 			// Last: both collect the drops the events above have just spawned.
 			AxeHarvest.tick(server);
+			GroundDrops.tick(server);
+			HoeHarvest.tick(server);
 			CombatDrops.tick(server);
 
 			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -211,6 +250,9 @@ public class PBEnchants implements ModInitializer {
 				// Sure Footing's attributes and Last Stand's rescue: both react
 				// to a state that can change inside one tick.
 				ArmorUpkeep.tick(player);
+				// Last: the aura reads the state this tick has already settled —
+				// a Last Stand rescue, a hunger change, an armour swap.
+				DiggyDiggyHole.tick(player);
 			}
 
 			// Slow checks (once a second): position-based gates.

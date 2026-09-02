@@ -77,6 +77,9 @@ public class PBEnchantsClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(EnchantPreviewPayload.TYPE, (payload, context) ->
 			EnchantPreviewState.accept(payload));
 
+		ClientPlayNetworking.registerGlobalReceiver(dev.pbenchants.network.AbilityStatePayload.TYPE,
+			(payload, context) -> DiggyHud.setActive(payload.diggyActive()));
+
 		// Set Sense draws next to the armour bar it explains.
 		SetSenseHud.register();
 		// Quiver Sense mirrors it on the hotbar's other side: the arrow the
@@ -84,6 +87,8 @@ public class PBEnchantsClient implements ClientModInitializer {
 		QuiverSenseHud.register();
 		// The pinned-goal scoreboard on the right edge, fed by the Track button.
 		GoalTrackerHud.register();
+		// A held ability that keeps breaking blocks by itself has to be visible.
+		DiggyHud.register();
 
 		// Lets common code (enchanting menu logic) check enchanter perk
 		// ownership on the client via the synced skill state.
@@ -101,6 +106,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 			ArtisanSearch.clear();
 			GoalTracker.clear();
 			ProgressChimes.clear();
+			DiggyHud.clear();
 			hintCountdown = -1;
 			screenOpen = false;
 		});

@@ -37,8 +37,6 @@ import net.minecraft.world.level.block.state.BlockState;
  * stone and obsidian collapses below the grace, and they do come out together.
  */
 public final class AreaBreak {
-	private static final ThreadLocal<Boolean> BREAKING = ThreadLocal.withInitial(() -> false);
-
 	/** Pickaxe tier 5: the whole Dig Range swing costs half the durability. */
 	private static final String ENDURING_EDGE = "enduring_edge";
 
@@ -54,12 +52,14 @@ public final class AreaBreak {
 	private AreaBreak() {
 	}
 
+	/** @deprecated superseded by {@link BreakGuard#busy()}; kept for older callers. */
+	@Deprecated
 	public static boolean isAreaBreaking() {
-		return BREAKING.get();
+		return BreakGuard.busy();
 	}
 
 	public static void onBreak(Level level, Player player, BlockPos pos, BlockState state) {
-		if (BREAKING.get() || TimberScheduler.isTimberBreaking()) {
+		if (BreakGuard.busy()) {
 			return;
 		}
 		if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
@@ -87,7 +87,7 @@ public final class AreaBreak {
 		// charged the tool for it before this event ever fires.
 		int broken = 1;
 
-		BREAKING.set(true);
+		BreakGuard.enter();
 		try {
 			for (BlockPos target : targets(serverPlayer, pos, rangeLevel)) {
 				if (pickaxeAboutToBreak(serverPlayer)) {
@@ -103,7 +103,7 @@ public final class AreaBreak {
 				}
 			}
 		} finally {
-			BREAKING.set(false);
+			BreakGuard.exit();
 			if (sparing) {
 				chargeHalf(serverPlayer, pickaxe, damageBefore, broken);
 			}

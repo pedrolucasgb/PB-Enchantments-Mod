@@ -28,6 +28,7 @@ public final class ModNetworking {
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillFeedbackPayload.TYPE, SkillFeedbackPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(AbilityStatePayload.TYPE, AbilityStatePayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ScreenStatePayload.TYPE, ScreenStatePayload.CODEC);
 
