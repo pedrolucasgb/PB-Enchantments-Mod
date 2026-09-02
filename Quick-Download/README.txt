@@ -1,5 +1,9 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
+<<<<<<< HEAD
 Version 0.8.0-beta
+=======
+Version 0.7.2-beta
+>>>>>>> worktree-balance-and-gate-tooltips
 ================================================
 
 HOW TO INSTALL
@@ -44,6 +48,7 @@ out, with the reason in the tooltip.
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
 
+<<<<<<< HEAD
 WHAT IS NEW IN 0.8.0-beta
 -------------------------
 - A NINTH CLASS: GROUND, THE PATH OF THE GROUND. One tab carrying two
@@ -102,6 +107,80 @@ WHAT IS NEW IN 0.8.0-beta
 - THE ROD TAB IS GONE, BUILDER TAKES ITS PLACE. The greyed "coming
   soon" tab now names the class that is actually coming next. Nothing
   was ever unlockable there, so no progress moved.
+=======
+WHAT IS NEW IN 0.7.2-beta
+-------------------------
+- HOVER A GATE LINE TO SEE WHAT IT COUNTS. Under "Gate achievements",
+  resting the mouse on a line opens what that counter actually
+  measures - which tool it wants in your hand, what does not count,
+  whether it is checked once a second. No more guessing why a number
+  is not moving.
+
+- CHECKLISTS SAY WHAT YOU ARE STILL MISSING. Ore checklist, the two
+  wood checklists, the enchanted-gear checklist, the armour material
+  list, the iron set and the new boss list all show every entry
+  ticked or unticked, by name and in your language. "7/11" told you
+  how far along you were; the list tells you it is quartz and ancient
+  debris you still owe. Existing progress carries over - nothing
+  resets.
+
+- BOSS CHECKLIST CLOSES THE SWORD TREE. Legend, the Sword's tier 7,
+  now asks for one of each: Elder Guardian, Wither, Warden and Ender
+  Dragon. Slay the Ender Dragon moves down to tier 5, Champion.
+
+- TRIM A FULL ARMOR SET. Aegis Bearer, the Armor tree's tier 6, has a
+  new line for wearing four pieces with an armour trim on every one
+  of them. Pattern and material are yours to pick - they do not have
+  to match.
+
+- HALF THE GRIND IN THE THREE COMBAT TREES. Kill hostile mobs is
+  halved across all seven Sword tiers (200 becomes 100 at tier 1,
+  5000 becomes 2500 at tier 7), Damage absorbed by armor across all
+  seven Armor tiers (500 becomes 250, 40000 becomes 20000), and the
+  Bow's Arrows fired and Ranged kills likewise. Arrows landed is
+  unchanged, so it is that line pacing the early Bow tiers now.
+
+- DEFT HANDS NO LONGER GRABS THE STACK OUT OF YOUR HAND. Picking a
+  stack up off the hotbar with the inventory open looked exactly like
+  spending it, so the slot refilled itself under your cursor and the
+  stack you were carrying had nowhere to go back to. The perk stands
+  down while an inventory or container screen is open, and picks up
+  where it left off when you close it.
+
+WHAT IS NEW IN 0.7.1-beta
+-------------------------
+- LEAVES COUNT WHATEVER BREAKS THEM. The Axe tree's leaf gate only
+  ever saw leaves cleared with an axe. Shears, a sword, a bare hand
+  and the canopy Timber III sweeps away all count now. Leaves that
+  rot away on their own still do not - that was never the point.
+
+- THE SEARCH BOX KEEPS YOUR KEYS. Typing an item name with an E in it
+  used to slam the inventory shut, and Q threw the stack you were
+  hovering. While the caret is in the Seeker's Eye field, the screen
+  stops reading your typing as shortcuts. Clicking the magnifier now
+  also puts the caret straight in the field - it used to take a
+  second click.
+
+- XP LEVELS SPENT IS NOW XP POINTS SPENT. Levels are not a fixed
+  price - three levels off a level-40 player is several times the
+  experience it is off a level-15 one - so the gate asked a different
+  question of everybody. It counts experience points now, and it
+  counts every way you spend them: the enchanting table, the anvil,
+  and every tier, node and enchant bought in the skill tree. Progress
+  already made is carried over, generously.
+
+- ANVIL COMBINES MEANS ANY COMBINE. It only counted a sacrifice that
+  carried enchantments, so two plain pickaxes were invisible to it.
+  Anything that merges two items counts now - tool on tool, book on
+  tool, book on book, enchanted or not. Repairing with raw material
+  still does not, and neither does a bare rename.
+
+- THE DOWNLOAD HAS ITS VERSION IN ITS NAME. Releases used to carry
+  two copies of the same jar, and the one the download button handed
+  you was the unversioned "pbenchants.jar" - so there was no way to
+  tell which build was in your mods folder. There is one asset now,
+  "pbenchants-<version>.jar", and the button points at it.
+>>>>>>> worktree-balance-and-gate-tooltips
 
 WHAT IS NEW IN 0.7.0-beta
 -------------------------

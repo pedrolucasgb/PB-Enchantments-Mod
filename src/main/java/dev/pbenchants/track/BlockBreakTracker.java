@@ -3,6 +3,7 @@ package dev.pbenchants.track;
 import dev.pbenchants.PBEnchants;
 import dev.pbenchants.perk.HoeCrops;
 import dev.pbenchants.progress.TreeProgress;
+import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.core.BlockPos;
@@ -21,17 +22,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * Feeds gate counters from block-break events. Checklist gates (distinct ore
- * types, wood types) are tracked as bitmasks in a companion "<id>_mask"
- * counter; the visible counter holds the popcount.
+ * Feeds gate counters from block-break events. The checklist gates it feeds —
+ * distinct ores, distinct woods — hand their bits to {@link GateChecklists},
+ * which owns both the roster and the mask counter behind the visible count.
  */
 public final class BlockBreakTracker {
-	/** Widths of the checklist masks, so a stale bit cannot leak into a popcount. */
-	public static final int ORE_BITS = 0b111_1111_1111;
-	public static final int OVERWORLD_WOOD_BITS = 0b1_1111_1111;
-	public static final int NETHER_WOOD_BITS = 0b11;
-	public static final int CROP_BITS = 0b111_1111_1111;
-
 	/**
 	 * Every biome that grows emerald ore. Vanilla's {@code #is_mountain} is not
 	 * that list: it leaves out the groves and the windswept hills, which is where
@@ -47,6 +42,14 @@ public final class BlockBreakTracker {
 		if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
 			return;
 		}
+		// Leaves are counted for whatever broke them - axe, shears, sword or a
+		// bare hand. The gate asks how much canopy you have cleared, not which
+		// tool you cleared it with, and only a player break reaches this event,
+		// so natural decay never counts.
+		if (state.is(BlockTags.LEAVES)) {
+			countLeaf(serverPlayer);
+		}
+
 		ItemStack held = serverPlayer.getMainHandItem();
 		if (held.is(ItemTags.PICKAXES)) {
 			trackPickaxe(serverPlayer, serverLevel, pos, state);
@@ -57,6 +60,15 @@ public final class BlockBreakTracker {
 		} else if (held.is(ItemTags.HOES)) {
 			trackHoe(serverPlayer, state);
 		}
+	}
+
+	/**
+	 * One leaf block cleared by this player. Public because Timber fells its
+	 * canopy through {@code Level.destroyBlock}, which never raises the break
+	 * event this class otherwise listens to.
+	 */
+	public static void countLeaf(ServerPlayer player) {
+		SkillService.progress(player, SkillTrees.AXE).addCount("break_leaves", 1);
 	}
 
 	private static void trackPickaxe(ServerPlayer player, ServerLevel level, BlockPos pos, BlockState state) {
@@ -113,7 +125,7 @@ public final class BlockBreakTracker {
 			oreBit = 10;
 		}
 		if (oreBit >= 0) {
-			updateChecklist(progress, "ore_checklist", oreBit, ORE_BITS);
+			GateChecklists.tick(progress, "ore_checklist", oreBit);
 		}
 	}
 
@@ -133,15 +145,12 @@ public final class BlockBreakTracker {
 
 			int woodBit = overworldWoodBit(state);
 			if (woodBit >= 0) {
-				updateChecklist(progress, "overworld_wood_checklist", woodBit, OVERWORLD_WOOD_BITS);
+				GateChecklists.tick(progress, "overworld_wood_checklist", woodBit);
 			}
 			int netherBit = netherWoodBit(state);
 			if (netherBit >= 0) {
-				updateChecklist(progress, "nether_wood_checklist", netherBit, NETHER_WOOD_BITS);
+				GateChecklists.tick(progress, "nether_wood_checklist", netherBit);
 			}
-		}
-		if (state.is(BlockTags.LEAVES)) {
-			progress.addCount("break_leaves", 1);
 		}
 	}
 
@@ -208,7 +217,7 @@ public final class BlockBreakTracker {
 		}
 		int cropBit = cropBit(state);
 		if (cropBit >= 0) {
-			updateChecklist(progress, "crop_checklist", cropBit, CROP_BITS);
+			GateChecklists.tick(progress, "crop_checklist", cropBit);
 		}
 	}
 
@@ -232,14 +241,4 @@ public final class BlockBreakTracker {
 		return -1;
 	}
 
-	/**
-	 * Bits above the checklist width are dropped: a mask saved under an older
-	 * split of the list cannot inflate the popcount past its new target.
-	 */
-	private static void updateChecklist(TreeProgress progress, String id, int bit, int width) {
-		String maskId = id + "_mask";
-		int mask = (progress.count(maskId) | (1 << bit)) & width;
-		progress.counters.put(maskId, mask);
-		progress.counters.put(id, Integer.bitCount(mask));
-	}
 }

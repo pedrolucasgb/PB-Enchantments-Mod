@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import dev.pbenchants.enchant.EnchanterPerks;
 import dev.pbenchants.network.EnchantPreviewPayload;
 import dev.pbenchants.network.SkillActionPayload;
+import dev.pbenchants.network.ScreenStatePayload;
 import dev.pbenchants.network.SkillStatePayload;
 import dev.pbenchants.perk.PerkAccess;
 import net.fabricmc.api.ClientModInitializer;
@@ -14,6 +15,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
@@ -41,6 +43,9 @@ public class PBEnchantsClient implements ClientModInitializer {
 	 * handler below runs, and the screen would spring straight back open.
 	 */
 	private static boolean closedByKey;
+
+	/** Whether the server has last been told an item screen is up. */
+	private static boolean screenOpen;
 
 	/** Called by the screen as it closes, so this tick's press is not read twice. */
 	public static void treeClosedByKey() {
@@ -103,6 +108,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 			ProgressChimes.clear();
 			DiggyHud.clear();
 			hintCountdown = -1;
+			screenOpen = false;
 		});
 
 		// Why a borrowed tool feels dead, and why a librarian will not sell a
@@ -121,6 +127,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			tickJoinHint(client);
+			tickScreenState(client);
 
 			boolean handled = false;
 			while (OPEN_TREE_KEY.consumeClick()) {
@@ -142,6 +149,30 @@ public class PBEnchantsClient implements ClientModInitializer {
 			}
 			closedByKey = false;
 		});
+	}
+
+	/**
+	 * Tells the server when an item screen goes up and when it comes down.
+	 *
+	 * <p>Only the client knows: the survival inventory is drawn over the menu
+	 * every player always has, so opening it sends vanilla nothing. Deft Hands
+	 * is the one perk that needs the difference — a hotbar slot going empty
+	 * means something different while you are rearranging your bags than it
+	 * does while you are placing blocks — so the fact is reported here rather
+	 * than guessed at on the far side.
+	 *
+	 * <p>Sent on change only, and a disconnect resets the memory so the next
+	 * world starts by saying so again.
+	 */
+	private static void tickScreenState(Minecraft client) {
+		boolean open = client.gui.screen() instanceof AbstractContainerScreen<?>;
+		if (open == screenOpen) {
+			return;
+		}
+		screenOpen = open;
+		if (client.player != null && ClientPlayNetworking.canSend(ScreenStatePayload.TYPE)) {
+			ClientPlayNetworking.send(new ScreenStatePayload(open));
+		}
 	}
 
 	/**

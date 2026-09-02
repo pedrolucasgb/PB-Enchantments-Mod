@@ -1,5 +1,6 @@
 package dev.pbenchants.storage;
 
+import dev.pbenchants.network.ScreenStatePayload;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
@@ -9,7 +10,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -36,6 +39,15 @@ import java.util.UUID;
  *
  * <p>Pinned slots are never refilled: a locked empty slot is a slot the player
  * deliberately keeps empty.
+ *
+ * <p>And none of it runs while an item screen is open. Inside the inventory the
+ * "less of it than before" rule stops being a good proxy for spending: lift a
+ * stack onto the cursor and, as far as the container is concerned, it is gone —
+ * so the slot refilled itself under the player's hand and the stack they were
+ * carrying had nowhere to go back to. Moving items by hand is not using them
+ * up, so the perk stands down for as long as the screen is up. The client says
+ * when that is ({@link ScreenStatePayload}); the cursor and the open menu are
+ * read here too, so a client that never sends the packet is still safe.
  */
 public final class DeftHands {
 	/** What each hotbar slot held last tick, and how much of it the player had. */
@@ -57,14 +69,44 @@ public final class DeftHands {
 
 	private static final Map<UUID, Memory> MEMORIES = new HashMap<>();
 
+	/** Players whose client currently has an item screen open. */
+	private static final Set<UUID> BUSY = new HashSet<>();
+
 	private DeftHands() {
+	}
+
+	/** The client opened or closed an item screen. */
+	public static void setScreenOpen(ServerPlayer player, boolean open) {
+		if (open) {
+			BUSY.add(player.getUUID());
+		} else {
+			BUSY.remove(player.getUUID());
+		}
+	}
+
+	/**
+	 * Whether the player is currently handling items by hand rather than
+	 * playing. Three independent signs, because no one of them covers
+	 * everything: the client's own report (the only thing that sees the
+	 * survival inventory), a menu other than the always-open inventory one (a
+	 * chest, a crafting table — true even for a client that sends nothing), and
+	 * a stack sitting on the cursor mid-drag.
+	 */
+	private static boolean handlingItems(ServerPlayer player) {
+		return BUSY.contains(player.getUUID())
+			|| player.containerMenu != player.inventoryMenu
+			|| !player.containerMenu.getCarried().isEmpty();
 	}
 
 	/** Called every server tick per online player. */
 	public static void tick(ServerPlayer player) {
 		Inventory inventory = player.getInventory();
 		Memory memory = MEMORIES.computeIfAbsent(player.getUUID(), key -> Memory.blank());
-		boolean enabled = SkillService.owns(player, SkillTrees.ARTISAN, "deft_hands");
+		// The memory still keeps up while a screen is open — it is what the
+		// slot held and how much of it there was, and both stay true — but
+		// nothing refills until the screen is gone.
+		boolean enabled = SkillService.owns(player, SkillTrees.ARTISAN, "deft_hands")
+			&& !handlingItems(player);
 		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
 		Map<Item, Integer> totals = tally(inventory);
 
@@ -92,9 +134,10 @@ public final class DeftHands {
 		}
 	}
 
-	/** Forgets a player who left, so the map does not grow forever. */
+	/** Forgets a player who left, so the maps do not grow forever. */
 	public static void forget(ServerPlayer player) {
 		MEMORIES.remove(player.getUUID());
+		BUSY.remove(player.getUUID());
 	}
 
 	/** How much of every item the player is carrying, in one pass. */

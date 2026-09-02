@@ -57,13 +57,24 @@ Progress is **per player**, persisted with the world, and survives death.
 ### Latest release
 
 The **[landing page](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)** always offers the newest build, and
-[`releases/latest/download/pbenchants.jar`](https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases/latest/download/pbenchants.jar)
-is a stable URL that follows it. Every version ever released lives on the
+every version ever released lives on the
 [releases page](https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases).
 
+Each release ships exactly one asset, `pbenchants-<version>.jar` — the version is in the filename so you can
+tell at a glance which build is already in your `mods` folder, and replacing it is unambiguous.
+
 Releases are cut by tag: pushing a `vX.Y.Z` tag makes the [Release workflow](.github/workflows/release.yml)
-build the jar from that commit (the tag supplies the mod version) and publish it as a GitHub Release with
-generated notes — the landing page and the stable URL pick it up with no further step.
+build the jar from that commit (the tag supplies the mod version) and publish it as a GitHub Release — the
+landing page reads the releases API live, so it picks the new jar up with no further step.
+
+### Patch notes
+
+Every released version has a notes file at `docs/patchnotes/<version>.md`, carrying the changelog in
+English, Portuguese and Spanish in one file. The landing page renders it — the newest version under
+**What is new**, and every entry in **All versions** can expand its own — and the release workflow attaches
+it to the GitHub Release and uses its English block as the release body. **The workflow refuses to build a
+tag with no notes file.** How to write one: [`.claude/skills/patch-notes/SKILL.md`](.claude/skills/patch-notes/SKILL.md),
+with a checker at `.claude/skills/patch-notes/check-patch-notes.ps1`.
 
 ### Quick download (no toolchain)
 

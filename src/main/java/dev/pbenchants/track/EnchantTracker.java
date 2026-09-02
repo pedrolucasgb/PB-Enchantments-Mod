@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import dev.pbenchants.progress.TreeProgress;
+import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.core.Holder;
@@ -25,34 +26,47 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
  * disenchant and a shelf of distinct books all move different lines.
  */
 public final class EnchantTracker {
-	/** Width of the "which kinds of gear have you enchanted" mask. */
-	private static final int TYPE_BITS = 0b1_1111_1111;
-
 	private EnchantTracker() {
 	}
 
 	/**
-	 * @param slotId 0-based table slot used (2 = the bottom, level-30 slot)
-	 * @param levels XP levels actually deducted (slotId + 1; 0 in creative-like
-	 *               flows is still a valid enchant)
+	 * The one line every XP purchase in the mod reports to: the enchanting
+	 * table, the anvil, and every skill-tree unlock, tier and enchant bought
+	 * with points.
+	 *
+	 * <p>Counted in <b>points</b>, not levels. A level is not a fixed price —
+	 * three levels off a level-40 player is several times the experience it is
+	 * off a level-15 one — so a gate measured in levels asked a different
+	 * question of every player. Points are the same currency the skill tree
+	 * already charges in ({@link dev.pbenchants.skill.XpMath}).
+	 *
+	 * <p>The counter lives on the Enchanter tree because that is where the gate
+	 * that reads it lives; what the points were spent on does not matter.
 	 */
-	public static void onTableEnchant(Player player, ItemStack stack, int slotId, int levels) {
+	public static void onXpPointsSpent(Player player, int points) {
+		if (points > 0 && player instanceof ServerPlayer serverPlayer) {
+			SkillService.addCount(serverPlayer, SkillTrees.ENCHANTER, "spend_points", points);
+		}
+	}
+
+	/**
+	 * @param slotId 0-based table slot used (2 = the bottom, level-30 slot)
+	 * @param points XP points actually deducted, measured across the enchant
+	 *               (0 in creative-like flows is still a valid enchant)
+	 */
+	public static void onTableEnchant(Player player, ItemStack stack, int slotId, int points) {
 		if (!(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
 		TreeProgress progress = SkillService.progress(serverPlayer, SkillTrees.ENCHANTER);
 		progress.addCount("enchant_items", 1);
-		if (levels > 0) {
-			progress.addCount("spend_levels", levels);
-		}
+		onXpPointsSpent(serverPlayer, points);
 		if (slotId == 2) {
 			progress.addCount("max_slot_enchants", 1);
 		}
 		int typeBit = typeBit(stack);
 		if (typeBit >= 0) {
-			int mask = (progress.count("enchant_type_checklist_mask") | (1 << typeBit)) & TYPE_BITS;
-			progress.counters.put("enchant_type_checklist_mask", mask);
-			progress.counters.put("enchant_type_checklist", Integer.bitCount(mask));
+			GateChecklists.tick(progress, "enchant_type_checklist", typeBit);
 		}
 	}
 

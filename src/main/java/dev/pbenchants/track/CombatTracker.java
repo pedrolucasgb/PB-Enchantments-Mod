@@ -2,11 +2,13 @@ package dev.pbenchants.track;
 
 import dev.pbenchants.perk.CombatPerks;
 import dev.pbenchants.progress.TreeProgress;
+import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
@@ -84,6 +86,10 @@ public final class CombatTracker {
 		if (victim.getType() == EntityTypes.ENDER_DRAGON) {
 			progress.counters.put("slay_dragon", 1);
 		}
+		int bossBit = bossBit(victim);
+		if (bossBit >= 0) {
+			GateChecklists.tick(progress, "boss_checklist", bossBit);
+		}
 	}
 
 	/**
@@ -102,6 +108,28 @@ public final class CombatTracker {
 		if (progress.count("survive_raid") < 1 && player.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)) {
 			progress.counters.put("survive_raid", 1);
 		}
+	}
+
+	/**
+	 * Which line of the boss checklist this kill ticks, or -1 for anything
+	 * else. The roster is {@link GateChecklists}'; this only says which entity
+	 * is which bit.
+	 */
+	private static int bossBit(LivingEntity victim) {
+		EntityType<?> type = victim.getType();
+		if (type == EntityTypes.ELDER_GUARDIAN) {
+			return 0;
+		}
+		if (type == EntityTypes.WITHER) {
+			return 1;
+		}
+		if (type == EntityTypes.WARDEN) {
+			return 2;
+		}
+		if (type == EntityTypes.ENDER_DRAGON) {
+			return 3;
+		}
+		return -1;
 	}
 
 	private static boolean holdsTrident(ServerPlayer player) {

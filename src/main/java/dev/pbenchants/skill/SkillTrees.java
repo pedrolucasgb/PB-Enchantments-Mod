@@ -360,7 +360,7 @@ public final class SkillTrees {
 			)),
 			// Tier 4 — Master Enchanter
 			new SkillTier(20, List.of(
-				new GateRequirement("spend_levels", 150),
+				new GateRequirement("spend_points", 10000),
 				new GateRequirement("collect_xp", 10000),
 				new GateRequirement("grindstone_disenchants", 20),
 				new GateRequirement("buy_enchanted_books", 12)
@@ -616,45 +616,46 @@ public final class SkillTrees {
 		List.of(
 			// Tier 1 — Duelist
 			new SkillTier(5, List.of(
-				new GateRequirement("kill_hostiles", 200),
+				new GateRequirement("kill_hostiles", 100),
 				new GateRequirement("craft_iron_sword", 1),
 				new GateRequirement("crit_kills", 50)
 			)),
 			// Tier 2 — Skirmisher
 			new SkillTier(10, List.of(
-				new GateRequirement("kill_hostiles", 500),
+				new GateRequirement("kill_hostiles", 250),
 				new GateRequirement("melee_damage", 5000),
 				new GateRequirement("mob_checklist", 5)
 			)),
 			// Tier 3 — Warblade
 			new SkillTier(15, List.of(
-				new GateRequirement("kill_hostiles", 1000),
+				new GateRequirement("kill_hostiles", 500),
 				new GateRequirement("own_trident", 1),
 				new GateRequirement("sweep_hits", 100)
 			)),
 			// Tier 4 — Slayer
 			new SkillTier(20, List.of(
-				new GateRequirement("kill_hostiles", 1600),
+				new GateRequirement("kill_hostiles", 800),
 				new GateRequirement("survive_raid", 1),
 				new GateRequirement("nether_kills", 100)
 			)),
 			// Tier 5 — Champion
 			new SkillTier(25, List.of(
-				new GateRequirement("kill_hostiles", 2400),
+				new GateRequirement("kill_hostiles", 1200),
 				new GateRequirement("mace_slams", 50),
-				new GateRequirement("melee_damage", 25000)
+				new GateRequirement("melee_damage", 25000),
+				new GateRequirement("slay_dragon", 1)
 			)),
 			// Tier 6 — Warlord
 			new SkillTier(30, List.of(
-				new GateRequirement("kill_hostiles", 3500),
+				new GateRequirement("kill_hostiles", 1750),
 				new GateRequirement("slay_boss", 1),
 				new GateRequirement("desperate_kills", 100)
 			)),
 			// Tier 7 — Legend
 			new SkillTier(40, List.of(
-				new GateRequirement("kill_hostiles", 5000),
+				new GateRequirement("kill_hostiles", 2500),
 				new GateRequirement("mob_checklist", 30),
-				new GateRequirement("slay_dragon", 1)
+				new GateRequirement("boss_checklist", 4)
 			))
 		),
 		List.of(
@@ -784,13 +785,13 @@ public final class SkillTrees {
 		List.of(
 			// Tier 1 — Padded
 			new SkillTier(5, List.of(
-				new GateRequirement("absorb_damage", 500),
+				new GateRequirement("absorb_damage", 250),
 				new GateRequirement("craft_iron_armor", 4),
 				new GateRequirement("block_damage", 100)
 			)),
 			// Tier 2 — Ironclad
 			new SkillTier(10, List.of(
-				new GateRequirement("absorb_damage", 2000),
+				new GateRequirement("absorb_damage", 1000),
 				new GateRequirement("survive_falls", 50),
 				new GateRequirement("wear_diamond_minutes", 20)
 			)),
@@ -802,26 +803,27 @@ public final class SkillTrees {
 			)),
 			// Tier 4 — Bastion
 			new SkillTier(20, List.of(
-				new GateRequirement("absorb_damage", 6000),
+				new GateRequirement("absorb_damage", 3000),
 				new GateRequirement("block_damage", 1000),
 				new GateRequirement("survive_explosions", 25)
 			)),
 			// Tier 5 — Netherite Wall
 			new SkillTier(25, List.of(
 				new GateRequirement("own_netherite_set", 1),
-				new GateRequirement("absorb_damage", 10000),
+				new GateRequirement("absorb_damage", 5000),
 				new GateRequirement("survive_wither_skull", 1)
 			)),
 			// Tier 6 — Aegis Bearer
 			new SkillTier(30, List.of(
-				new GateRequirement("absorb_damage", 18000),
+				new GateRequirement("absorb_damage", 9000),
 				new GateRequirement("block_hits", 500),
-				new GateRequirement("wear_netherite_minutes", 60)
+				new GateRequirement("wear_netherite_minutes", 60),
+				new GateRequirement("trim_full_set", 1)
 			)),
 			// Tier 7 — Unbreaking Line
 			new SkillTier(40, List.of(
 				new GateRequirement("armor_checklist", 6),
-				new GateRequirement("absorb_damage", 40000),
+				new GateRequirement("absorb_damage", 20000),
 				new GateRequirement("block_damage", 5000)
 			))
 		),
@@ -930,13 +932,13 @@ public final class SkillTrees {
 		List.of(
 			// Tier 1 — Fletcher
 			new SkillTier(5, List.of(
-				new GateRequirement("arrows_fired", 300),
+				new GateRequirement("arrows_fired", 150),
 				new GateRequirement("arrows_hit", 100),
 				new GateRequirement("craft_bow", 1)
 			)),
 			// Tier 2 — Marksman
 			new SkillTier(10, List.of(
-				new GateRequirement("arrows_fired", 800),
+				new GateRequirement("arrows_fired", 400),
 				new GateRequirement("arrows_hit", 300),
 				new GateRequirement("bow_kills", 50)
 			)),
@@ -960,13 +962,13 @@ public final class SkillTrees {
 			)),
 			// Tier 6 — Windrunner
 			new SkillTier(30, List.of(
-				new GateRequirement("ranged_kills", 600),
+				new GateRequirement("ranged_kills", 300),
 				new GateRequirement("tipped_checklist", 3),
 				new GateRequirement("arrows_hit", 2500)
 			)),
 			// Tier 7 — Eye of the Storm
 			new SkillTier(40, List.of(
-				new GateRequirement("ranged_kills", 1000),
+				new GateRequirement("ranged_kills", 500),
 				new GateRequirement("kills_60", 75),
 				new GateRequirement("tipped_checklist", 8)
 			))
