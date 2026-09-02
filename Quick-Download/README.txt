@@ -46,6 +46,19 @@ describes the cross, not the whole family.
 
 WHAT IS NEW IN 0.8.2-beta
 -------------------------
+- THE SERVER CHECKS YOUR MOD VERSION AT THE DOOR. A dedicated server
+  running PB Enchantments now refuses a client whose mod version does
+  not match its own - or that does not have the mod at all - before
+  the world even loads. The message names both versions, so you
+  always know which side is behind and what to download.
+
+- EVERYONE UPDATES TOGETHER. The check is exact: the server and every
+  player must run the same PB Enchantments version. This is also the
+  first version that can answer the check - a player still on
+  0.8.1-beta or older is turned away as if the mod were missing - so
+  hand this jar to your players when you update the server. Nothing
+  about your world or your progress changes.
+
 - A GREEN THUMB HOE REFUSES TO TRAMPLE SEEDLINGS. While you own Green
   Thumb (the auto-replant node), a farmland crop that has not finished
   growing simply does not break under a hoe - the action bar says it is

@@ -134,7 +134,13 @@ The workflow builds the jar from that commit and publishes both it and the
 notes file. The landing page needs no deploy — it reads the new file the moment
 `main` moves.
 
+6. After the tag: run `server-motd` — the home server's MOTD names the new
+   version, and the jar on the server must match it (since `0.8.2-beta` the
+   version gate kicks clients by exact version).
+
 ## Related
 
 - `lang-sync` — the same discipline for the in-game strings. A release that
   adds player-facing text needs both.
+- `server-motd` — the "and tell the server" step: the MOTD line and the jar
+  swap on the home server, every tag.
