@@ -480,7 +480,7 @@
 	"node.pbenchants.shield_breaker": "Shield Breaker",
 	"node.pbenchants.shield_breaker.desc": "Passive: your axes disable a blocking shield for 2 extra seconds and push 2 more damage through it. Deliberately works in PvP — Riposte is its counter.",
 	"node.pbenchants.environment": "Environment",
-	"node.pbenchants.environment.desc": "Enchantment: a tree felled with Logic III replants its sapling on the stump, taking one from your inventory.",
+	"node.pbenchants.environment.desc": "Enchantment: a tree felled with Logic III replants its sapling at the tree's own base, wherever on the trunk you chopped — a 2x2 giant gets all four saplings back. Each sapling comes out of your inventory.",
 	"node.pbenchants.arcane_insight": "Arcane Insight",
 	"node.pbenchants.arcane_insight_1.desc": "Passive: a panel beside the enchanting table reveals the true enchantments behind the first offer, before you pay for it.",
 	"node.pbenchants.arcane_insight_2.desc": "Passive: the panel also reveals the second offer.",

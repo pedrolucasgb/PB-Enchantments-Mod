@@ -71,6 +71,11 @@ WHAT IS NEW IN 0.8.2-beta
   falls. An Indestructible axe survives on its last durability point,
   spent, exactly as that enchantment already works.
 
+- ENVIRONMENT REPLANTS WHEREVER YOU CHOP. The sapling only ever came
+  back when the tree was cut at its bottom-most log; now it is planted
+  at the tree's own rooted base whichever log you hit, and a 2x2 giant
+  gets all four saplings back - one from your inventory per base.
+
 - ONLY GROWN TREES FALL. Logs you place are remembered by the world
   and are never part of a tree: breaking one never triggers Logic, and
   a fell never crosses into a build. Trees grown from saplings fell

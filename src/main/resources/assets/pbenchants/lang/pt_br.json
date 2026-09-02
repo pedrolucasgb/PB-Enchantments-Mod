@@ -480,7 +480,7 @@
 	"node.pbenchants.shield_breaker": "Quebra-Escudos",
 	"node.pbenchants.shield_breaker.desc": "Passivo: seus machados desativam um escudo erguido por 2 segundos extras e empurram 2 de dano a mais através dele. Funciona em PvP de propósito — Riposta é o seu contra.",
 	"node.pbenchants.environment": "Ambiente",
-	"node.pbenchants.environment.desc": "Encantamento: uma árvore derrubada com Lógica III replanta sua muda no toco, tirando uma do seu inventário.",
+	"node.pbenchants.environment.desc": "Encantamento: uma árvore derrubada com Lógica III replanta sua muda na própria base da árvore, não importa onde no tronco você cortou — uma gigante 2x2 recebe as quatro mudas de volta. Cada muda sai do seu inventário.",
 	"node.pbenchants.arcane_insight": "Percepção Arcana",
 	"node.pbenchants.arcane_insight_1.desc": "Passivo: um painel ao lado da mesa de encantamentos revela os encantamentos verdadeiros por trás da primeira oferta, antes de você pagar por ela.",
 	"node.pbenchants.arcane_insight_2.desc": "Passivo: o painel também revela a segunda oferta.",

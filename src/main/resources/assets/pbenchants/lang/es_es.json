@@ -480,7 +480,7 @@
 	"node.pbenchants.shield_breaker": "Rompescudos",
 	"node.pbenchants.shield_breaker.desc": "Pasiva: tus hachas inutilizan un escudo que bloquea durante 2 segundos extra y le cuelan 2 puntos más de daño. Funciona en PvP a propósito — Contragolpe es su contramedida.",
 	"node.pbenchants.environment": "Ecología",
-	"node.pbenchants.environment.desc": "Encantamiento: un árbol talado con Lógica III replanta su brote en el tocón, tomando uno de tu inventario.",
+	"node.pbenchants.environment.desc": "Encantamiento: un árbol talado con Lógica III replanta su brote en la propia base del árbol, sin importar dónde cortaste el tronco — un gigante 2x2 recupera sus cuatro brotes. Cada brote sale de tu inventario.",
 	"node.pbenchants.arcane_insight": "Perspicacia Arcana",
 	"node.pbenchants.arcane_insight_1.desc": "Pasiva: un panel junto a la mesa de encantamientos revela los encantamientos reales detrás de la primera oferta, antes de pagarla.",
 	"node.pbenchants.arcane_insight_2.desc": "Pasiva: el panel también revela la segunda oferta.",

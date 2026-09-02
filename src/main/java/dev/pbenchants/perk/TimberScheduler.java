@@ -124,6 +124,11 @@ public final class TimberScheduler {
 			return; // not a tree (log house, fence post, floating stump...)
 		}
 
+		// Read off the axe before the fell — the fell may consume it, and an
+		// empty stack answers zero to every enchantment.
+		boolean environment = logicLevel >= 3
+			&& ItemAuthority.effectiveLevel(serverPlayer, axe, ModEnchantments.ENVIRONMENT) > 0;
+
 		boolean breakLeaves = logicLevel >= 3;
 		fell(serverPlayer, serverLevel, scan, breakLeaves);
 
@@ -131,12 +136,16 @@ public final class TimberScheduler {
 		SkillService.addCount(serverPlayer, SkillTrees.AXE, "fell_trees_total", 1);
 		SkillService.addCount(serverPlayer, SkillTrees.AXE, "fell_trees_grand_total", 1);
 
-		if (logicLevel >= 3 && ItemAuthority.effectiveLevel(serverPlayer, axe, ModEnchantments.ENVIRONMENT) > 0) {
-			replant(serverPlayer, serverLevel, pos, state);
+		if (environment) {
+			// Replant on the tree's own rooted bases — wherever on the trunk the
+			// chop landed. Only when no base was found (a tree the ground scan
+			// could not root) does the broken block itself stand in.
+			replant(serverPlayer, serverLevel,
+				scan.stumps().isEmpty() ? List.of(pos) : scan.stumps(), state);
 		}
 	}
 
-	private record Scan(List<BlockPos> logs, List<BlockPos> leaves, int leafCount) {
+	private record Scan(List<BlockPos> logs, List<BlockPos> leaves, int leafCount, List<BlockPos> stumps) {
 	}
 
 	/**
@@ -230,6 +239,7 @@ public final class TimberScheduler {
 
 		// --- One tree: every log claims the nearest trunk, origin's wins ---
 		List<BlockPos> felled = componentOrder;
+		Integer originTree = null;
 		if (clusters > 1) {
 			ArrayDeque<BlockPos> wave = new ArrayDeque<>(owner.keySet());
 			while (!wave.isEmpty()) {
@@ -247,7 +257,7 @@ public final class TimberScheduler {
 					}
 				}
 			}
-			Integer originTree = owner.get(origin);
+			originTree = owner.get(origin);
 			if (originTree != null) {
 				felled = new ArrayList<>();
 				for (BlockPos log : componentOrder) {
@@ -255,6 +265,14 @@ public final class TimberScheduler {
 						felled.add(log);
 					}
 				}
+			}
+		}
+
+		// --- The felled tree's own rooted bases: where Environment replants ---
+		List<BlockPos> stumps = new ArrayList<>();
+		for (BlockPos root : roots) {
+			if (originTree == null || originTree.equals(owner.get(root))) {
+				stumps.add(root);
 			}
 		}
 
@@ -282,7 +300,7 @@ public final class TimberScheduler {
 			}
 			layer = nextLayer;
 		}
-		return new Scan(felled, canopy, shellLeaves.size());
+		return new Scan(felled, canopy, shellLeaves.size(), stumps);
 	}
 
 	/** Natural (world-generated) leaves only — player-placed hedges are persistent. */
@@ -340,26 +358,46 @@ public final class TimberScheduler {
 		}
 	}
 
-	/** Environment: puts a sapling back on the stump, consuming one from the player. */
-	private static void replant(ServerPlayer player, ServerLevel level, BlockPos stump, BlockState brokenState) {
+	/**
+	 * Environment: puts a sapling back on every rooted base of the felled tree,
+	 * consuming one from the player per sapling planted — the same base-first
+	 * replant the Tree Harvester family of mods does, so it works wherever on
+	 * the trunk the chop landed. A 2x2 giant (jungle, spruce, dark oak) has
+	 * four bases and gets all four saplings back, which is exactly what it
+	 * takes to regrow one; run out of saplings and the remaining bases stay
+	 * bare.
+	 */
+	private static void replant(ServerPlayer player, ServerLevel level, List<BlockPos> stumps, BlockState brokenState) {
 		net.minecraft.world.level.block.Block sapling = LOG_TO_SAPLING.get(brokenState.getBlock());
 		if (sapling == null) {
 			return;
 		}
 		BlockState saplingState = sapling.defaultBlockState();
-		if (!level.getBlockState(stump).isAir() || !saplingState.canSurvive(level, stump)) {
-			return;
-		}
 		ItemStack saplingItem = new ItemStack(sapling.asItem());
+		for (BlockPos stump : stumps) {
+			// Farmland-style surprises aside, the base can be occupied (a felled
+			// neighbour's drop entity is fine, a block is not) or its ground gone.
+			if (!level.getBlockState(stump).isAir() || !saplingState.canSurvive(level, stump)) {
+				continue;
+			}
+			if (!takeSapling(player, saplingItem)) {
+				return; // out of saplings — the remaining bases stay bare
+			}
+			level.setBlockAndUpdate(stump, saplingState);
+			SkillService.addCount(player, SkillTrees.AXE, "replant_with_environment", 1);
+		}
+	}
+
+	/** One sapling out of the player's inventory; false when they carry none. */
+	private static boolean takeSapling(ServerPlayer player, ItemStack saplingItem) {
 		var inventory = player.getInventory();
 		for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
 			ItemStack inSlot = inventory.getItem(slot);
 			if (ItemStack.isSameItem(inSlot, saplingItem)) {
 				inSlot.shrink(1);
-				level.setBlockAndUpdate(stump, saplingState);
-				SkillService.addCount(player, SkillTrees.AXE, "replant_with_environment", 1);
-				return;
+				return true;
 			}
 		}
+		return false;
 	}
 }
