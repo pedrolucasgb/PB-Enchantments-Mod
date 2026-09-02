@@ -1,9 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-<<<<<<< HEAD
-Version 0.8.0-beta
-=======
-Version 0.7.2-beta
->>>>>>> worktree-balance-and-gate-tooltips
+Version 0.8.1-beta
 ================================================
 
 HOW TO INSTALL
@@ -48,7 +44,47 @@ out, with the reason in the tooltip.
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
 
-<<<<<<< HEAD
+WHAT IS NEW IN 0.8.1-beta
+-------------------------
+- A RANK YOU HAVE NOT UNLOCKED NO LONGER WORKS AT ALL. Holding a Dig
+  Range III pickaxe with only rank II bought used to give you a
+  working rank II pickaxe. Now the whole item handles like a bare
+  hand - bare-hand digging speed, no drops from blocks that need a
+  tool, bare-hand damage, no durability spent - until you buy the
+  rank on the label. It makes no difference how it reached you: the
+  enchanting table, a librarian's book, an anvil, or another player.
+  This reaches tools you already own, and the tooltip names the rank
+  you still owe. Creative mode still bypasses the rule.
+
+- SMELT II NO LONGER HANDS BACK INGOTS FOR EVERYTHING. The roll was
+  repeated once for every block the swing broke, so a drop sitting in
+  the middle of a Rich Vein or Dig Range swing was rolled eight times
+  over - and eight tries at 50% is 99.6%. Every drop is rolled
+  exactly once now, whatever else the swing took.
+
+- SMELT PAYS WHAT A FURNACE PAYS. An ore that turns into an ingot
+  mid-swing now drops the experience its smelting recipe would have
+  given: raw iron and raw copper 0.7 apiece, raw gold 1.0.
+
+- RICH VEIN TAKES THE VEIN AND NOTHING ELSE. Its size limit was only
+  tested once per step of the search, so Rich Vein I could take
+  thirty-three blocks instead of eight. And a pickaxe carrying Dig
+  Range as well took the vein plus a 3x3 of the stone around the
+  block that started it. The vein is the whole swing now, and Dig
+  Range stands down on a block Rich Vein claims.
+
+- THE ANVIL NO LONGER FORGES A RANK YOU HAVE NOT EARNED. Two Dig
+  Range II books used to merge into a Dig Range III. Every PB
+  Enchantments rank now caps at your own there, exactly as vanilla
+  Fortune, Looting, Mending, Protection and Power already did.
+
+- PROSPECTOR'S WISDOM, A NEW ENCHANTER CAPSTONE. A block broken with
+  a Fortune tool gives more experience: +25% per level of Fortune,
+  all four of them, so Fortune IV is +100%. It stacks on top of
+  Scholar the same way Reaper's Wisdom does - and Reaper's Wisdom now
+  rounds its own bonus up instead of down, so every rank is finally
+  worth the 25% it advertises.
+
 WHAT IS NEW IN 0.8.0-beta
 -------------------------
 - A NINTH CLASS: GROUND, THE PATH OF THE GROUND. One tab carrying two
@@ -107,7 +143,6 @@ WHAT IS NEW IN 0.8.0-beta
 - THE ROD TAB IS GONE, BUILDER TAKES ITS PLACE. The greyed "coming
   soon" tab now names the class that is actually coming next. Nothing
   was ever unlockable there, so no progress moved.
-=======
 WHAT IS NEW IN 0.7.2-beta
 -------------------------
 - HOVER A GATE LINE TO SEE WHAT IT COUNTS. Under "Gate achievements",
@@ -180,7 +215,6 @@ WHAT IS NEW IN 0.7.1-beta
   you was the unversioned "pbenchants.jar" - so there was no way to
   tell which build was in your mods folder. There is one asset now,
   "pbenchants-<version>.jar", and the button points at it.
->>>>>>> worktree-balance-and-gate-tooltips
 
 WHAT IS NEW IN 0.7.0-beta
 -------------------------
