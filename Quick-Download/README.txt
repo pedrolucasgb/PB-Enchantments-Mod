@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.8.1-beta
+Version 0.8.2-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,57 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.8.2-beta
+-------------------------
+- THE SERVER CHECKS YOUR MOD VERSION AT THE DOOR. A dedicated server
+  running PB Enchantments now refuses a client whose mod version does
+  not match its own - or that does not have the mod at all - before
+  the world even loads. The message names both versions, so you
+  always know which side is behind and what to download.
+
+- EVERYONE UPDATES TOGETHER. The check is exact: the server and every
+  player must run the same PB Enchantments version. This is also the
+  first version that can answer the check - a player still on
+  0.8.1-beta or older is turned away as if the mod were missing - so
+  hand this jar to your players when you update the server. Nothing
+  about your world or your progress changes.
+
+- A GREEN THUMB HOE REFUSES TO TRAMPLE SEEDLINGS. While you own Green
+  Thumb (the auto-replant node), a farmland crop that has not finished
+  growing simply does not break under a hoe - the action bar says it is
+  still growing. Only true farmland crops (wheat, carrots, potatoes,
+  beetroot, torchflower, pitcher pod): sugar cane, cocoa, berries and
+  nether wart are untouched, so cutting cane mid-stalk works as before.
+  Sneak to break a seedling on purpose.
+
+- LOGIC FELLS ONE TREE PER SWING. Cherry groves and jungle tangles
+  whose trunks touched used to come down as one absurd harvest. Logic
+  now finds each trunk's base on the ground and fells only the tree
+  you hit. A 2x2 giant (jungle, spruce, dark oak) still counts as one
+  tree.
+
+- LOGIC III ONLY CLEARS ITS OWN CANOPY. A leaf that sits closer to a
+  standing trunk stays on it, so neighbouring trees keep their crowns
+  instead of being stripped to bare logs.
+
+- THE FELL ALWAYS FINISHES THE TREE. Logic used to stop a couple of
+  logs short of breaking the axe, leaving half a tree standing. Now
+  every log costs durability and the tree comes down whole - if the
+  wood outlasts the axe, the axe breaks mid-fell and the rest still
+  falls. An Indestructible axe survives on its last durability point,
+  spent, exactly as that enchantment already works.
+
+- ENVIRONMENT REPLANTS WHEREVER YOU CHOP. The sapling only ever came
+  back when the tree was cut at its bottom-most log; now it is planted
+  at the tree's own rooted base whichever log you hit, and a 2x2 giant
+  gets all four saplings back - one from your inventory per base.
+
+- ONLY GROWN TREES FALL. Logs you place are remembered by the world
+  and are never part of a tree: breaking one never triggers Logic, and
+  a fell never crosses into a build. Trees grown from saplings fell
+  normally. Logs placed before this update carry no memory - for
+  those, the old rule (a tree needs leaves) still stands guard.
 
 WHAT IS NEW IN 0.8.1-beta
 -------------------------

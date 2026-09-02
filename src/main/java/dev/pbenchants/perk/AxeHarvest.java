@@ -77,7 +77,11 @@ public final class AxeHarvest {
 		if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
 			return;
 		}
-		boolean axe = serverPlayer.getMainHandItem().is(ItemTags.AXES);
+		// A Logic fell may consume the axe partway through the tree, and every
+		// log after that moment breaks with an empty hand — but the swing that
+		// paid for the fell was an axe swing, so the fell context keeps these
+		// passives alive to the last log.
+		boolean axe = serverPlayer.getMainHandItem().is(ItemTags.AXES) || TimberScheduler.felling();
 		boolean leaf = state.is(BlockTags.LEAVES);
 
 		int doubleAxePercent = 0;

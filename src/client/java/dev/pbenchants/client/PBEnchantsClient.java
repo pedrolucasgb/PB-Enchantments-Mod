@@ -54,6 +54,13 @@ public class PBEnchantsClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		// Configuration phase: the server states its version and waits; the
+		// answer is what lets the login finish. See VersionGate for the rules.
+		net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking.registerGlobalReceiver(
+			dev.pbenchants.network.VersionCheckPayload.TYPE, (payload, context) ->
+				context.responseSender().sendPacket(
+					new dev.pbenchants.network.VersionReplyPayload(dev.pbenchants.network.VersionGate.modVersion())));
+
 		ClientPlayNetworking.registerGlobalReceiver(SkillStatePayload.TYPE, (payload, context) -> {
 			ClientSkillState.accept(payload);
 			// Judged off the snapshot rather than announced by the server, so a

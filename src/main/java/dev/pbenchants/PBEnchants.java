@@ -72,6 +72,7 @@ public class PBEnchants implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModAttachments.init();
+		dev.pbenchants.track.PlacedLogs.init();
 		// The sword tree is the first part of the mod whose balance depends on
 		// what kind of server it is running on. Two switches, read once.
 		PBEnchantsConfig.load();
@@ -87,6 +88,11 @@ public class PBEnchants implements ModInitializer {
 		// ModNetworking.init above.)
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
 			ModAdvancements.syncAll(handler.getPlayer()));
+
+		// Ground: Green Thumb's other half — while a hoe is in hand, a farmland
+		// crop that has not finished growing refuses to break at all.
+		PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) ->
+			dev.pbenchants.perk.GreenThumbGuard.allowBreak(level, player, pos, state));
 
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			// Before anything reads the tool: if the holder has not earned what
@@ -105,8 +111,16 @@ public class PBEnchants implements ModInitializer {
 			// Same family as Dig Range, and mutually exclusive with it by tool.
 			FlatEarth.onBreak(level, player, pos, state);
 			HoeAreaHarvest.onBreak(level, player, pos, state);
-			TimberScheduler.onBreak(level, player, pos, state);
+			// Before Timber, or the origin log is judged after the fell — when
+			// the axe it was chopped with may already have broken with the tree.
 			AxeHarvest.onBreak(level, player, pos, state);
+			TimberScheduler.onBreak(level, player, pos, state);
+			// After Timber, which still needed to know whether the origin log
+			// was hand-placed: the record dies with the block.
+			if (state.is(net.minecraft.tags.BlockTags.LOGS)
+				&& level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+				dev.pbenchants.track.PlacedLogs.clear(serverLevel, pos);
+			}
 			// Queue-only, so they go last: the cascades above re-enter this chain
 			// from the top and every extra block queues its own drop work.
 			GroundDrops.onBreak(level, player, pos, state);
