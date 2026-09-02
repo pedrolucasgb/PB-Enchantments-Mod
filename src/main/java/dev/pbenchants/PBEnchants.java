@@ -89,6 +89,11 @@ public class PBEnchants implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
 			ModAdvancements.syncAll(handler.getPlayer()));
 
+		// Ground: Green Thumb's other half — while a hoe is in hand, a farmland
+		// crop that has not finished growing refuses to break at all.
+		PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) ->
+			dev.pbenchants.perk.GreenThumbGuard.allowBreak(level, player, pos, state));
+
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			// Before anything reads the tool: if the holder has not earned what
 			// it carries, none of the perks below will fire and the block just

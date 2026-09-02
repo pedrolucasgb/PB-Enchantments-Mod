@@ -46,6 +46,14 @@ describes the cross, not the whole family.
 
 WHAT IS NEW IN 0.8.2-beta
 -------------------------
+- A GREEN THUMB HOE REFUSES TO TRAMPLE SEEDLINGS. While you own Green
+  Thumb (the auto-replant node), a farmland crop that has not finished
+  growing simply does not break under a hoe - the action bar says it is
+  still growing. Only true farmland crops (wheat, carrots, potatoes,
+  beetroot, torchflower, pitcher pod): sugar cane, cocoa, berries and
+  nether wart are untouched, so cutting cane mid-stalk works as before.
+  Sneak to break a seedling on purpose.
+
 - LOGIC FELLS ONE TREE PER SWING. Cherry groves and jungle tangles
   whose trunks touched used to come down as one absurd harvest. Logic
   now finds each trunk's base on the ground and fells only the tree
