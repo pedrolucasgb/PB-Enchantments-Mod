@@ -908,9 +908,9 @@
 	"node.pbenchants.furrow_hand": "Mão de Arado",
 	"node.pbenchants.furrow_hand.desc": "Passiva: a enxada ara todo o 3x3 ao redor do bloco em que você clicou, e os oito blocos extras não custam nada à enxada. Um campo sai de grama para terra arada com um nono dos cliques.",
 	"node.pbenchants.flat_earth": "Terra Plana",
-	"node.pbenchants.flat_earth_1.desc": "Encantamento: uma pancada de pá também leva o bloco acima do que você atingiu e o de baixo — mas nunca um bloco abaixo do chão em que você está pisando, então o buraco fica plano e você fica nele. Só blocos de pá com dureza parecida. Agache para desativar.",
+	"node.pbenchants.flat_earth_1.desc": "Encantamento: uma pancada de pá também leva o bloco acima do que você atingiu e o de baixo — mas nunca abaixo do chão em que você está pisando, e nunca o bloco que te sustenta. Só blocos de pá com dureza parecida. Agache para desativar.",
 	"node.pbenchants.flat_earth_2.desc": "Encantamento: amplia a pancada para 3x2 — os dois ao lado do bloco atingido e os três abaixo deles.",
-	"node.pbenchants.flat_earth_3.desc": "Encantamento: amplia a pancada para um 3x3 completo. Cavando aos seus pés, isso é um trecho de chão 3x3 por pancada: você limpa uma camada, desce um degrau e limpa a próxima.",
+	"node.pbenchants.flat_earth_3.desc": "Encantamento: amplia a pancada para um 3x3 completo. Cavando aos seus pés, isso limpa o anel de chão à sua volta e deixa o único bloco em que você está pisando: saia de cima dele e a próxima pancada leva ele também.",
 	"node.pbenchants.sifter": "Peneira",
 	"node.pbenchants.sifter.desc": "Passiva: cascalho quebrado com uma pá sempre solta seu sílex, e um bloco de argila dá cinco bolas em vez de quatro. Dois caras-ou-coroas do jogo, resolvidos.",
 	"node.pbenchants.bone_thrift": "Economia de Ossos",
@@ -936,5 +936,5 @@
 	"node.pbenchants.field_press": "Prensa de Campo",
 	"node.pbenchants.field_press.desc": "Passiva: o trigo no seu inventário vira fardo sozinho, e fatias de melancia se prensam em melancias. O Bloco Automático do Artesão, para as coisas que crescem — só que os primeiros 64 de cada sempre ficam soltos, porque um fazendeiro que enfardasse todo o trigo teria que quebrar um fardo para alimentar uma vaca.",
 	"node.pbenchants.diggy_diggy_hole": "Diggy Diggy Hole",
-	"node.pbenchants.diggy_diggy_hole.desc": "Ápice ativo: agache e clique com o botão direito segurando uma pá, e tudo ao seu alcance se desfaz ao seu redor, bloco após bloco, até você desligar. Nunca um bloco abaixo do chão em que você está pisando, e nunca o que te sustenta. Ele para sozinho quando a pá sai da sua mão, quando ela está prestes a quebrar, quando você está com fome demais, ou no instante em que seus pés deixam o chão."
+	"node.pbenchants.diggy_diggy_hole.desc": "Ápice ativo: agache e clique com o botão direito segurando uma pá, e tudo ao seu alcance se desfaz ao seu redor até você desligar. Ele cava na velocidade em que a pá teria batido — Eficiência, Pressa e Pegada do Cavador contam, e uma pá de netherite com Eficiência V limpa todo o alcance num instante. Nunca um bloco abaixo do chão em que você está pisando, e nunca o que te sustenta. Ele para sozinho quando a pá sai da sua mão, quebra, se esgota como Indestrutível, quando você está com fome demais, ou no instante em que seus pés deixam o chão."
 }

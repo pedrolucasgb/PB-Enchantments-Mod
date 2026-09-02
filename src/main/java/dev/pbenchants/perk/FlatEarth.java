@@ -26,11 +26,12 @@ import java.util.List;
  * block has to be about as hard as the one you actually swung at.
  *
  * <p><b>The floor rule.</b> Nothing here is ever broken below the block the
- * player is standing on ({@link GroundLevel}). Digging down at your own feet that
- * costs nothing — the whole horizontal plane is your own layer — so the perk
- * flattens one layer per pass and you step down for the next. Aiming a layer
- * lower yields nothing at all, on purpose: this is the enchantment that cannot
- * drop you into a cave you did not see.
+ * player is standing on, and never that block itself ({@link GroundLevel}).
+ * Digging down at your own feet the rest of the layer is fair game, so a swing
+ * clears the ring around you and leaves the one tile you are standing on: you
+ * step off it and take it with the next swing. Aiming a layer lower yields
+ * nothing at all, on purpose — this is the enchantment that cannot drop you into
+ * a cave you did not see.
  *
  * <p>Strictly a shovel effect. As with Dig Range and its pickaxe tag, the
  * {@code #minecraft:mineable/shovel} check is what keeps it from turning into a
@@ -67,7 +68,7 @@ public final class FlatEarth {
 		}
 
 		float budgetTicks = ticksToBreak(serverLevel, pos, state, serverPlayer) + GRACE_TICKS;
-		int floorY = GroundLevel.floorY(serverPlayer);
+		BlockPos support = GroundLevel.support(serverPlayer);
 		PlaneGrid grid = PlaneGrid.facing(serverPlayer);
 
 		BreakGuard.enter();
@@ -77,8 +78,8 @@ public final class FlatEarth {
 					return;
 				}
 				BlockPos target = grid.at(pos, offset[0], offset[1]);
-				if (target.getY() < floorY) {
-					continue; // the floor rule
+				if (!GroundLevel.allowed(support, target)) {
+					continue; // never below the floor, never the block holding you up
 				}
 				BlockState targetState = serverLevel.getBlockState(target);
 				if (!digsWithShovel(serverLevel, target, targetState, serverPlayer)

@@ -908,9 +908,9 @@
 	"node.pbenchants.furrow_hand": "Mano de Arado",
 	"node.pbenchants.furrow_hand.desc": "Pasiva: la azada ara todo el 3x3 alrededor del bloque en el que hiciste clic, y las ocho casillas extra no le cuestan nada a la azada. Un campo pasa de hierba a tierra de cultivo con una novena parte de los clics.",
 	"node.pbenchants.flat_earth": "Tierra Plana",
-	"node.pbenchants.flat_earth_1.desc": "Encantamiento: un golpe de pala también se lleva el bloque de encima del que golpeaste y el de debajo — pero nunca un bloque por debajo del suelo que estás pisando, así que el hoyo queda plano y tú te quedas dentro. Solo bloques de pala de dureza parecida. Agáchate para desactivarlo.",
+	"node.pbenchants.flat_earth_1.desc": "Encantamiento: un golpe de pala también se lleva el bloque de encima del que golpeaste y el de debajo — pero nunca por debajo del suelo que estás pisando, y nunca el bloque que te sostiene. Solo bloques de pala de dureza parecida. Agáchate para desactivarlo.",
 	"node.pbenchants.flat_earth_2.desc": "Encantamiento: amplía el golpe a 3x2 — los dos junto al bloque golpeado y los tres de debajo.",
-	"node.pbenchants.flat_earth_3.desc": "Encantamiento: amplía el golpe a un 3x3 completo. Cavando a tus pies eso es un tramo de suelo de 3x3 por golpe: limpias una capa, bajas un escalón y limpias la siguiente.",
+	"node.pbenchants.flat_earth_3.desc": "Encantamiento: amplía el golpe a un 3x3 completo. Cavando a tus pies eso limpia el anillo de suelo a tu alrededor y deja la única casilla que estás pisando: sal de ella y el siguiente golpe se la lleva también.",
 	"node.pbenchants.sifter": "Cribador",
 	"node.pbenchants.sifter.desc": "Pasiva: la grava rota con una pala siempre suelta su pedernal, y un bloque de arcilla da cinco bolas en vez de cuatro. Dos caras o cruz del juego, resueltos.",
 	"node.pbenchants.bone_thrift": "Ahorro de Huesos",
@@ -936,5 +936,5 @@
 	"node.pbenchants.field_press": "Prensa de Campo",
 	"node.pbenchants.field_press.desc": "Pasiva: el trigo de tu inventario se empaca solo en balas, y las rodajas de sandía se prensan en bloques de sandía. El Bloque Automático del Artesano, para lo que crece — salvo que los primeros 64 de cada uno se quedan siempre sueltos, porque un granjero que empacara todo su trigo tendría que romper una bala para alimentar a una vaca.",
 	"node.pbenchants.diggy_diggy_hole": "Diggy Diggy Hole",
-	"node.pbenchants.diggy_diggy_hole.desc": "Culminación activa: agáchate y haz clic derecho con una pala, y todo lo que tengas a tu alcance se deshace a tu alrededor, bloque tras bloque, hasta que lo apagues. Nunca un bloque por debajo del suelo que pisas, y nunca el que te sostiene. Se detiene solo cuando la pala sale de tu mano, cuando está a punto de romperse, cuando tienes demasiada hambre, o en el instante en que tus pies dejan el suelo."
+	"node.pbenchants.diggy_diggy_hole.desc": "Culminación activa: agáchate y haz clic derecho con una pala, y todo lo que tengas a tu alcance se deshace a tu alrededor hasta que lo apagues. Cava a la velocidad a la que la pala habría golpeado — Eficiencia, Prisa y Agarre del Cavador cuentan, y una pala de netherita con Eficiencia V limpia todo su alcance en un instante. Nunca un bloque por debajo del suelo que pisas, y nunca el que te sostiene. Se detiene solo cuando la pala sale de tu mano, se rompe, se agota como Indestructible, cuando tienes demasiada hambre, o en el instante en que tus pies dejan el suelo."
 }

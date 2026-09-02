@@ -33,6 +33,15 @@ import java.util.UUID;
  * player is standing on, and never the block holding them up. You dig the room,
  * not the shaft.
  *
+ * <p><b>It costs what swinging would have cost.</b> Each tick hands the aura one
+ * tick of mining and every block is charged what vanilla would have charged to
+ * break it, so the shovel in your hand is what decides the rate: Efficiency,
+ * Haste, Spade's Grip and a locked tool's penalty all land here exactly as they
+ * land on a swing, and an Efficiency V netherite shovel clears its whole reach of
+ * dirt in a tick. Durability, hunger and drops are charged per block through
+ * {@code destroyBlock}, which is also what lets the Digger's Magnet pocket what
+ * the aura breaks and what makes a spent Indestructible shovel stop it dead.
+ *
  * <p><b>Two callbacks, not one.</b> {@code UseItemCallback} only fires when the
  * click misses every block, and a shovel that hits dirt goes to {@code useOn} and
  * makes a dirt path instead. So the block callback runs too and reports
@@ -48,9 +57,23 @@ import java.util.UUID;
 public final class DiggyDiggyHole {
 	public static final String NODE = "diggy_diggy_hole";
 
-	/** Four pulses a second at three blocks each: 12 blocks/s. */
-	private static final int ACTION_INTERVAL = 5;
-	private static final int BLOCKS_PER_PULSE = 3;
+	/**
+	 * How much mining the aura is handed per tick: exactly one tick of it, the
+	 * same budget a player swinging by hand gets. The shovel's own speed decides
+	 * what that buys, so Efficiency, Haste and Spade's Grip all scale the aura
+	 * for free and an Efficiency V netherite shovel clears dirt as fast as it
+	 * would have swung at it — which is to say instantly.
+	 */
+	private static final float TICK_BUDGET = 1.0F;
+
+	/**
+	 * Ceiling on banked budget, in ticks. Without it, standing in the air for a
+	 * minute would buy a minute of instant digging the moment you land.
+	 */
+	private static final float MAX_CARRY = 20.0F;
+
+	/** Ceiling on one tick's work, so a fast shovel cannot stall the server. */
+	private static final int MAX_BREAKS_PER_TICK = 32;
 
 	/** Caps the scan volume regardless of reach modifiers. Not a balance knob. */
 	private static final int MAX_RADIUS = 5;
@@ -65,7 +88,7 @@ public final class DiggyDiggyHole {
 	 * a hotbar swap, a shulker swap and an off-hand shuffle in one check. Same
 	 * trick {@code AreaBreak.chargeHalf} uses to notice the tool changed under it.
 	 */
-	private record Armed(ItemStack shovel, int cooldown) {
+	private record Armed(ItemStack shovel, float carry) {
 	}
 
 	private static final Map<UUID, Armed> ACTIVE = new HashMap<>();
@@ -119,12 +142,12 @@ public final class DiggyDiggyHole {
 			announce(player, "deny.spent");
 			return true;
 		}
-		ACTIVE.put(player.getUUID(), new Armed(shovel, 0));
+		ACTIVE.put(player.getUUID(), new Armed(shovel, 0.0F));
 		announce(player, "on");
 		return true;
 	}
 
-	/** Called every tick per online player; throttles itself. */
+	/** Called every tick per online player. */
 	public static void tick(ServerPlayer player) {
 		Armed armed = ACTIVE.get(player.getUUID());
 		if (armed == null) {
@@ -136,15 +159,10 @@ public final class DiggyDiggyHole {
 			announce(player, "off." + off);
 			return;
 		}
-		if (armed.cooldown() > 0) {
-			ACTIVE.put(player.getUUID(), new Armed(armed.shovel(), armed.cooldown() - 1));
-			return;
-		}
-		ACTIVE.put(player.getUUID(), new Armed(armed.shovel(), ACTION_INTERVAL));
+		float carry = Math.min(armed.carry() + TICK_BUDGET, MAX_CARRY);
 
 		ServerLevel level = player.level();
-		int floorY = GroundLevel.floorY(player);
-		BlockPos support = player.getOnPos();
+		BlockPos support = GroundLevel.support(player);
 		double reach = Math.min(player.blockInteractionRange(), MAX_RADIUS);
 		double reachSq = reach * reach;
 		Vec3 eye = player.getEyePosition();
@@ -155,8 +173,8 @@ public final class DiggyDiggyHole {
 			for (int dy = -scan; dy <= scan; dy++) {
 				for (int dz = -scan; dz <= scan; dz++) {
 					BlockPos target = player.blockPosition().offset(dx, dy, dz);
-					if (target.getY() < floorY || target.equals(support)) {
-						continue; // the floor rule, and never the block holding you up
+					if (!GroundLevel.allowed(support, target)) {
+						continue; // never below the floor, never the block holding you up
 					}
 					if (target.distToCenterSqr(eye) > reachSq) {
 						continue;
@@ -176,14 +194,26 @@ public final class DiggyDiggyHole {
 		// with whatever corner the scan happened to reach first.
 		candidates.sort(Comparator.comparingDouble(target -> target.distToCenterSqr(eye)));
 
+		// Spend the budget block by block at the price the shovel actually pays
+		// for each one. A block costs what vanilla would have charged to swing at
+		// it — so a wooden shovel gnaws through gravel a block at a time while an
+		// Efficiency V netherite one empties the whole reach in a tick.
 		BreakGuard.enter();
 		try {
 			int broken = 0;
 			for (BlockPos target : candidates) {
-				if (broken >= BLOCKS_PER_PULSE || aboutToBreak(player)) {
+				if (broken >= MAX_BREAKS_PER_TICK || aboutToBreak(player)) {
 					break;
 				}
+				float cost = ticksToBreak(level, target, player);
+				if (cost > carry) {
+					// Nearest first also means cheapest-to-reach first, but not
+					// cheapest to break; keep looking rather than stopping, so a
+					// patch of dirt is not held up by one block of gravel in it.
+					continue;
+				}
 				if (player.gameMode.destroyBlock(target)) {
+					carry -= cost;
 					broken++;
 					player.causeFoodExhaustion(EXHAUSTION_PER_BLOCK);
 				}
@@ -191,6 +221,25 @@ public final class DiggyDiggyHole {
 		} finally {
 			BreakGuard.exit();
 		}
+		// Re-read: the tool may have worn out or been swapped inside the loop.
+		Armed still = ACTIVE.get(player.getUUID());
+		if (still != null) {
+			ACTIVE.put(player.getUUID(), new Armed(still.shovel(), carry));
+		}
+	}
+
+	/**
+	 * How many ticks this player needs to break this block, from the very same
+	 * progress-per-tick vanilla uses for the cracking animation — so Efficiency,
+	 * Haste, Spade's Grip and a locked tool's penalty all land on the aura
+	 * exactly as they land on a swing.
+	 */
+	private static float ticksToBreak(ServerLevel level, BlockPos pos, ServerPlayer player) {
+		float progress = level.getBlockState(pos).getDestroyProgress(player, level, pos);
+		if (!(progress > 0.0F)) {
+			return Float.MAX_VALUE; // unbreakable for this player (also catches NaN)
+		}
+		return 1.0F / progress;
 	}
 
 	/**

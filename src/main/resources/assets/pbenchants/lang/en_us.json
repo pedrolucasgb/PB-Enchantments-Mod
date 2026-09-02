@@ -908,9 +908,9 @@
 	"node.pbenchants.furrow_hand": "Furrow Hand",
 	"node.pbenchants.furrow_hand.desc": "Passive: a hoe tills the whole 3x3 around the block you clicked, and the eight extra tiles cost the hoe nothing. A field goes from grass to farmland in a ninth of the clicks.",
 	"node.pbenchants.flat_earth": "Flat Earth",
-	"node.pbenchants.flat_earth_1.desc": "Enchantment: a shovel swing also takes the block above the one you hit and the block below it — but never a block below the floor you are standing on, so the hole stays flat and you stay in it. Shovel-mineable blocks of about the same hardness only. Sneak to disable.",
+	"node.pbenchants.flat_earth_1.desc": "Enchantment: a shovel swing also takes the block above the one you hit and the block below it — but never below the floor you are standing on, and never the block holding you up. Shovel-mineable blocks of about the same hardness only. Sneak to disable.",
 	"node.pbenchants.flat_earth_2.desc": "Enchantment: widens the swing to 3x2 — the two beside the block you hit and the three below them.",
-	"node.pbenchants.flat_earth_3.desc": "Enchantment: widens the swing to a full 3x3. Dug at your feet that is a 3x3 patch of floor per swing: you clear one layer, step down, and clear the next.",
+	"node.pbenchants.flat_earth_3.desc": "Enchantment: widens the swing to a full 3x3. Dug at your feet that clears the ring of floor around you and leaves the one tile you are standing on: step off it and the next swing takes it too.",
 	"node.pbenchants.sifter": "Sifter",
 	"node.pbenchants.sifter.desc": "Passive: gravel broken with a shovel always gives its flint, and a clay block gives five balls instead of four. Two of the game's coin flips, settled.",
 	"node.pbenchants.bone_thrift": "Bone Thrift",
@@ -936,5 +936,5 @@
 	"node.pbenchants.field_press": "Field Press",
 	"node.pbenchants.field_press.desc": "Passive: wheat in your inventory bales itself, and melon slices press into melon blocks. The Artisan's Auto Block, for the things that grow — except that the first 64 of each are always left loose, because a farmer who baled all their wheat would have to break a bale to feed a cow.",
 	"node.pbenchants.diggy_diggy_hole": "Diggy Diggy Hole",
-	"node.pbenchants.diggy_diggy_hole.desc": "Capstone active: sneak and right-click with a shovel, and everything in reach comes apart around you, block after block, until you switch it off. Never a block below the floor you are standing on and never the one holding you up. It stops on its own when the shovel leaves your hand, when it is about to break, when you are too hungry, or the moment your feet leave the ground."
+	"node.pbenchants.diggy_diggy_hole.desc": "Capstone active: sneak and right-click with a shovel, and everything in reach comes apart around you until you switch it off. It digs at the speed the shovel would have swung — Efficiency, Haste and Spade's Grip all count, and an Efficiency V netherite shovel clears its whole reach in an instant. Never a block below the floor you are standing on and never the one holding you up. It stops on its own when the shovel leaves your hand, breaks, runs out as Indestructible, when you are too hungry, or the moment your feet leave the ground."
 }
