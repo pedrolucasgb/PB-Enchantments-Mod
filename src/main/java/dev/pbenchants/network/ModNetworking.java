@@ -24,6 +24,12 @@ public final class ModNetworking {
 	}
 
 	public static void init() {
+		// Configuration phase: the version handshake runs before the player
+		// exists, so a mismatched client never reaches the play payloads below.
+		PayloadTypeRegistry.clientboundConfiguration().register(VersionCheckPayload.TYPE, VersionCheckPayload.CODEC);
+		PayloadTypeRegistry.serverboundConfiguration().register(VersionReplyPayload.TYPE, VersionReplyPayload.CODEC);
+		VersionGate.init();
+
 		PayloadTypeRegistry.serverboundPlay().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SkillFeedbackPayload.TYPE, SkillFeedbackPayload.CODEC);

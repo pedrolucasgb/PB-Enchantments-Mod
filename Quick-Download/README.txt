@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.8.1-beta
+Version 0.8.2-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,21 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.8.2-beta
+-------------------------
+- THE SERVER CHECKS YOUR MOD VERSION AT THE DOOR. A dedicated server
+  running PB Enchantments now refuses a client whose mod version does
+  not match its own - or that does not have the mod at all - before
+  the world even loads. The message names both versions, so you
+  always know which side is behind and what to download.
+
+- EVERYONE UPDATES TOGETHER. The check is exact: the server and every
+  player must run the same PB Enchantments version. This is also the
+  first version that can answer the check - a player still on
+  0.8.1-beta or older is turned away as if the mod were missing - so
+  hand this jar to your players when you update the server. Nothing
+  about your world or your progress changes.
 
 WHAT IS NEW IN 0.8.1-beta
 -------------------------
