@@ -887,7 +887,7 @@
 	"perk.pbenchants.diggy.on": "Diggy Diggy Hole is running — sneak and right-click again to stop.",
 	"perk.pbenchants.diggy.off.manual": "Diggy Diggy Hole stopped.",
 	"perk.pbenchants.diggy.off.unequipped": "Diggy Diggy Hole stopped: the shovel left your hand.",
-	"perk.pbenchants.diggy.off.broken": "Diggy Diggy Hole stopped: the shovel is about to break.",
+	"perk.pbenchants.diggy.off.broken": "Diggy Diggy Hole stopped: the shovel broke.",
 	"perk.pbenchants.diggy.off.spent": "Diggy Diggy Hole stopped: the shovel is spent.",
 	"perk.pbenchants.diggy.off.locked": "Diggy Diggy Hole stopped: that shovel carries something you have not earned.",
 	"perk.pbenchants.diggy.off.not_owned": "Diggy Diggy Hole stopped: the node is no longer yours.",

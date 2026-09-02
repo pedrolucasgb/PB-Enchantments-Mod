@@ -29,9 +29,8 @@ import java.util.UUID;
  *
  * <p>Sneak and right-click with a shovel and everything within reach comes apart,
  * block after block, until you switch it off or something switches it off for you.
- * It obeys the same floor rule as Flat Earth: never a block below the one the
- * player is standing on, and never the block holding them up. You dig the room,
- * not the shaft.
+ * It obeys the same floor rule as Flat Earth: never the layer the player is
+ * standing on, nor anything below it. You dig the room, not the shaft.
  *
  * <p><b>It costs what swinging would have cost.</b> Each tick hands the aura one
  * tick of mining and every block is charged what vanilla would have charged to
@@ -174,7 +173,7 @@ public final class DiggyDiggyHole {
 				for (int dz = -scan; dz <= scan; dz++) {
 					BlockPos target = player.blockPosition().offset(dx, dy, dz);
 					if (!GroundLevel.allowed(support, target)) {
-						continue; // never below the floor, never the block holding you up
+						continue; // never the layer you are standing on, nor below it
 					}
 					if (target.distToCenterSqr(eye) > reachSq) {
 						continue;
@@ -202,7 +201,7 @@ public final class DiggyDiggyHole {
 		try {
 			int broken = 0;
 			for (BlockPos target : candidates) {
-				if (broken >= MAX_BREAKS_PER_TICK || aboutToBreak(player)) {
+				if (broken >= MAX_BREAKS_PER_TICK || cannotDig(player)) {
 					break;
 				}
 				float cost = ticksToBreak(level, target, player);
@@ -250,10 +249,10 @@ public final class DiggyDiggyHole {
 	private static String offReason(ServerPlayer player, Armed armed) {
 		ItemStack held = player.getMainHandItem();
 		if (held != armed.shovel() || !held.is(ItemTags.SHOVELS)) {
-			return "unequipped";
-		}
-		if (held.isDamageableItem() && held.getDamageValue() >= held.getMaxDamage() - 2) {
-			return "broken";
+			// A shovel that wore out is gone from the slot, so the remembered
+			// stack reads empty — that is the difference between it breaking and
+			// you putting it away, and the player deserves to be told which.
+			return armed.shovel().isEmpty() ? "broken" : "unequipped";
 		}
 		if (Indestructible.isSpent(held)) {
 			return "spent";
@@ -278,10 +277,17 @@ public final class DiggyDiggyHole {
 		return null;
 	}
 
-	private static boolean aboutToBreak(ServerPlayer player) {
+	/**
+	 * The aura digs a shovel all the way to nothing — wearing a tool out is a
+	 * cost the player accepted when they switched it on, and stopping two points
+	 * short just left them holding a shovel they had to finish off by hand.
+	 * Indestructible is the exception, because that enchantment exists precisely
+	 * so the tool survives: it goes inert instead of breaking, and inert is where
+	 * the aura stops.
+	 */
+	private static boolean cannotDig(ServerPlayer player) {
 		ItemStack shovel = player.getMainHandItem();
-		return !shovel.is(ItemTags.SHOVELS)
-			|| (shovel.isDamageableItem() && shovel.getDamageValue() >= shovel.getMaxDamage() - 2);
+		return !shovel.is(ItemTags.SHOVELS) || Indestructible.isSpent(shovel);
 	}
 
 	/** Chat line plus the HUD flag, so the state is legible while it is running. */

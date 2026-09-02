@@ -26,12 +26,11 @@ import java.util.List;
  * block has to be about as hard as the one you actually swung at.
  *
  * <p><b>The floor rule.</b> Nothing here is ever broken below the block the
- * player is standing on, and never that block itself ({@link GroundLevel}).
- * Digging down at your own feet the rest of the layer is fair game, so a swing
- * clears the ring around you and leaves the one tile you are standing on: you
- * step off it and take it with the next swing. Aiming a layer lower yields
- * nothing at all, on purpose — this is the enchantment that cannot drop you into
- * a cave you did not see.
+ * player is standing in ({@link GroundLevel}): the layer under your feet and
+ * everything below it is off limits, so the swing works downwards from where you
+ * stand rather than through it. That is what levelling a hill actually is — you
+ * stand at the height you want and take everything above it — and it is why this
+ * is the enchantment that cannot drop you into a cave you did not see.
  *
  * <p>Strictly a shovel effect. As with Dig Range and its pickaxe tag, the
  * {@code #minecraft:mineable/shovel} check is what keeps it from turning into a
@@ -74,12 +73,12 @@ public final class FlatEarth {
 		BreakGuard.enter();
 		try {
 			for (int[] offset : mask(rangeLevel)) {
-				if (shovelAboutToBreak(serverPlayer)) {
+				if (cannotDig(serverPlayer)) {
 					return;
 				}
 				BlockPos target = grid.at(pos, offset[0], offset[1]);
 				if (!GroundLevel.allowed(support, target)) {
-					continue; // never below the floor, never the block holding you up
+					continue; // never the layer you are standing on, nor below it
 				}
 				BlockState targetState = serverLevel.getBlockState(target);
 				if (!digsWithShovel(serverLevel, target, targetState, serverPlayer)
@@ -134,9 +133,13 @@ public final class FlatEarth {
 		return 1.0F / progress;
 	}
 
-	private static boolean shovelAboutToBreak(ServerPlayer player) {
+	/**
+	 * The swing spends the shovel down to nothing rather than stopping short of
+	 * breaking it. Indestructible is the exception: it never breaks, it goes
+	 * inert, and inert is where the cascade stops.
+	 */
+	private static boolean cannotDig(ServerPlayer player) {
 		ItemStack shovel = player.getMainHandItem();
-		return !shovel.is(ItemTags.SHOVELS)
-			|| (shovel.isDamageableItem() && shovel.getDamageValue() >= shovel.getMaxDamage() - 2);
+		return !shovel.is(ItemTags.SHOVELS) || Indestructible.isSpent(shovel);
 	}
 }

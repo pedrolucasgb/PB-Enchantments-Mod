@@ -887,7 +887,7 @@
 	"perk.pbenchants.diggy.on": "Diggy Diggy Hole activo — agáchate y haz clic derecho otra vez para detenerlo.",
 	"perk.pbenchants.diggy.off.manual": "Diggy Diggy Hole detenido.",
 	"perk.pbenchants.diggy.off.unequipped": "Diggy Diggy Hole detenido: la pala salió de tu mano.",
-	"perk.pbenchants.diggy.off.broken": "Diggy Diggy Hole detenido: la pala está a punto de romperse.",
+	"perk.pbenchants.diggy.off.broken": "Diggy Diggy Hole detenido: la pala se rompió.",
 	"perk.pbenchants.diggy.off.spent": "Diggy Diggy Hole detenido: la pala está agotada.",
 	"perk.pbenchants.diggy.off.locked": "Diggy Diggy Hole detenido: esa pala lleva algo que no has ganado.",
 	"perk.pbenchants.diggy.off.not_owned": "Diggy Diggy Hole detenido: el nodo ya no es tuyo.",
