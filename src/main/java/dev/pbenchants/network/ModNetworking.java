@@ -7,6 +7,7 @@ import dev.pbenchants.skill.SkillNode;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
+import dev.pbenchants.storage.DeftHands;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -28,6 +29,7 @@ public final class ModNetworking {
 		PayloadTypeRegistry.clientboundPlay().register(SkillFeedbackPayload.TYPE, SkillFeedbackPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(ScreenStatePayload.TYPE, ScreenStatePayload.CODEC);
 
 		// The client needs the snapshot from login on, not from the first time the
 		// tree screen is opened: the speed passives are computed client-side while
@@ -36,6 +38,12 @@ public final class ModNetworking {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.getPlayer()));
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
 			LAST_SYNC.remove(handler.getPlayer().getUUID()));
+
+		// Deft Hands stands down while the player has a screen open, and the
+		// survival inventory is the one screen vanilla never tells the server
+		// about — so the client says so itself.
+		ServerPlayNetworking.registerGlobalReceiver(ScreenStatePayload.TYPE, (payload, context) ->
+			DeftHands.setScreenOpen(context.player(), payload.open()));
 
 		// Artisan buttons live in the inventory screen, not the skill screen, and
 		// change the world rather than the tree — so they get their own channel

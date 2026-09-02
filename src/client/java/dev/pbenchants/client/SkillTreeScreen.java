@@ -10,6 +10,7 @@ import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.network.SkillActionPayload;
 import dev.pbenchants.network.SkillStatePayload;
 import dev.pbenchants.perk.BiomeCharts;
+import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.GateRequirement;
 import dev.pbenchants.skill.MaterialCost;
 import dev.pbenchants.skill.SkillNode;
@@ -857,7 +858,7 @@ public class SkillTreeScreen extends Screen {
 		// last, clipped to its panel.
 		super.extractRenderState(graphics, mouseX, mouseY, delta);
 
-		drawDetails(graphics);
+		drawDetails(graphics, mouseX, mouseY);
 		drawXpBar(graphics);
 		drawFeedback(graphics);
 	}
@@ -1026,7 +1027,7 @@ public class SkillTreeScreen extends Screen {
 		return y;
 	}
 
-	private void drawDetails(GuiGraphicsExtractor graphics) {
+	private void drawDetails(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
 		SkillTree tree = SkillTrees.byId(treeId);
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
 		int x = panelX + 6;
@@ -1045,7 +1046,7 @@ public class SkillTreeScreen extends Screen {
 				drawNode(graphics, node, state, x, y);
 			}
 		} else if (selectedTier >= 0) {
-			drawTier(graphics, tree, state, x, y);
+			drawTier(graphics, tree, state, x, y, mouseX, mouseY);
 		} else {
 			graphics.textWithWordWrap(font, Component.translatable("screen.pbenchants.help"),
 				x, y, panelWidth - 12, SkillTreeStyle.MUTED);
@@ -1131,7 +1132,8 @@ public class SkillTreeScreen extends Screen {
 		return y;
 	}
 
-	private void drawTier(GuiGraphicsExtractor graphics, SkillTree tree, SkillStatePayload.TreeState state, int x, int y) {
+	private void drawTier(GuiGraphicsExtractor graphics, SkillTree tree, SkillStatePayload.TreeState state,
+			int x, int y, int mouseX, int mouseY) {
 		SkillTier tier = tree.tiers().get(selectedTier);
 		boolean open = selectedTier < state.unlockedTiers();
 		y = wrappedText(graphics, tree.tierName(selectedTier), x, y, SkillTreeStyle.TEXT, 11);
@@ -1143,8 +1145,12 @@ public class SkillTreeScreen extends Screen {
 			x, y, open ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 13);
 
 		graphics.text(font, Component.translatable("screen.pbenchants.gate"), x, y, SkillTreeStyle.GOLD);
-		y += 12;
+		y += 10;
+		y = wrappedText(graphics, Component.translatable("screen.pbenchants.gate_hint"), x, y,
+			SkillTreeStyle.DIM, 11);
+		y += 1;
 		for (GateRequirement gate : tier.gates()) {
+			int lineTop = y;
 			int count = Math.min(state.counters().getOrDefault(gate.id(), 0), gate.target());
 			boolean done = count >= gate.target();
 			int color = done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED;
@@ -1161,7 +1167,51 @@ public class SkillTreeScreen extends Screen {
 			SkillTreeStyle.progressBar(graphics, x, y, panelWidth - 12, 3,
 				(float) count / gate.target(), done ? SkillTreeStyle.GREEN : SkillTreeStyle.GOLD);
 			y += 7;
+
+			// The line says how far along you are; the tooltip says what the
+			// line means and — for a checklist — which entries are still
+			// missing. Scissor-tested so a line clipped out of the panel does
+			// not answer a mouse hovering over whatever is drawn there instead.
+			if (mouseX >= panelX && mouseX < panelX + panelWidth && mouseY >= lineTop && mouseY < y
+				&& graphics.containsPointInScissor(mouseX, mouseY)) {
+				graphics.setComponentTooltipForNextFrame(font, gateTooltip(gate, state), mouseX, mouseY);
+			}
 		}
+	}
+
+	/**
+	 * What one gate line explains when the mouse rests on it: its name and
+	 * progress, what the counter actually counts, and — for the gates that are
+	 * a closed list rather than a running total — every entry, ticked or not.
+	 *
+	 * <p>The checklist half is the point of the whole tooltip. "Ore checklist
+	 * 7/11" tells a player how far they are and nothing about what to do next;
+	 * the list tells them it is quartz and ancient debris they still owe.
+	 */
+	private List<Component> gateTooltip(GateRequirement gate, SkillStatePayload.TreeState state) {
+		int count = state.counters().getOrDefault(gate.id(), 0);
+		boolean done = count >= gate.target();
+		List<Component> lines = new ArrayList<>();
+		lines.add(Component.literal(gate.displayName()).withColor(SkillTreeStyle.GOLD & 0xFFFFFF));
+		lines.add(Component.literal(Math.min(count, gate.target()) + "/" + gate.target())
+			.withColor((done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED) & 0xFFFFFF));
+		// A gate nobody has written a description for yet contributes no line at
+		// all, rather than a blank one in the middle of the tooltip.
+		Component description = Component.translatableWithFallback("gate.pbenchants." + gate.id() + ".desc", "");
+		if (!description.getString().isEmpty()) {
+			lines.add(description.copy().withColor(SkillTreeStyle.MUTED & 0xFFFFFF));
+		}
+
+		List<GateChecklists.Entry> entries = GateChecklists.of(gate.id());
+		if (!entries.isEmpty()) {
+			lines.add(Component.empty());
+			for (GateChecklists.Entry entry : entries) {
+				boolean ticked = GateChecklists.ticked(state.counters(), gate.id(), entry.bit());
+				lines.add(Component.literal(ticked ? "✓ " : "□ ").append(entry.name())
+					.withColor((ticked ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED) & 0xFFFFFF));
+			}
+		}
+		return lines;
 	}
 
 	/**
