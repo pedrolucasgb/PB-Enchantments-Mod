@@ -16,9 +16,9 @@ import net.minecraft.world.item.Items;
  * until then. Either way the tooltip doubles as advertising for a tier the
  * player has not reached, which is the same job the villager's offer does.
  *
- * <p>A book whose rank the player only partly owns is still refused (a trade
- * shows its price up front), while a tool is not: it clamps and quietly wakes
- * up, so it gets no warning line.
+ * <p>One rule for both: the rank on the label is the rank you have to own.
+ * A Dig Range III pickaxe warns a rank II player exactly as a Dig Range III
+ * book does, because neither is any use to them.
  */
 public final class LockedItemTooltip {
 	private LockedItemTooltip() {
@@ -31,7 +31,7 @@ public final class LockedItemTooltip {
 				return;
 			}
 			boolean book = stack.is(Items.ENCHANTED_BOOK);
-			ItemAuthority.Unmet unmet = ItemAuthority.firstUnmet(player, stack, book);
+			ItemAuthority.Unmet unmet = ItemAuthority.firstUnmet(player, stack);
 			if (unmet == null) {
 				return;
 			}

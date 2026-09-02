@@ -278,12 +278,18 @@ public class LivingEntityMixin {
 
 	/**
 	 * Reaper's Wisdom: a mob killed with a Looting weapon gives more XP —
-	 * +25% per level, so Looting III is +75%. Looting already decides how much
-	 * of a mob you take away; this makes it decide how much you learn too, and
-	 * gives the Enchanter a reason to care about a weapon enchantment.
+	 * +25% per level across the whole ladder, I +25% through IV +100%. Looting
+	 * reaches IV in this mod (Spoils of War), and the scaling follows it there
+	 * rather than stopping at the vanilla ceiling. Looting already decides how
+	 * much of a mob you take away; this makes it decide how much you learn too,
+	 * and gives the Enchanter a reason to care about a weapon enchantment.
 	 *
-	 * <p>Rounded up, so a 1-point kill still benefits, and the Scholar bonus
-	 * applies afterwards on the way into the player's bar — the two multiply.
+	 * <p>Rounded up — a real ceiling, {@code (reward * level + 3) / 4}, not a
+	 * floor with a floor of 1 under it. Plain integer division rounded the bonus
+	 * <em>down</em> at every rank, so a 5-point mob under Looting I paid +1
+	 * instead of the +2 that 25% of 5 comes to, and the ladder never quite added
+	 * up to what it says. Scholar applies afterwards on the way into the
+	 * player's bar — the two multiply.
 	 */
 	@Inject(method = "getExperienceReward", at = @At("RETURN"), cancellable = true)
 	private void pbenchants$reapersWisdom(ServerLevel level, Entity killer, CallbackInfoReturnable<Integer> cir) {
@@ -294,7 +300,7 @@ public class LivingEntityMixin {
 		}
 		int looting = pbenchants$lootingLevel(level, player);
 		if (looting > 0) {
-			cir.setReturnValue(reward + Math.max(1, reward * looting / 4));
+			cir.setReturnValue(reward + Math.max(1, (reward * looting + 3) / 4));
 		}
 	}
 

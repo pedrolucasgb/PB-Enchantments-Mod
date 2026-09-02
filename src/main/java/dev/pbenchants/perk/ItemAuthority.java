@@ -27,18 +27,21 @@ import java.util.UUID;
  *
  * <p>Every perk effect used to read the item and nothing else, so a gifted
  * Dig Range III pickaxe skipped ten hours of progression. This class is the
- * per-holder half the enchantments were missing:
+ * per-holder half the enchantments were missing.
  *
- * <ul>
- *   <li>hold an item carrying a Tool Mastery enchantment you own <em>no</em>
- *       rank of and the whole item goes {@link #locked inert} — bare-hand dig
- *       speed, no drops from blocks that need a tool, bare-hand melee damage,
- *       and no durability spent. The item is intact; it is carried, not
- *       usable.</li>
- *   <li>own a lower rank than the item carries and the effect is
- *       {@link #effectiveLevel clamped} down to your rank. The tool wakes up
- *       further as the tree catches up.</li>
- * </ul>
+ * <p>The rule is one sentence: <b>hold a rank you have not unlocked and the
+ * whole item goes {@link #locked inert}</b> — bare-hand dig speed, no drops
+ * from blocks that need a tool, bare-hand melee damage, and no durability
+ * spent. The item is intact; it is carried, not usable. It does not matter how
+ * it got into your hands — enchanted at a table, bought off a librarian,
+ * hammered together on an anvil or handed over by a player who did earn it.
+ *
+ * <p>It is the exact rank on the label that has to be earned, not merely some
+ * rank of the same enchantment. Own Dig Range II, pick up a Dig Range III
+ * pickaxe and it is a stick until you buy rank III: the tool advertises the
+ * tier you have not reached instead of quietly handing you two thirds of it.
+ * That also makes the trade counter and the swing agree — a book you may not
+ * buy is a book you could not have used.
  *
  * <p>Both answers have to match on the client and the server: the client draws
  * the cracking animation and the server validates the break, so a disagreement
@@ -123,15 +126,11 @@ public final class ItemAuthority {
 	/**
 	 * The first enchantment on the stack the player falls short of, or null.
 	 *
-	 * @param requireFullRank {@code true} asks "may this player own the item at
-	 *                        all" — the trade counter's question, where the rank
-	 *                        and the price are both on the label and quietly
-	 *                        handing over a weaker book would be a bug.
-	 *                        {@code false} asks "may this player use the item",
-	 *                        where a rank below the item's is fine: it clamps.
+	 * <p>"Falls short" means the player owns a lower rank than the item carries,
+	 * or none at all — the same question at the trade counter and in the hand.
 	 */
 	@Nullable
-	public static Unmet firstUnmet(Player player, ItemStack stack, boolean requireFullRank) {
+	public static Unmet firstUnmet(Player player, ItemStack stack) {
 		if (stack.isEmpty() || player.hasInfiniteMaterials()) {
 			return null;
 		}
@@ -147,8 +146,7 @@ public final class ItemAuthority {
 				continue; // vanilla enchantments have no unlock to fall short of
 			}
 			int ownedRank = owned(player, key);
-			int needed = requireFullRank ? entry.getIntValue() : 1;
-			if (ownedRank < needed) {
+			if (ownedRank < entry.getIntValue()) {
 				return new Unmet(entry.getKey(), key, entry.getIntValue(), ownedRank);
 			}
 		}
@@ -156,26 +154,35 @@ public final class ItemAuthority {
 	}
 
 	/**
-	 * True when the holder owns no rank at all of something the item carries.
-	 * The whole item goes inert, not just our enchantment's effect: "your gear
-	 * is only as strong as you are" is one sentence instead of a matrix, and a
-	 * gifted Efficiency V netherite pickaxe would otherwise still be most of
-	 * the shortcut this closes.
+	 * True when the item carries a rank this holder has not unlocked. The whole
+	 * item goes inert, not just our enchantment's effect: "your gear is only as
+	 * strong as you are" is one sentence instead of a matrix, and a gifted
+	 * Efficiency V netherite pickaxe would otherwise still be most of the
+	 * shortcut this closes.
 	 */
 	public static boolean locked(Player player, ItemStack stack) {
-		return firstUnmet(player, stack, false) != null;
-	}
-
-	/** Trade-counter rule: the buyer must own the exact rank on the label, or better. */
-	public static boolean unbuyable(Player player, ItemStack stack) {
-		return firstUnmet(player, stack, true) != null;
+		return firstUnmet(player, stack) != null;
 	}
 
 	/**
-	 * What one of our enchantments is actually worth in this player's hands:
-	 * the item's rank clamped down to theirs, and 0 outright when anything else
-	 * on the item is locked. Every perk reads this instead of the raw stack
-	 * level, which is what makes a borrowed tool wake up rank by rank.
+	 * Trade-counter rule: the buyer must own the exact rank on the label, or
+	 * better. The same test as {@link #locked} — deliberately, since a book you
+	 * may not buy would be a book you could not have used — but kept under its
+	 * own name because the two callers are asking different questions.
+	 */
+	public static boolean unbuyable(Player player, ItemStack stack) {
+		return firstUnmet(player, stack) != null;
+	}
+
+	/**
+	 * What one of our enchantments is actually worth in this player's hands: the
+	 * rank on the item, or 0 when anything the item carries is above what the
+	 * holder has unlocked. Every perk reads this instead of the raw stack level,
+	 * which is what makes an unearned tool dig like a bare hand.
+	 *
+	 * <p>The clamp on the way out is belt and braces — {@link #locked} has
+	 * already refused anything above the player's rank — so that a future caller
+	 * that reaches this without the lock check cannot hand out a rank either.
 	 */
 	public static int effectiveLevel(Player player, ItemStack stack, ResourceKey<Enchantment> enchantmentKey) {
 		int carried = ModEnchantments.level(player, stack, enchantmentKey);
@@ -198,7 +205,7 @@ public final class ItemAuthority {
 		if (!(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
-		Unmet unmet = firstUnmet(player, stack, false);
+		Unmet unmet = firstUnmet(player, stack);
 		if (unmet == null) {
 			return;
 		}

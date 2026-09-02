@@ -13,7 +13,9 @@ import net.minecraft.world.item.enchantment.Enchantments;
 /**
  * Prospector's Wisdom (Enchanter tier 5) — the mining half of
  * {@code Reaper's Wisdom}: a block broken with a Fortune tool gives more
- * experience, +25% per level, so Fortune III is +75%.
+ * experience, +25% per level across the whole ladder — I +25%, II +50%,
+ * III +75%, IV +100%. Fortune reaches IV in this mod (Ancient Fortune), and the
+ * scaling follows it there rather than stopping at the vanilla ceiling.
  *
  * <p>Looting already decides how much of a mob you take away, and Reaper's
  * Wisdom makes it decide how much you learn too. Fortune is the same bargain on
@@ -60,16 +62,17 @@ public final class ProspectorsWisdom {
 	}
 
 	/**
-	 * The experience this break should actually drop. Rounded up, so a 1-point
-	 * block still benefits, and Scholar applies afterwards on the way into the
-	 * bar — the two multiply, exactly as they do for Reaper's Wisdom.
+	 * The experience this break should actually drop: a real ceiling, so every
+	 * rank is worth the 25% it advertises and a 1-point block still benefits.
+	 * Scholar applies afterwards on the way into the bar — the two multiply,
+	 * exactly as they do for Reaper's Wisdom, which uses the same arithmetic.
 	 */
 	public static int scale(int amount) {
 		Swing swing = CURRENT.get();
 		if (swing == null || amount <= 0) {
 			return amount;
 		}
-		return amount + Math.max(1, amount * swing.fortuneLevel() / 4);
+		return amount + Math.max(1, (amount * swing.fortuneLevel() + 3) / 4);
 	}
 
 	private static int fortuneLevel(ServerPlayer player, ItemStack tool) {

@@ -225,8 +225,8 @@ And *nothing in this tree digs below the floor you are standing on*. Flat Earth 
 | **Anvil Adept** I–II | 3 / 4 | I takes 30% off every anvil job; II removes *"Too Expensive!"* and caps any job at 40 levels |
 | **Ancient Knowledge** | capstone | The three table offers become 35 / 40 / 45 — and the top one sometimes rolls a perfect item |
 | **Greater Mending** | capstone | Lifts vanilla Mending from I to II — two Mending books merge into Mending II on *your* anvil, and it mends double per point of XP |
-| **Reaper’s Wisdom** | capstone | A mob killed with a Looting weapon gives +25% XP per Looting level, stacking on top of Scholar |
-| **Prospector’s Wisdom** | capstone | The mining half of the same idea: a block broken with a Fortune tool gives +25% XP per Fortune level, stacking on top of Scholar |
+| **Reaper’s Wisdom** | capstone | A mob killed with a Looting weapon gives +25% XP per Looting level, all four of them — +100% at Looting IV. Stacks on top of Scholar |
+| **Prospector’s Wisdom** | capstone | The mining half of the same idea: a block broken with a Fortune tool gives +25% XP per Fortune level, all four of them — +100% at Fortune IV. Stacks on top of Scholar |
 
 **Anvil Adept, in two ranks.** The bill is rewritten at the one point vanilla computes it — the `Mth.clamp` that folds the prior-work penalty in — so everything downstream reads the same number: the too-expensive wall, the level check in `mayPickup`, and the levels `onTake` actually deducts.
 
@@ -429,26 +429,26 @@ Enchanted books are the third way onto a tool, next to the enchanting table and 
 
 - ✅ **The villager offers them at any stage.** Trade generation never looks at your tree. A brand-new player can walk into a village on day one and see *Dig Range III* in a librarian's list. The offer is bait: it advertises what the tree holds.
 - ✅ **Only an unlocked player can buy.** Taking the book is refused server-side unless you own that node at that rank or higher — no emerald is spent and no book is produced.
-- ✅ **Refused, not clamped.** A *Dig Range III* book offered to someone who owns only rank I is blocked outright. The enchanting table clamps because the roll is invisible until it lands; a trade puts the rank and the price on the label, so quietly handing over a weaker book for the full price would be a bug.
+- ✅ **Refused at the counter, not clamped in the hand.** A *Dig Range III* book offered to someone who owns only rank I is blocked outright — no emerald spent, no weaker book quietly substituted for the full price. Buying it were it possible would gain them nothing anyway: an unearned rank is inert in the hand too (see *shared items* below). The enchanting table is the one place that clamps, because there the roll is invisible until it lands and it clamps to a rank you can actually use.
 - ✅ **No click-into-refusal.** The offer renders with vanilla's barred arrow and the book's tooltip names the rank you still owe.
-- ✅ **One pool per class, spread across the librarian’s career.** A librarian draws two trades for life from each level’s pool, so a single trade rolling one of twenty-six enchantments made any *particular* book — Rich Vein, say — something you could look for all game and never see. The offers are now split by class and by level: **apprentice** sells Pickaxe and Ground books, **journeyman** Axe and Sword, **expert** Armor and Bow, **master** the Enchanter and Explorer pair. Two entries per level, never more, so vanilla book trades keep their place in a village.
-- ✅ **Data-driven.** Each offer rolls a random enchantment at a random rank from its class tag — `#toolmastery:trade_pool/pickaxe` and friends, with `#toolmastery:trade_pool` still the union of all of them. Adding a new enchantment to the tree means one tag entry, not new trade code.
+- ✅ **One book per librarian, one pool for the whole mod.** The offer joins the vanilla *apprentice* pool, from which a librarian draws two trades for life — so mod books never crowd the vanilla book trades out of a village. Every enchantment sits in the same pool at the same weight: a Rich Vein book is exactly as rare as a Keen Edge one, which is the point. Rare is the intended feel; the tree, not the village, is the reliable route.
+- ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#toolmastery:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
 
-**Price.** 20 / 24 / 28 / 32 emeralds by librarian level, plus vanilla's own rank-scaled book price, so a rank I lands around 30 and a rank III up near the 64 ceiling. Books are deliberately expensive: emeralds are a currency the progression does not otherwise touch, and a cheap book would make the skill screen's Enchant button dead UI.
+**Price.** 24 emeralds flat plus vanilla's own rank-scaled book price, so a rank I lands around 30 and a rank III up near the 64 ceiling. Books are deliberately expensive: emeralds are a currency the progression does not otherwise touch, and a cheap book would make the skill screen's Enchant button dead UI.
 
 **The anvil.** A bought book can be applied to any tool and handed to anyone — that is fine, and intended: under *shared items* below the resulting tool is inert in unearned hands, so the book is a certificate that only works for someone who has done the work anyway. What the anvil will *not* do is mint a rank you have not earned. Two Dig Range II books merge into a Dig Range II, not a III, until the tree says otherwise — the same clamp that already stopped two Fortune III books from standing in for Ancient Fortune.
 
-### Shared items — gear only works as well as its holder has unlocked
+### Shared items — gear only works for a holder who earned the rank on it
 A gear-rich player can hand a beginner a Dig Range III / Smelt III netherite pickaxe. Trading stays legal; what changes is that the item does not do the beginner's growing for them.
 
-> Hold an item carrying an enchantment you have not unlocked, and it behaves as if your hands were empty.
+> Hold an item carrying a **rank** you have not unlocked, and it behaves as if your hands were empty.
 
 - ✅ **The whole item goes inert, not just the enchantment.** A borrowed pickaxe digs at the bare-hand rate and stone drops nothing; a borrowed axe hits for bare-hand damage. The item is intact and keeps its enchantments — it is carried, not usable, and it becomes a goal in your inventory instead of a shortcut past ten hours of play.
-- ✅ **Partial ownership clamps instead.** Own Dig Range I and hold a Dig Range III pickaxe and it works at rank I. The tool wakes up further as the tree catches up.
+- ✅ **Partial ownership is not ownership.** Own Dig Range II, hold a Dig Range III pickaxe, and it is a stick — not a rank II pickaxe. The rank on the label is the rank you have to have bought, and it does not matter which of the three routes put it there: the enchanting table, a librarian's book or another player's generosity. Buy rank III and the tool wakes up whole.
 - ✅ **A locked item takes no durability damage.** You are not really using it, and it closes the angle where handing someone a tool burns it out for them.
 - ✅ **Both sides agree.** The check runs on the client and the server from the same synced state, so blocks never "heal" mid-swing.
 - ✅ **You are told.** The item's tooltip names the rank to unlock, and swinging one puts a rate-limited note on the action bar. Silent degradation reads as a bug.
-- ✅ **Creative mode bypasses it**, so testing every other feature does not mean grinding the tree first.
+- ✅ **Creative mode bypasses it**, so testing every other feature does not mean grinding the tree first. It is the one hole on purpose, and it is why an unearned rank looks like it works when you are flying: use `/mastery debug unlockall` and survival to check the gate itself.
 
 Environmental modifiers still apply on top: a locked pickaxe swung underwater is as slow as bare hands underwater, not as fast as bare hands on dry land.
 
