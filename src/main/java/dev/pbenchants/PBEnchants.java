@@ -95,9 +95,13 @@ public class PBEnchants implements ModInitializer {
 			ItemAuthority.noticeInertUse(player, player.getMainHandItem());
 			BlockBreakTracker.onBreak(level, player, pos, state);
 			dev.pbenchants.perk.SmeltHandler.onBreak(level, player, pos, state);
-			dev.pbenchants.perk.VeinMiner.onBreak(level, player, pos, state);
+			// Rich Vein claims the swing when it fires: an ore vein is the whole
+			// of what that pickaxe does this hit, and Dig Range does not widen it.
+			boolean vein = dev.pbenchants.perk.VeinMiner.onBreak(level, player, pos, state);
 			MinersMagnet.onBreak(level, player, pos, state);
-			AreaBreak.onBreak(level, player, pos, state);
+			if (!vein) {
+				AreaBreak.onBreak(level, player, pos, state);
+			}
 			// Same family as Dig Range, and mutually exclusive with it by tool.
 			FlatEarth.onBreak(level, player, pos, state);
 			HoeAreaHarvest.onBreak(level, player, pos, state);

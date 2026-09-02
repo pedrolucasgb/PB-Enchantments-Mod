@@ -398,13 +398,17 @@ public final class SkillTrees {
 				.costing(mat(Items.BOOK, 32), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD, 8)),
 			SkillNode.chained("anvil_adept_2", 3, 12, "anvil_adept_1", SkillType.PASSIVE).icon(Items.CHIPPED_ANVIL)
 				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.DIAMOND, 8), mat(Items.EMERALD, 16)),
-			// Tier 5 — three finishers, buyable together
+			// Tier 5 — four finishers, buyable together. Reaper's Wisdom and
+			// Prospector's Wisdom are the same node read twice: one turns Looting
+			// into experience, the other Fortune.
 			SkillNode.of("ancient_knowledge", 4, 20, SkillType.PASSIVE).icon(Items.ENCHANTED_BOOK)
 				.costing(mat(Items.LAPIS_LAZULI, 64), mat(Items.BOOKSHELF, 16), mat(Items.EMERALD_BLOCK, 4)),
 			SkillNode.of("greater_mending", 4, 20, SkillType.PASSIVE).icon(Items.EXPERIENCE_BOTTLE)
 				.costing(mat(Items.EXPERIENCE_BOTTLE, 32), mat(Items.EMERALD_BLOCK, 2), mat(Items.NETHERITE_INGOT, 1)),
 			SkillNode.of("reapers_wisdom", 4, 20, SkillType.PASSIVE).icon(Items.SCULK_CATALYST)
-				.costing(mat(Items.SCULK_CATALYST, 1), mat(Items.ECHO_SHARD, 4), mat(Items.EMERALD_BLOCK, 2))
+				.costing(mat(Items.SCULK_CATALYST, 1), mat(Items.ECHO_SHARD, 4), mat(Items.EMERALD_BLOCK, 2)),
+			SkillNode.of("prospectors_wisdom", 4, 20, SkillType.PASSIVE).icon(Items.DEEPSLATE_EMERALD_ORE)
+				.costing(mat(Items.DIAMOND_BLOCK, 1), mat(Items.LAPIS_BLOCK, 4), mat(Items.EMERALD_BLOCK, 2))
 		)
 	);
 

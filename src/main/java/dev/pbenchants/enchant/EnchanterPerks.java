@@ -28,6 +28,8 @@ public final class EnchanterPerks {
 	public static final String GREATER_MENDING = "greater_mending";
 	/** Tier 5: mob XP scales with the Looting on the weapon that landed the kill. */
 	public static final String REAPERS_WISDOM = "reapers_wisdom";
+	/** Tier 5: block XP scales with the Fortune on the tool that broke it. */
+	public static final String PROSPECTORS_WISDOM = "prospectors_wisdom";
 	/** Tier 5: the table offers 35/40/45, and sometimes a perfect item. */
 	public static final String ANCIENT_KNOWLEDGE = "ancient_knowledge";
 

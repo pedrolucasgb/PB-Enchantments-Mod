@@ -556,6 +556,8 @@
 	"node.pbenchants.greater_mending.desc": "Capstone passive: lifts the ceiling on vanilla Mending from I to II. Two Mending books merge into Mending II on your anvil — nobody else's — and Mending II mends twice the durability per point of experience.",
 	"node.pbenchants.reapers_wisdom": "Reaper's Wisdom",
 	"node.pbenchants.reapers_wisdom.desc": "Capstone passive: a mob killed with a Looting weapon gives more experience — +25% per level, so Looting III is +75%. It stacks on top of Scholar.",
+	"node.pbenchants.prospectors_wisdom": "Prospector's Wisdom",
+	"node.pbenchants.prospectors_wisdom.desc": "Capstone passive: a block broken with a Fortune tool gives more experience — +25% per level, so Fortune III is +75%. Reaper's Wisdom for the mine, and it stacks on top of Scholar.",
 	"node.pbenchants.cartographer": "Cartographer",
 	"node.pbenchants.cartographer_1.desc": "Passive: walking into a biome you have never visited prints its name and your coordinates in the action bar, and the skill screen keeps the list of what you have found. It is also what makes the biome gate legible.",
 	"node.pbenchants.tireless": "Tireless",

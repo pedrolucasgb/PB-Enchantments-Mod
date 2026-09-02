@@ -1,9 +1,11 @@
 package dev.pbenchants.mixin;
 
 import dev.pbenchants.enchant.EnchanterPerks;
+import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.perk.ArmorPerks;
 import dev.pbenchants.perk.BowPerks;
 import dev.pbenchants.perk.CombatPerks;
+import dev.pbenchants.perk.ItemAuthority;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
@@ -58,6 +60,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * {@code getMaxLevel} back here for anyone without the node is what makes them
  * rewards. The anvil is the only place Mending II can be made at all, Mending
  * being treasure.
+ *
+ * <p><b>Tool Mastery ranks</b> are clamped the same way, and for the same
+ * reason: the data file has to declare Dig Range III so the rank can exist, and
+ * the anvil would otherwise let two rank IIs be hammered into one.
  *
  * <p><b>Broad Swing</b> (Sword tier 2) — a Sweeping Edge book only takes on an
  * axe for someone who has bought the node.
@@ -154,10 +160,9 @@ public class AnvilMenuMixin {
 	 * and clamps back here for anyone without the node that earned them.
 	 *
 	 * <p>Mending II, Fortune IV, Looting IV and Protection V are all the same
- * trick and now
-	 * all live in the same table. Fortune used to be gated at the enchanting
-	 * table only, which left two Fortune III books on an anvil as a way round
-	 * the capstone entirely — that hole closes here.
+	 * trick and now all live in the same table. Fortune used to be gated at the
+	 * enchanting table only, which left two Fortune III books on an anvil as a
+	 * way round the capstone entirely — that hole closes here.
 	 */
 	@Unique
 	private int pbenchants$gatedCeiling(Enchantment enchantment, ResourceKey<Enchantment> key,
@@ -200,7 +205,34 @@ public class AnvilMenuMixin {
 		}
 		int power = pbenchants$gatedCeiling(enchantment, Enchantments.POWER,
 			"bow", BowPerks.HUNTERS_BOUNTY, 5);
-		return power >= 0 ? power : max;
+		if (power >= 0) {
+			return power;
+		}
+		return pbenchants$masteryCeiling(enchantment, max);
+	}
+
+	/**
+	 * Tool Mastery ranks are earned, not forged. The enchanting table already
+	 * clamps our own enchantments to the rank the tree has unlocked, but the
+	 * anvil was still adding two Dig Range II books up into a Dig Range III for
+	 * a player who owns rank II — the same hole Fortune III + Fortune III used
+	 * to leave, one row up. The ceiling here is the player's own rank, so a
+	 * merge tops out where the tree does.
+	 *
+	 * <p>Never below 1: a player who owns no rank at all is carrying an inert
+	 * item anyway ({@link ItemAuthority#locked}), and a ceiling of 0 would strip
+	 * the enchantment off the result instead of just refusing the upgrade.
+	 *
+	 * @return the clamped ceiling, or {@code vanillaMax} when this is not one of ours
+	 */
+	@Unique
+	private int pbenchants$masteryCeiling(Enchantment enchantment, int vanillaMax) {
+		for (ResourceKey<Enchantment> ours : ModEnchantments.ALL) {
+			if (pbenchants$is(enchantment, ours)) {
+				return Math.max(1, ItemAuthority.owned(pbenchants$player, ours));
+			}
+		}
+		return vanillaMax;
 	}
 
 	/**

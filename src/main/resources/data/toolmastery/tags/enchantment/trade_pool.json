@@ -1,30 +1,11 @@
 {
   "values": [
-    "toolmastery:dig_range",
-    "toolmastery:smelt",
-    "toolmastery:logic",
-    "toolmastery:rich_vein",
-    "toolmastery:environment",
-    "toolmastery:indestructible",
-    "toolmastery:slipstream",
-    "toolmastery:keen_edge",
-    "toolmastery:sweeping_arc",
-    "toolmastery:executioner",
-    "toolmastery:tidecaller",
-    "toolmastery:gravity_well",
-    "toolmastery:phalanx",
-    "toolmastery:nostalgy",
-    "toolmastery:sundering_blow",
-    "toolmastery:thermal_weave",
-    "toolmastery:ablative_plating",
-    "toolmastery:thorned_plate",
-    "toolmastery:bulwark",
-    "toolmastery:kinetic_plating",
-    "toolmastery:long_shot",
-    "toolmastery:gale",
-    "toolmastery:ricochet",
-    "toolmastery:pinning_shot",
-    "toolmastery:flat_earth",
-    "toolmastery:harvest_swing"
+    "#toolmastery:trade_pool/pickaxe",
+    "#toolmastery:trade_pool/axe",
+    "#toolmastery:trade_pool/ground",
+    "#toolmastery:trade_pool/sword",
+    "#toolmastery:trade_pool/armor",
+    "#toolmastery:trade_pool/bow",
+    "#toolmastery:trade_pool/arcane"
   ]
 }
