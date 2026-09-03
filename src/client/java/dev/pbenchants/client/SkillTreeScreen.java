@@ -95,7 +95,14 @@ public class SkillTreeScreen extends Screen {
 		BUY_ITEM
 	}
 
-	private String treeId = SkillTrees.ORDER.getFirst().id();
+	/**
+	 * The tab the screen showed last time it was open. Static on purpose: the
+	 * screen is built fresh on every K press, and reopening on the first tree
+	 * instead of the one you were reading read as the screen forgetting you.
+	 */
+	private static String lastTreeId = SkillTrees.ORDER.getFirst().id();
+
+	private String treeId = lastTreeId;
 	@Nullable
 	private String selectedNode;
 	private int selectedTier = -1;
@@ -293,6 +300,7 @@ public class SkillTreeScreen extends Screen {
 				treeId.equals(id), () -> {
 					if (!treeId.equals(id)) {
 						treeId = id;
+						lastTreeId = id;
 						select(null, -1);
 					}
 				});

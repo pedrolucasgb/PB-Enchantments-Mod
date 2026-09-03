@@ -367,7 +367,7 @@ public final class SkillTrees {
 			)),
 			// Tier 5 — Archmage
 			new SkillTier(30, List.of(
-				new GateRequirement("enchant_items", 200),
+				new GateRequirement("enchant_items", 100),
 				new GateRequirement("max_slot_enchants", 50),
 				new GateRequirement("enchanted_book_checklist", 12)
 			))
@@ -937,13 +937,13 @@ public final class SkillTrees {
 			// Tier 1 — Fletcher
 			new SkillTier(5, List.of(
 				new GateRequirement("arrows_fired", 150),
-				new GateRequirement("arrows_hit", 100),
+				new GateRequirement("arrows_hit", 50),
 				new GateRequirement("craft_bow", 1)
 			)),
 			// Tier 2 — Marksman
 			new SkillTier(10, List.of(
 				new GateRequirement("arrows_fired", 400),
-				new GateRequirement("arrows_hit", 300),
+				new GateRequirement("arrows_hit", 150),
 				new GateRequirement("bow_kills", 50)
 			)),
 			// Tier 3 — Sharpshooter
@@ -955,20 +955,20 @@ public final class SkillTrees {
 			// Tier 4 — Hawkeye
 			new SkillTier(20, List.of(
 				new GateRequirement("crossbow_kills", 50),
-				new GateRequirement("arrows_hit", 800),
+				new GateRequirement("arrows_hit", 400),
 				new GateRequirement("multishot_kills", 10)
 			)),
 			// Tier 5 — Deadeye
 			new SkillTier(25, List.of(
 				new GateRequirement("kills_60", 25),
-				new GateRequirement("arrows_hit", 1500),
+				new GateRequirement("arrows_hit", 750),
 				new GateRequirement("phantom_air_kills", 10)
 			)),
 			// Tier 6 — Windrunner
 			new SkillTier(30, List.of(
 				new GateRequirement("ranged_kills", 300),
 				new GateRequirement("tipped_checklist", 3),
-				new GateRequirement("arrows_hit", 2500)
+				new GateRequirement("arrows_hit", 1250)
 			)),
 			// Tier 7 — Eye of the Storm
 			new SkillTier(40, List.of(

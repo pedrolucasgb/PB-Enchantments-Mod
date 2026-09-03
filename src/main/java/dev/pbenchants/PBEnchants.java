@@ -208,8 +208,9 @@ public class PBEnchants implements ModInitializer {
 		});
 
 		// Armor levels from what happens to you, so both halves of a hit are
-		// read: ALLOW_DAMAGE is where Flashpoint drops the lava, AFTER_DAMAGE
-		// is where the difference between raw and applied becomes the gate.
+		// read: ALLOW_DAMAGE is where Flashpoint drops lava and fire,
+		// AFTER_DAMAGE is where the difference between raw and applied becomes
+		// the gate.
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register(Flashpoint::allowDamage);
 		// Ground: a fall into a shaft you dug yourself is not a fall you pay for.
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register(Gravedigger::allowDamage);
