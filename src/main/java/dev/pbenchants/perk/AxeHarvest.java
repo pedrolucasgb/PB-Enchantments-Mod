@@ -2,6 +2,7 @@ package dev.pbenchants.perk;
 
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
+import dev.pbenchants.track.PlacedLogs;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -31,7 +32,8 @@ import java.util.UUID;
  * end-of-tick pass because they compose in a fixed order and must never touch
  * the same drop twice:
  *
- *   Double Axe I/II  — logs drop double, 10% / 20% per log (axe only)
+ *   Double Axe I/II  — grown logs drop double, 10% / 20% per log (axe only;
+ *                      hand-placed logs are excluded, or it would be a duper)
  *   Pruner           — leaves broken with an axe drop double loot
  *   Fair Harvest     — +25% sapling chance from any leaf you break
  *   Logger's Magnet  — whatever is left goes straight into the inventory
@@ -85,7 +87,10 @@ public final class AxeHarvest {
 		boolean leaf = state.is(BlockTags.LEAVES);
 
 		int doubleAxePercent = 0;
-		if (axe && state.is(BlockTags.LOGS)) {
+		// A hand-placed log never doubles — place, chop, repeat would be an
+		// infinite log printer. Same memory Logic reads, and this runs before
+		// the break chain clears the record.
+		if (axe && state.is(BlockTags.LOGS) && !PlacedLogs.isPlaced(serverLevel, pos)) {
 			doubleAxePercent = switch (PerkAccess.rank(serverPlayer, SkillTrees.AXE, "double_axe_1", "double_axe_2")) {
 				case 1 -> 10;
 				case 2 -> 20;

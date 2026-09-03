@@ -180,7 +180,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Logger's Magnet** | 1 | Blocks chopped with an axe go straight into your inventory, Logic fells included |
 | **Fair Harvest** | 1 | +25% sapling chance from every leaf block you break, on top of the vanilla roll |
 | **Pruner** | 3 | Leaves broken with an axe drop double loot (apples, saplings, sticks) |
-| **Double Axe** I–II | 3 / 4 | 10% / 20% chance for a log to drop twice — every log of a Logic fell rolls on its own |
+| **Double Axe** I–II | 3 / 4 | 10% / 20% chance for a grown log to drop twice — every log of a Logic fell rolls on its own; hand-placed logs never double |
 | **Shield Breaker** | 3 | Axes disable a blocking shield 2s longer and push 2 more damage through it |
 
 **Tier 4, not built yet.** Four sides of the axe that have nothing to do with what it can hit: *Kindling* (logs come out as charcoal straight from the swing), *Woodcarver* (right-click cycles a wooden block through its stair, slab and fence forms in place), *Sap Tapper* (a stripped log weeps resin while the tree stands) and *Patina Hand* (sneak-scrape to age copper a stage instead of only scouring it back).
@@ -346,7 +346,7 @@ Seven tiers, like the Sword, and for the same reason: the defensive kit splits i
 | **Set Sense** | 1 | Your real armour, toughness and damage reduction, drawn above the armour bar |
 | **Shield Wall** I–II | 1 / 3 | The shield is up the instant you raise it; II widens the arc it covers |
 | **Steady Stance** | 1 | 25% less knockback from mobs |
-| **Flashpoint** | 2 | Touching lava gives you 10 seconds of immunity to it |
+| **Flashpoint** | 2 | Touching lava or fire gives you 10 seconds of immunity to both (2 min cooldown) |
 | **Thermal Weave** I–II | 2 / 3 | ~25 / 50% less fire and lava damage, *on top of* Fire Protection |
 | **Sure Footing** | 2 | Nothing underfoot slows you, plus half Depth Strider and half Soul Speed |
 | **Second Skin** | 3 | A piece never spends its last durability point, and warns you |
@@ -363,7 +363,7 @@ Seven tiers, like the Sword, and for the same reason: the defensive kit splits i
 
 **Where the tree inserts itself into damage.** This was the cross-cutting worry in [#28](../../issues/28), and it is answered once rather than per node: every effect that reduces damage *by type* — Thermal Weave, Ablative Plating — is a real data-driven `damage_protection` enchantment, so it lands in vanilla's own protection sum and composes with Protection, Resistance and absorption instead of racing them. Only what vanilla has no data hook for is Java: durability, knockback, blocking, fall grace and the capstones. Neither is in `#minecraft:exclusive_set/armor`, so both genuinely stack on top of the vanilla protections rather than competing for the slot.
 
-**Flashpoint.** The window opens on the first point of lava damage and runs for ten seconds whatever you do with them. It **only arms again once you have stopped burning** — lava lights you for fifteen seconds, so you cannot be off the fire before the window you just spent has closed. It suppresses lava damage only: you still burn, so it buys a swim to the shore and not a bath.
+**Flashpoint.** The window opens on the first point of lava or fire damage and runs for ten seconds whatever you do with them, suppressing both lava and fire damage while it lasts. It arms again on a flat **two-minute cooldown**, counted from the moment the window opens — one escape, then the node goes dark until the timer runs out.
 
 **The three capstones are a real pick-one.** Aegis lifts your ceiling on vanilla **Protection from IV to V** — raised in the data pack for everybody and clamped back to IV at the table *and* the anvil for anyone without the node, the same trick Ancient Fortune and Greater Mending use. Immortal Line turns a killing blow into one heart with a few seconds of Regeneration and Resistance, once every ten minutes, consuming no totem. Living Armor puts the experience you pick up into the whole set at once, from any source and with no Mending on the pieces. Buying one puts the other two out of reach, which is what made a node's exclusivity a *list* rather than a single id.
 

@@ -37,7 +37,12 @@ public class ItemEntityMixin {
 		if (self.level().isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
 			return;
 		}
-		int taken = pbenchants$preTouchCount - self.getItem().getCount();
+		// A full pickup discards the entity and then RESTORES the stack's count
+		// (vanilla keeps the stack alive for the pickup animation), so the
+		// before/after difference reads zero exactly when everything was taken.
+		int taken = self.isRemoved()
+			? pbenchants$preTouchCount
+			: pbenchants$preTouchCount - self.getItem().getCount();
 		if (taken > 0 && pbenchants$preTouchItem == Items.APPLE) {
 			FarmingTracker.onApplePickup(serverPlayer, taken);
 		}
