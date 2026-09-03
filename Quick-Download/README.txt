@@ -44,6 +44,37 @@ out, with the reason in the tooltip.
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
 
+WHAT IS NEW IN 0.8.3-beta
+-------------------------
+- THE NOVICE LIBRARIAN SELLS ENCHANTED BOOKS. The random PB
+  Enchantments book trade (24 emeralds + a book) moved down to
+  villager level 1, and a second, dedicated trade sells the
+  Indestructible book outright for 32 emeralds + a book. A librarian
+  draws two trades per level, so re-roll the lectern until yours
+  carries the one you want.
+
+- THE SKILL SCREEN REMEMBERS YOUR TAB. Pressing K used to snap back
+  to the Pickaxe tree every time; it now reopens on the tree you were
+  reading, for the whole game session.
+
+- FLASHPOINT COVERS ALL FIRE, ON A COOLDOWN. Its 10 seconds now block
+  everything the game calls fire - lava, burning, magma, campfires,
+  fireballs - the same list Fire Resistance reads. In exchange it
+  rearms on a flat 2-minute cooldown from the moment it triggers,
+  instead of waiting for you to stop burning.
+
+- DOUBLE AXE ONLY DOUBLES GROWN TREES. Placing a log and chopping it
+  used to roll the double drop, an infinite log printer. Logs you
+  placed yourself never double now.
+
+- HARVEST APPLES ACTUALLY COUNTS. Picking up a whole stack of apples
+  counted as zero; every apple counts now.
+
+- BOW GATES HALVED, ARCHMAGE TRIMMED. Every Arrows landed gate asks
+  half of what it did (50 / 150 / 400 / 750 / 1250), and the
+  Enchanter tier-5 gate Enchant items dropped from 200 to 100.
+  Progress you already made still counts.
+
 WHAT IS NEW IN 0.8.2-beta
 -------------------------
 - THE SERVER CHECKS YOUR MOD VERSION AT THE DOOR. A dedicated server
