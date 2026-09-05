@@ -32,6 +32,7 @@ import java.util.List;
 public final class AutoBlock {
 	public static final String AUTO_BLOCK = "auto_block";
 	public static final String FIELD_PRESS = "field_press";
+	public static final String AUTO_BLOCK_DISABLED = "auto_block_disabled";
 
 	/**
 	 * {@code keepLoose} is how many stay unpacked. Zero for ore materials — nobody
@@ -81,8 +82,9 @@ public final class AutoBlock {
 
 	/** Called once a second per online player. */
 	public static void slowTick(ServerPlayer player) {
+		TreeProgress artisan = SkillService.progress(player, SkillTrees.ARTISAN);
 		List<Packing> active = new java.util.ArrayList<>();
-		if (SkillService.owns(player, SkillTrees.ARTISAN, AUTO_BLOCK)) {
+		if (SkillService.owns(player, SkillTrees.ARTISAN, AUTO_BLOCK) && artisan.count(AUTO_BLOCK_DISABLED) == 0) {
 			active.addAll(PACKINGS);
 		}
 		if (SkillService.owns(player, SkillTrees.GROUND, FIELD_PRESS)) {
@@ -92,7 +94,6 @@ public final class AutoBlock {
 			return;
 		}
 		// Still the Artisan progress: an unbought slot lock simply locks nothing.
-		TreeProgress artisan = SkillService.progress(player, SkillTrees.ARTISAN);
 		NonNullList<ItemStack> items = player.getInventory().getNonEquipmentItems();
 
 		for (Packing packing : active) {

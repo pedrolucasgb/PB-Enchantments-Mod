@@ -35,7 +35,9 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 		/** Quartermaster's Call: top up what you already carry. */
 		RESTOCK,
 		/** Locked Slots: pin or unpin one inventory slot. */
-		TOGGLE_SLOT_LOCK
+		TOGGLE_SLOT_LOCK,
+		/** Auto Block: enable or disable automatic material compression. */
+		TOGGLE_AUTO_BLOCK
 	}
 
 	public static final Type<ArtisanActionPayload> TYPE =

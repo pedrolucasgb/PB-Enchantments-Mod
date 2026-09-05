@@ -1,6 +1,7 @@
 package dev.pbenchants.client;
 
 import dev.pbenchants.network.SkillStatePayload;
+import dev.pbenchants.perk.AutoBlock;
 import dev.pbenchants.storage.SortMode;
 
 /**
@@ -34,5 +35,13 @@ public final class ClientArtisanState {
 			return SortMode.CATEGORY;
 		}
 		return SortMode.byIndex(state.counters().getOrDefault("sort_mode", 0));
+	}
+
+	public static boolean autoBlockEnabled() {
+		SkillStatePayload.TreeState state = ClientSkillState.tree(TREE);
+
+		return state != null
+				&& state.purchased().contains(AutoBlock.AUTO_BLOCK)
+				&& state.counters().getOrDefault(AutoBlock.AUTO_BLOCK_DISABLED, 0) == 0;
 	}
 }
