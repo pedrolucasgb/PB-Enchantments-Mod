@@ -85,6 +85,9 @@ public class SkillTreeScreen extends Screen {
 	/** How far a wrapped gate line is indented under its checkbox. */
 	private static final int GATE_INDENT = 8;
 
+	/** Column a gate description wraps to in its tooltip, in pixels. */
+	private static final int GATE_TOOLTIP_WRAP = 230;
+
 	/** Which purchase is waiting for a Confirm click. */
 	private enum Pending {
 		NONE,
@@ -1182,7 +1185,7 @@ public class SkillTreeScreen extends Screen {
 			// not answer a mouse hovering over whatever is drawn there instead.
 			if (mouseX >= panelX && mouseX < panelX + panelWidth && mouseY >= lineTop && mouseY < y
 				&& graphics.containsPointInScissor(mouseX, mouseY)) {
-				graphics.setComponentTooltipForNextFrame(font, gateTooltip(gate, state), mouseX, mouseY);
+				graphics.setTooltipForNextFrame(font, gateTooltip(gate, state), mouseX, mouseY);
 			}
 		}
 	}
@@ -1196,27 +1199,42 @@ public class SkillTreeScreen extends Screen {
 	 * 7/11" tells a player how far they are and nothing about what to do next;
 	 * the list tells them it is quartz and ancient debris they still owe.
 	 */
-	private List<Component> gateTooltip(GateRequirement gate, SkillStatePayload.TreeState state) {
+	private List<FormattedCharSequence> gateTooltip(GateRequirement gate, SkillStatePayload.TreeState state) {
 		int count = state.counters().getOrDefault(gate.id(), 0);
 		boolean done = count >= gate.target();
-		List<Component> lines = new ArrayList<>();
-		lines.add(Component.literal(gate.displayName()).withColor(SkillTreeStyle.GOLD & 0xFFFFFF));
+		List<FormattedCharSequence> lines = new ArrayList<>();
+		lines.add(Component.literal(gate.displayName()).withColor(SkillTreeStyle.GOLD & 0xFFFFFF)
+			.getVisualOrderText());
 		lines.add(Component.literal(Math.min(count, gate.target()) + "/" + gate.target())
-			.withColor((done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED) & 0xFFFFFF));
+			.withColor((done ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED) & 0xFFFFFF)
+			.getVisualOrderText());
 		// A gate nobody has written a description for yet contributes no line at
-		// all, rather than a blank one in the middle of the tooltip.
+		// all, rather than a blank one in the middle of the tooltip. One that
+		// has is wrapped to a readable column — a tooltip line is never wrapped
+		// on its own, and a two-sentence description used to run the width of
+		// the screen — and a line break in the lang text is a paragraph break.
 		Component description = Component.translatableWithFallback("gate.pbenchants." + gate.id() + ".desc", "");
-		if (!description.getString().isEmpty()) {
-			lines.add(description.copy().withColor(SkillTreeStyle.MUTED & 0xFFFFFF));
+		String text = description.getString();
+		if (!text.isEmpty()) {
+			boolean first = true;
+			for (String paragraph : text.split("\n")) {
+				if (!first) {
+					lines.add(FormattedCharSequence.EMPTY);
+				}
+				first = false;
+				lines.addAll(font.split(
+					Component.literal(paragraph).withColor(SkillTreeStyle.MUTED & 0xFFFFFF), GATE_TOOLTIP_WRAP));
+			}
 		}
 
 		List<GateChecklists.Entry> entries = GateChecklists.of(gate.id());
 		if (!entries.isEmpty()) {
-			lines.add(Component.empty());
+			lines.add(FormattedCharSequence.EMPTY);
 			for (GateChecklists.Entry entry : entries) {
 				boolean ticked = GateChecklists.ticked(state.counters(), gate.id(), entry.bit());
 				lines.add(Component.literal(ticked ? "✓ " : "□ ").append(entry.name())
-					.withColor((ticked ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED) & 0xFFFFFF));
+					.withColor((ticked ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED) & 0xFFFFFF)
+					.getVisualOrderText());
 			}
 		}
 		return lines;

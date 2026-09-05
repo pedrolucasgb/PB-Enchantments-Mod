@@ -4,8 +4,6 @@ import dev.pbenchants.enchant.AncientKnowledge;
 import dev.pbenchants.enchant.EnchanterPerks;
 import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.network.EnchantPreviewPayload;
-import dev.pbenchants.perk.ArmorPerks;
-import dev.pbenchants.perk.BowPerks;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import dev.pbenchants.skill.XpMath;
@@ -57,14 +55,6 @@ import java.util.stream.Stream;
  */
 @Mixin(EnchantmentMenu.class)
 public abstract class EnchantmentMenuMixin {
-	/** The pickaxe passive that lifts vanilla Fortune from III to IV. */
-	@Unique
-	private static final String ANCIENT_FORTUNE = "ancient_fortune";
-
-	/** The sword capstone that lifts vanilla Looting from III to IV. */
-	@Unique
-	private static final String SPOILS_OF_WAR = "spoils_of_war";
-
 	/** The sword passive that lets an axe carry vanilla Sweeping Edge. */
 	@Unique
 	private static final String BROAD_SWING = "broad_swing";
@@ -141,33 +131,17 @@ public abstract class EnchantmentMenuMixin {
 				? AncientKnowledge.perfectRoll(random, stack, pool)
 				: EnchantmentHelper.selectEnchantment(random, stack, cost, pool.stream());
 
-		// 3. Clamp our levels to what the skill tree has unlocked, vanilla
-		//    Fortune to III unless Ancient Fortune has lifted the ceiling, and
-		//    everything to its own maximum. The Fortune data file raises
-		//    max_level to 4 for everybody, because a data pack cannot be
-		//    per-player; this is what makes it a reward.
+		// 3. Clamp our levels to what the skill tree has unlocked, and
+		//    everything to its own maximum. The raised vanilla ceilings —
+		//    Fortune IV, Looting IV, Protection V, Power VI — are deliberately
+		//    NOT clamped here any more: until 0.8.4 a roll of Protection V was
+		//    rewritten to IV for anyone without Aegis, which hid the rank and
+		//    handed out a working piece. The roll now lands as rolled, the clue
+		//    shows the true rank before a level is spent, and an unearned rank
+		//    makes the item inert until the node is bought (ItemAuthority) —
+		//    the same rule a Dig Range III pickaxe follows for a rank II player.
 		List<EnchantmentInstance> result = new ArrayList<>(rolled.size());
 		for (EnchantmentInstance instance : rolled) {
-			if (instance.enchantment().is(Enchantments.FORTUNE) && instance.level() > 3
-					&& !SkillService.owns(serverPlayer, SkillTrees.PICKAXE, ANCIENT_FORTUNE)) {
-				result.add(new EnchantmentInstance(instance.enchantment(), 3));
-				continue;
-			}
-			if (instance.enchantment().is(Enchantments.LOOTING) && instance.level() > 3
-					&& !SkillService.owns(serverPlayer, SkillTrees.SWORD, SPOILS_OF_WAR)) {
-				result.add(new EnchantmentInstance(instance.enchantment(), 3));
-				continue;
-			}
-			if (instance.enchantment().is(Enchantments.PROTECTION) && instance.level() > 4
-					&& !SkillService.owns(serverPlayer, SkillTrees.ARMOR, ArmorPerks.AEGIS)) {
-				result.add(new EnchantmentInstance(instance.enchantment(), 4));
-				continue;
-			}
-			if (instance.enchantment().is(Enchantments.POWER) && instance.level() > 5
-					&& !SkillService.owns(serverPlayer, SkillTrees.BOW, BowPerks.HUNTERS_BOUNTY)) {
-				result.add(new EnchantmentInstance(instance.enchantment(), 5));
-				continue;
-			}
 			int allowed = instance.enchantment().value().getMaxLevel();
 			ResourceKey<Enchantment> ours = pbenchants$matchOurs(instance.enchantment());
 			if (ours != null) {

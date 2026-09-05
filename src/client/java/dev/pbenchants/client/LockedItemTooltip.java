@@ -1,5 +1,6 @@
 package dev.pbenchants.client;
 
+import dev.pbenchants.perk.ArmorPerks;
 import dev.pbenchants.perk.ItemAuthority;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.ChatFormatting;
@@ -10,8 +11,9 @@ import net.minecraft.world.item.Items;
 /**
  * The line that stops a degraded tool from reading as a bug.
  *
- * <p>Two shapes, one rule. On a <b>tool</b> the holder has not earned, it says
- * the item handles like bare hands and names the rank to go and unlock. On an
+ * <p>Three shapes, one rule. On a <b>tool</b> the holder has not earned, it
+ * says the item handles like bare hands and names the rank to go and unlock. On
+ * a piece of <b>armour</b> it says the piece protects like bare skin. On an
  * <b>enchanted book</b> — the librarian's offer — it says the trade is refused
  * until then. Either way the tooltip doubles as advertising for a tier the
  * player has not reached, which is the same job the villager's offer does.
@@ -35,9 +37,10 @@ public final class LockedItemTooltip {
 			if (unmet == null) {
 				return;
 			}
-			lines.add(Component.translatable(
-					book ? "item.pbenchants.locked.book" : "item.pbenchants.locked.tool", unmet.name())
-				.withStyle(ChatFormatting.RED));
+			String key = book ? "item.pbenchants.locked.book"
+				: ArmorPerks.isArmour(stack) ? "item.pbenchants.locked.armor"
+				: "item.pbenchants.locked.tool";
+			lines.add(Component.translatable(key, unmet.name()).withStyle(ChatFormatting.RED));
 		});
 	}
 }

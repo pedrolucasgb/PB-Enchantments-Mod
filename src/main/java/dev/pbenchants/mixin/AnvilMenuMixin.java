@@ -2,12 +2,11 @@ package dev.pbenchants.mixin;
 
 import dev.pbenchants.enchant.EnchanterPerks;
 import dev.pbenchants.enchant.ModEnchantments;
-import dev.pbenchants.perk.ArmorPerks;
 import dev.pbenchants.perk.BowPerks;
 import dev.pbenchants.perk.CombatPerks;
 import dev.pbenchants.perk.ItemAuthority;
+import dev.pbenchants.perk.PerkAccess;
 import dev.pbenchants.skill.SkillService;
-import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
 import dev.pbenchants.skill.XpMath;
 import dev.pbenchants.track.EnchantTracker;
@@ -55,15 +54,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * it.
  *
  * <p><b>The raised vanilla ceilings</b> — Mending II (Enchanter), Fortune IV
- * (Pickaxe) and Looting IV (Sword). Each data file raises max_level for
- * everybody, because a data pack cannot be per-player; clamping
- * {@code getMaxLevel} back here for anyone without the node is what makes them
- * rewards. The anvil is the only place Mending II can be made at all, Mending
- * being treasure.
+ * (Pickaxe), Looting IV (Sword), Protection V (Armor) and Power VI (Bow). Each
+ * data file raises max_level for everybody, because a data pack cannot be
+ * per-player; refusing to <em>forge</em> the raised rank here for anyone
+ * without the node is what makes them rewards. A rank an input already carries
+ * is never lowered, though — an unearned rank stays on the label and the item
+ * is inert until the node is bought (see {@link ItemAuthority}). The anvil is
+ * the only place Mending II can be made at all, Mending being treasure.
  *
- * <p><b>Tool Mastery ranks</b> are clamped the same way, and for the same
- * reason: the data file has to declare Dig Range III so the rank can exist, and
- * the anvil would otherwise let two rank IIs be hammered into one.
+ * <p><b>Tool Mastery ranks</b> follow the same rule, and for the same reason:
+ * the data file has to declare Dig Range III so the rank can exist, and the
+ * anvil would otherwise let two rank IIs be hammered into one.
  *
  * <p><b>Broad Swing</b> (Sword tier 2) — a Sweeping Edge book only takes on an
  * axe for someone who has bought the node.
@@ -156,83 +157,82 @@ public class AnvilMenuMixin {
 	}
 
 	/**
-	 * The three vanilla ceilings the mod raises for everybody in its data pack
-	 * and clamps back here for anyone without the node that earned them.
+	 * The anvil forges no rank you have not earned — and rewrites none you
+	 * already hold.
 	 *
-	 * <p>Mending II, Fortune IV, Looting IV and Protection V are all the same
-	 * trick and now all live in the same table. Fortune used to be gated at the
-	 * enchanting table only, which left two Fortune III books on an anvil as a
-	 * way round the capstone entirely — that hole closes here.
+	 * <p>Vanilla clamps every merged level to {@code getMaxLevel()}; this
+	 * redirect answers with the player's own ceiling instead. For the raised
+	 * vanilla ceilings the mod's data pack declares for everybody — Mending II,
+	 * Fortune IV, Looting IV, Protection V, Power VI — that is vanilla's maximum
+	 * until the node that lifts it is bought ({@link ItemAuthority#CEILINGS}).
+	 * For the mod's own enchantments it is the rank the tree has unlocked, never
+	 * below 1: a ceiling of 0 would strip the enchantment off the result instead
+	 * of just refusing the upgrade. So two Dig Range II books stay a Dig Range
+	 * II for a rank II player, and two Protection IV books stay IV without
+	 * Aegis — the same hole Fortune III + Fortune III used to leave.
+	 *
+	 * <p>What the anvil will <em>not</em> do any more is lower a rank an input
+	 * already carries. Until 0.8.4 a Protection V book laid on a chestplate by
+	 * someone without Aegis came out as Protection IV, and worked — the rank was
+	 * hidden rather than gated. The ceiling is therefore never below the highest
+	 * rank of that enchantment on either input: the label survives the merge,
+	 * and the result is inert in those hands until the node is bought, exactly
+	 * as the same item would be if it were handed over by another player.
+	 *
+	 * <p>Ownership is read through {@link PerkAccess} on both sides, so the
+	 * preview the client computes for the result slot agrees with what the
+	 * server then hands out.
 	 */
-	@Unique
-	private int pbenchants$gatedCeiling(Enchantment enchantment, ResourceKey<Enchantment> key,
-	                                     String treeId, String nodeId, int vanillaMax) {
-		if (!pbenchants$is(enchantment, key)) {
-			return -1;
-		}
-		SkillTree tree = SkillTrees.byId(treeId);
-		boolean earned = tree != null && pbenchants$player instanceof ServerPlayer serverPlayer
-			&& SkillService.owns(serverPlayer, tree, nodeId);
-		return earned ? enchantment.getMaxLevel() : vanillaMax;
-	}
-
 	@Redirect(method = "createResult", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/item/enchantment/Enchantment;getMaxLevel()I"))
-	private int pbenchants$vanillaCeilings(Enchantment enchantment) {
+	private int pbenchants$earnedCeiling(Enchantment enchantment) {
 		int max = enchantment.getMaxLevel();
 		if (max <= 1 || pbenchants$player == null) {
 			return max;
 		}
-		int mending = pbenchants$gatedCeiling(enchantment, Enchantments.MENDING,
-			"enchanter", EnchanterPerks.GREATER_MENDING, 1);
-		if (mending >= 0) {
-			return mending;
-		}
-		int fortune = pbenchants$gatedCeiling(enchantment, Enchantments.FORTUNE,
-			"pickaxe", "ancient_fortune", 3);
-		if (fortune >= 0) {
-			return fortune;
-		}
-		int looting = pbenchants$gatedCeiling(enchantment, Enchantments.LOOTING,
-			"sword", CombatPerks.SPOILS_OF_WAR, 3);
-		if (looting >= 0) {
-			return looting;
-		}
-		int protection = pbenchants$gatedCeiling(enchantment, Enchantments.PROTECTION,
-			"armor", ArmorPerks.AEGIS, 4);
-		if (protection >= 0) {
-			return protection;
-		}
-		int power = pbenchants$gatedCeiling(enchantment, Enchantments.POWER,
-			"bow", BowPerks.HUNTERS_BOUNTY, 5);
-		if (power >= 0) {
-			return power;
-		}
-		return pbenchants$masteryCeiling(enchantment, max);
-	}
-
-	/**
-	 * Tool Mastery ranks are earned, not forged. The enchanting table already
-	 * clamps our own enchantments to the rank the tree has unlocked, but the
-	 * anvil was still adding two Dig Range II books up into a Dig Range III for
-	 * a player who owns rank II — the same hole Fortune III + Fortune III used
-	 * to leave, one row up. The ceiling here is the player's own rank, so a
-	 * merge tops out where the tree does.
-	 *
-	 * <p>Never below 1: a player who owns no rank at all is carrying an inert
-	 * item anyway ({@link ItemAuthority#locked}), and a ceiling of 0 would strip
-	 * the enchantment off the result instead of just refusing the upgrade.
-	 *
-	 * @return the clamped ceiling, or {@code vanillaMax} when this is not one of ours
-	 */
-	@Unique
-	private int pbenchants$masteryCeiling(Enchantment enchantment, int vanillaMax) {
-		for (ResourceKey<Enchantment> ours : ModEnchantments.ALL) {
-			if (pbenchants$is(enchantment, ours)) {
-				return Math.max(1, ItemAuthority.owned(pbenchants$player, ours));
+		int ceiling = max;
+		ItemAuthority.Ceiling raised = pbenchants$raisedCeiling(enchantment);
+		if (raised != null) {
+			ceiling = raised.ceilingFor(pbenchants$player, max);
+		} else {
+			for (ResourceKey<Enchantment> ours : ModEnchantments.ALL) {
+				if (pbenchants$is(enchantment, ours)) {
+					ceiling = Math.max(1, ItemAuthority.owned(pbenchants$player, ours));
+					break;
+				}
 			}
 		}
-		return vanillaMax;
+		return Math.max(ceiling, pbenchants$carried(enchantment));
+	}
+
+	/** The raised vanilla ceiling this enchantment is under, or null for any other. */
+	@Unique
+	private ItemAuthority.Ceiling pbenchants$raisedCeiling(Enchantment enchantment) {
+		for (ItemAuthority.Ceiling ceiling : ItemAuthority.CEILINGS) {
+			if (pbenchants$is(enchantment, ceiling.key())) {
+				return ceiling;
+			}
+		}
+		return null;
+	}
+
+	/** The highest rank of this enchantment already on either input, or 0. */
+	@Unique
+	private int pbenchants$carried(Enchantment enchantment) {
+		AnvilMenu menu = (AnvilMenu) (Object) this;
+		int carried = 0;
+		for (int slot : new int[] {AnvilMenu.INPUT_SLOT, AnvilMenu.ADDITIONAL_SLOT}) {
+			ItemStack stack = menu.getSlot(slot).getItem();
+			if (stack.isEmpty()) {
+				continue;
+			}
+			for (var entry : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) {
+				if (entry.getKey().value() == enchantment) {
+					carried = Math.max(carried, entry.getIntValue());
+				}
+			}
+		}
+		return carried;
 	}
 
 	/**
