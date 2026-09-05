@@ -59,7 +59,8 @@ public final class ModNetworking {
 		ServerPlayNetworking.registerGlobalReceiver(ArtisanActionPayload.TYPE, (payload, context) -> {
 			ArtisanHandler.handle(context.player(), payload);
 			if (payload.action() == ArtisanActionPayload.Action.TOGGLE_SLOT_LOCK
-				|| payload.action() == ArtisanActionPayload.Action.CYCLE_SORT_MODE) {
+				|| payload.action() == ArtisanActionPayload.Action.CYCLE_SORT_MODE
+				|| payload.action() == ArtisanActionPayload.Action.TOGGLE_AUTO_BLOCK) {
 				sendState(context.player());
 			}
 		});

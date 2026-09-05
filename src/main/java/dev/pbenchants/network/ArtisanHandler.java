@@ -1,5 +1,6 @@
 package dev.pbenchants.network;
 
+import dev.pbenchants.perk.AutoBlock;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
@@ -35,6 +36,7 @@ public final class ArtisanHandler {
 			case QUICK_STACK -> quickStack(player);
 			case RESTOCK -> restock(player);
 			case TOGGLE_SLOT_LOCK -> toggleLock(player, payload.slot());
+			case TOGGLE_AUTO_BLOCK -> toggleAutoBlock(player);
 		}
 	}
 
@@ -98,6 +100,30 @@ public final class ArtisanHandler {
 		}
 		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
 		progress.setSlotLocked(slot, !progress.slotLocked(slot));
+	}
+
+	private static void toggleAutoBlock(ServerPlayer player) {
+		if (!owns(player, AutoBlock.AUTO_BLOCK)) {
+			return;
+		}
+
+		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
+		boolean enabling = progress.count(AutoBlock.AUTO_BLOCK_DISABLED) != 0;
+
+		if (enabling) {
+			progress.counters.remove(AutoBlock.AUTO_BLOCK_DISABLED);
+		} else {
+			progress.counters.put(AutoBlock.AUTO_BLOCK_DISABLED, 1);
+		}
+
+		player.sendSystemMessage(
+			Component.translatable(enabling
+			? "screen.pbenchants.auto_block.enabled"
+			: "screen.pbenchants.auto_block.disabled")
+			.withStyle(enabling ? ChatFormatting.GREEN : ChatFormatting.GRAY),
+	true
+		);
+		click(player);
 	}
 
 	private static void report(ServerPlayer player, StorageOps.Outcome outcome, String okKey, String emptyKey) {

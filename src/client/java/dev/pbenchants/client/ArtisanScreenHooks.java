@@ -5,6 +5,7 @@ import dev.pbenchants.client.gui.ArtisanIcons;
 import dev.pbenchants.client.gui.SkillTreeStyle;
 import dev.pbenchants.client.mixin.ContainerScreenAccessor;
 import dev.pbenchants.network.ArtisanActionPayload;
+import dev.pbenchants.perk.AutoBlock;
 import dev.pbenchants.storage.SortMode;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -65,6 +66,11 @@ public final class ArtisanScreenHooks {
 
 	@Nullable
 	private static ArtisanIconButton orderButton;
+
+	@Nullable
+	private static ArtisanIconButton autoBlockButton;
+
+	private static boolean shownAutoBlockEnabled;
 
 	@Nullable
 	private static EditBox search;
@@ -134,6 +140,15 @@ public final class ArtisanScreenHooks {
 				(graphics, font, x, y, color) -> ArtisanIcons.letter(graphics, font, "S", x, y, color),
 				() -> send(ArtisanActionPayload.Action.SORT_INVENTORY));
 		}
+		if (ClientArtisanState.owns(AutoBlock.AUTO_BLOCK)) {
+			shownAutoBlockEnabled = ClientArtisanState.autoBlockEnabled();
+			autoBlockButton = add(
+				widgets,
+				autoBlockLabel(shownAutoBlockEnabled),
+				ArtisanScreenHooks::drawAutoBlockSymbol,
+				() -> send(ArtisanActionPayload.Action.TOGGLE_AUTO_BLOCK)
+			);
+		}
 		if (ClientArtisanState.owns("sort_profiles")) {
 			shownMode = ClientArtisanState.sortMode();
 			orderButton = add(widgets, orderLabel(shownMode), ArtisanScreenHooks::drawOrderSymbol,
@@ -198,6 +213,14 @@ public final class ArtisanScreenHooks {
 			if (mode != shownMode) {
 				shownMode = mode;
 				orderButton.rename(orderLabel(mode));
+			}
+		}
+		if (autoBlockButton != null) {
+			boolean enabled = ClientArtisanState.autoBlockEnabled();
+
+			if (enabled != shownAutoBlockEnabled) {
+				shownAutoBlockEnabled = enabled;
+				autoBlockButton.rename(autoBlockLabel(enabled));
 			}
 		}
 		if (search != null) {
@@ -279,9 +302,32 @@ public final class ArtisanScreenHooks {
 		return Component.translatable("screen.pbenchants.button.order", mode.label());
 	}
 
+	private static void drawAutoBlockSymbol(
+			GuiGraphicsExtractor graphics,
+			Font font,
+			int x,
+			int y,
+			int color) {
+		ArtisanIcons.letter(
+			graphics,
+			font,
+			"B",
+			x,
+			y,
+			ClientArtisanState.autoBlockEnabled() ? color : SkillTreeStyle.DIM
+		);
+	}
+
+	private static Component autoBlockLabel(boolean enabled) {
+		return Component.translatable(enabled
+			? "screen.pbenchants.button.auto_block.on"
+			: "screen.pbenchants.button.auto_block.off");
+	}
+
 	private static void forget() {
 		BUTTONS.clear();
 		orderButton = null;
+		autoBlockButton = null;
 		search = null;
 		shownMode = null;
 	}
