@@ -69,7 +69,7 @@
 	"gate.pbenchants.fell_trees_grand_total": "Trees felled, grand total",
 	"gate.pbenchants.fell_trees_grand_total.desc": "Trees felled by Logic, the class's grand total.",
 	"gate.pbenchants.sapling_checklist": "Sapling checklist",
-	"gate.pbenchants.sapling_checklist.desc": "Distinct kinds of sapling carried in your inventory at the same time. Checked once a second, and it remembers your best.",
+	"gate.pbenchants.sapling_checklist.desc": "Distinct kinds of sapling carried in your inventory at the same time.",
 	"gate.pbenchants.replant_with_environment": "Replants by Environment",
 	"gate.pbenchants.replant_with_environment.desc": "Stumps replanted for you by the Environment enchantment, out of the saplings you are carrying.",
 	"gate.pbenchants.craft_enchanting_table": "Craft an enchanting table",

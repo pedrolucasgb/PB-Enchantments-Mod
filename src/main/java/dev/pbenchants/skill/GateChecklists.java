@@ -75,6 +75,20 @@ public final class GateChecklists {
 		put("nether_wood_checklist",
 			block(0, Blocks.CRIMSON_STEM),
 			block(1, Blocks.WARPED_STEM));
+		put("sapling_checklist",
+			block(0, Blocks.OAK_SAPLING),
+			block(1, Blocks.SPRUCE_SAPLING),
+			block(2, Blocks.BIRCH_SAPLING),
+			block(3, Blocks.JUNGLE_SAPLING),
+			block(4, Blocks.ACACIA_SAPLING),
+			block(5, Blocks.DARK_OAK_SAPLING),
+			block(6, Blocks.MANGROVE_PROPAGULE),
+			block(7, Blocks.CHERRY_SAPLING),
+			block(8, Blocks.PALE_OAK_SAPLING),
+			block(9, Blocks.AZALEA),
+			block(10, Blocks.FLOWERING_AZALEA),
+			block(11, Blocks.CRIMSON_FUNGUS),
+			block(12, Blocks.WARPED_FUNGUS));
 
 		// Enchanter — one of every kind of gear taken off the table.
 		// Ground — every plant a hoe harvests, in the order BlockBreakTracker

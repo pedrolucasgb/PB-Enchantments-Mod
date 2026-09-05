@@ -69,7 +69,7 @@
 	"gate.pbenchants.fell_trees_grand_total": "Árboles talados, total general",
 	"gate.pbenchants.fell_trees_grand_total.desc": "Árboles derribados por Lógica, el total general de la clase.",
 	"gate.pbenchants.sapling_checklist": "Lista de brotes",
-	"gate.pbenchants.sapling_checklist.desc": "Tipos distintos de brote llevados en el inventario al mismo tiempo. Se comprueba una vez por segundo, y recuerda tu mejor resultado.",
+	"gate.pbenchants.sapling_checklist.desc": "Tipos distintos de brote llevados en el inventario al mismo tiempo.",
 	"gate.pbenchants.replant_with_environment": "Replantados por Ecología",
 	"gate.pbenchants.replant_with_environment.desc": "Tocones replantados para ti por el encantamiento Entorno, con los brotes que llevas encima.",
 	"gate.pbenchants.craft_enchanting_table": "Fabrica una mesa de encantamientos",
