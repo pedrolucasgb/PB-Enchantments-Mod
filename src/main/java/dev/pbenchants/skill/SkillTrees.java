@@ -155,11 +155,14 @@ public final class SkillTrees {
 				new GateRequirement("harvest_apples", 32),
 				new GateRequirement("fell_trees_total", 500)
 			)),
-			// Tier 5 — Forest Spirit
+			// Tier 5 — Forest Spirit. Environment itself sits in this tier, so
+			// a gate counting its replants (0.8.0–0.8.3) asked for the reward
+			// to earn the reward; hand-planted saplings ask the same
+			// stewardship of anyone.
 			new SkillTier(30, List.of(
 				new GateRequirement("fell_trees_grand_total", 1000),
 				new GateRequirement("sapling_checklist", 13),
-				new GateRequirement("replant_with_environment", 200)
+				new GateRequirement("plant_saplings", 300)
 			))
 		),
 		List.of(

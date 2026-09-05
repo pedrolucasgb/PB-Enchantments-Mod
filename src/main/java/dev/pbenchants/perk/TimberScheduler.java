@@ -384,7 +384,6 @@ public final class TimberScheduler {
 				return; // out of saplings — the remaining bases stay bare
 			}
 			level.setBlockAndUpdate(stump, saplingState);
-			SkillService.addCount(player, SkillTrees.AXE, "replant_with_environment", 1);
 		}
 	}
 

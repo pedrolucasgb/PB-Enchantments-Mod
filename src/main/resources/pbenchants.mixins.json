@@ -23,6 +23,7 @@
 		"FurnaceResultSlotMixin",
 		"GrindstoneResultSlotMixin",
 		"HoeItemMixin",
+		"InertArmorMixin",
 		"ItemEntityMixin",
 		"ItemStackMixin",
 		"LivingEntityMixin",

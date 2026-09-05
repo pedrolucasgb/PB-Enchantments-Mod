@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.8.2-beta
+Version 0.8.4-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,48 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.8.4-beta
+-------------------------
+- AUTO BLOCK HAS AN ON/OFF SWITCH. A "B" button in your inventory,
+  next to the other Artisan buttons, turns the packing on and off.
+  Off, nine ingots stay nine ingots without pinning a slot. The
+  button dims while it is off and chat confirms each flip.
+
+- ARMOUR FOLLOWS THE INERT-ITEM RULE. A piece carrying a rank you
+  have not unlocked - Protection V without Aegis, or a PB
+  Enchantments armour rank above yours - stays on and keeps its
+  enchantments, but protects like bare skin: no armour points, no
+  toughness, no Protection or Feather Falling from it, and no wear.
+  Its tooltip names the node to buy.
+
+- PROTECTION V IS NO LONGER REWRITTEN TO IV. Enchanting or
+  anvil-combining armour without Aegis used to hand you a working
+  Protection IV. The rank now stays on the label and the piece is
+  inert until you buy Aegis - the same rule the pickaxe follows for
+  an unearned Dig Range III. Fortune IV, Looting IV, Power VI and
+  Mending II follow it too: the table applies what it rolled, the
+  anvil never lowers a rank an input already carries, and the
+  librarian will not sell a book of a rank you cannot use. The anvil
+  still refuses to forge a raised rank out of two lower ones. This
+  reaches items you already own: a Fortune IV pickaxe made by someone
+  who earned it is inert in the hands of someone who has not.
+
+- AXE TIER 5 NO LONGER NEEDS ENVIRONMENT TO UNLOCK ENVIRONMENT.
+  "Replants by Environment 200" is now "Plant saplings 300" - saplings
+  you place by hand. Saplings planted so far already count.
+
+- THE ENCHANTED BOOK COUNTER EXPLAINS ITSELF. The Enchanter tier-5
+  gate was renamed from "Enchanted book checklist" and its description
+  is now written in paragraphs: distinct enchantments across every
+  enchanted book you carry, ranks ignored, best shelf remembered.
+  Every gate tooltip now wraps its text.
+
+- THE SAPLING CHECKLIST WANTS 13 KINDS. Crimson and warped fungus
+  join the eleven overworld saplings, and the tooltip ticks off which
+  kinds you still miss. It reads what you carry right now instead of
+  remembering your best, so keep the saplings on you when you unlock
+  the tier.
 
 WHAT IS NEW IN 0.8.3-beta
 -------------------------
