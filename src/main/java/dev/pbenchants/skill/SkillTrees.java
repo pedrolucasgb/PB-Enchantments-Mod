@@ -158,7 +158,7 @@ public final class SkillTrees {
 			// Tier 5 — Forest Spirit
 			new SkillTier(30, List.of(
 				new GateRequirement("fell_trees_grand_total", 1000),
-				new GateRequirement("sapling_checklist", 11),
+				new GateRequirement("sapling_checklist", 13),
 				new GateRequirement("replant_with_environment", 200)
 			))
 		),

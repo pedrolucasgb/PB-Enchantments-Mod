@@ -69,7 +69,7 @@
 	"gate.pbenchants.fell_trees_grand_total": "Árvores derrubadas, total geral",
 	"gate.pbenchants.fell_trees_grand_total.desc": "Árvores derrubadas por Lógica, o total geral da classe.",
 	"gate.pbenchants.sapling_checklist": "Lista de mudas",
-	"gate.pbenchants.sapling_checklist.desc": "Tipos distintos de muda carregados no inventário ao mesmo tempo. Verificado uma vez por segundo, e guarda o seu melhor resultado.",
+	"gate.pbenchants.sapling_checklist.desc": "Tipos distintos de muda carregados no inventário ao mesmo tempo.",
 	"gate.pbenchants.replant_with_environment": "Replantios do Ambiente",
 	"gate.pbenchants.replant_with_environment.desc": "Tocos replantados para você pelo encantamento Ambiente, com as mudas que você está carregando.",
 	"gate.pbenchants.craft_enchanting_table": "Crie uma mesa de encantamentos",

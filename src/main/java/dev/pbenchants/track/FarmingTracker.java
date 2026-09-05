@@ -5,12 +5,15 @@ import java.util.Set;
 
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
+import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import dev.pbenchants.skill.GateChecklists;
 
 /**
  * Feeds the farming gates of the two trees that farm: the Axe (saplings planted,
@@ -54,16 +57,44 @@ public final class FarmingTracker {
 	 */
 	public static void scanSaplingChecklist(ServerPlayer player) {
 		Inventory inventory = player.getInventory();
-		Set<Item> types = new HashSet<>();
+		int mask = 0;
+
 		for (int i = 0; i < inventory.getContainerSize(); i++) {
 			ItemStack stack = inventory.getItem(i);
-			if (!stack.isEmpty() && stack.is(ItemTags.SAPLINGS)) {
-				types.add(stack.getItem());
+			int bit = saplingBit(stack);
+
+			if (bit >= 0) {
+				mask |= 1 << bit;
 			}
 		}
+
 		TreeProgress progress = SkillService.progress(player, SkillTrees.AXE);
-		if (types.size() > progress.count("sapling_checklist")) {
-			progress.counters.put("sapling_checklist", types.size());
-		}
+		mask &= GateChecklists.width("sapling_checklist");
+
+		progress.counters.put(
+				GateChecklists.maskId("sapling_checklist"),
+				mask
+		);
+		progress.counters.put(
+				"sapling_checklist",
+				Integer.bitCount(mask)
+		);
+	}
+
+	private static int saplingBit(ItemStack stack) {
+		if (stack.is(Items.OAK_SAPLING)) return 0;
+		if (stack.is(Items.SPRUCE_SAPLING)) return 1;
+		if (stack.is(Items.BIRCH_SAPLING)) return 2;
+		if (stack.is(Items.JUNGLE_SAPLING)) return 3;
+		if (stack.is(Items.ACACIA_SAPLING)) return 4;
+		if (stack.is(Items.DARK_OAK_SAPLING)) return 5;
+		if (stack.is(Items.MANGROVE_PROPAGULE)) return 6;
+		if (stack.is(Items.CHERRY_SAPLING)) return 7;
+		if (stack.is(Items.PALE_OAK_SAPLING)) return 8;
+		if (stack.is(Items.AZALEA)) return 9;
+		if (stack.is(Items.FLOWERING_AZALEA)) return 10;
+		if (stack.is(Items.CRIMSON_FUNGUS)) return 11;
+		if (stack.is(Items.WARPED_FUNGUS)) return 12;
+		return -1;
 	}
 }
