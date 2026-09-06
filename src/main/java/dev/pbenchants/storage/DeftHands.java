@@ -1,7 +1,6 @@
 package dev.pbenchants.storage;
 
 import dev.pbenchants.network.ScreenStatePayload;
-import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,8 +36,8 @@ import java.util.UUID;
  * slot into a chest or onto the ground does drop the count, and refilling there
  * is the point of the perk.
  *
- * <p>Pinned slots are never refilled: a locked empty slot is a slot the player
- * deliberately keeps empty.
+ * <p>A locked stack is never the one that refills: it stays in the backpack
+ * where the player put it, whatever ran out on the bar.
  *
  * <p>And none of it runs while an item screen is open. Inside the inventory the
  * "less of it than before" rule stops being a good proxy for spending: lift a
@@ -107,7 +106,6 @@ public final class DeftHands {
 		// nothing refills until the screen is gone.
 		boolean enabled = SkillService.owns(player, SkillTrees.ARTISAN, "deft_hands")
 			&& !handlingItems(player);
-		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
 		Map<Item, Integer> totals = tally(inventory);
 
 		for (int slot = 0; slot < memory.held().length; slot++) {
@@ -119,7 +117,7 @@ public final class DeftHands {
 			Item ranOut = memory.held()[slot];
 			int had = memory.carried()[slot];
 			memory.clear(slot);
-			if (!enabled || ranOut == null || progress.slotLocked(slot)) {
+			if (!enabled || ranOut == null) {
 				continue;
 			}
 			// Still just as much of it as before: the stack was moved, not spent.
@@ -128,7 +126,7 @@ public final class DeftHands {
 			}
 			// A refill only shuffles the item within the inventory, so the tally
 			// stays true for the slots after this one.
-			if (refill(inventory, progress, slot, ranOut)) {
+			if (refill(inventory, slot, ranOut)) {
 				memory.remember(slot, ranOut, count(totals, ranOut));
 			}
 		}
@@ -157,13 +155,10 @@ public final class DeftHands {
 	}
 
 	/** Moves the first matching backpack stack into the empty hotbar slot. */
-	private static boolean refill(Inventory inventory, TreeProgress progress, int hotbarSlot, Item wanted) {
+	private static boolean refill(Inventory inventory, int hotbarSlot, Item wanted) {
 		for (int slot = StorageOps.BACKPACK_START; slot < StorageOps.BACKPACK_END; slot++) {
-			if (progress.slotLocked(slot)) {
-				continue;
-			}
 			ItemStack candidate = inventory.getItem(slot);
-			if (candidate.isEmpty() || !candidate.is(wanted)) {
+			if (candidate.isEmpty() || !candidate.is(wanted) || ItemLock.locked(candidate)) {
 				continue;
 			}
 			inventory.setItem(hotbarSlot, candidate);

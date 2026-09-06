@@ -78,6 +78,15 @@ WHAT IS NEW IN 0.8.5-beta
   plant until it stands two blocks tall. Sneaking still breaks
   anything; cane, cocoa and berries are still not guarded.
 
+- LOCKED SLOTS ARE NOW LOCKED ITEMS. The Artisan lock moves from the
+  slot to the stack, the way a Terraria favourite works: alt-click a
+  stack and it wears a gold frame that travels with it, in a chest
+  included. Sort, Quick Stack, Restock, Deft Hands and Auto Block step
+  around it, and no shortcut takes it out of your inventory - not a
+  shift-click into a container, not the drop key - while your own hand
+  still moves it anywhere. Alt-click again to release. Pins from older
+  versions are cleared: lock the items again.
+
 - EVERY PICK-ONE TIER EXPLAINS ITSELF. The Sword, Armor and Bow
   capstones are a one-way choice, and the screen now says so wherever
   you might miss it: a scales mark on each node of the group, a
@@ -446,7 +455,7 @@ WHAT IS NEW IN 0.6.6
   inventory pack themselves into the block within a second - ingots, raw
   ore, coal, diamonds, emeralds, redstone, lapis, netherite. Everything
   but quartz. Nine gold or iron nuggets become an ingot, and a nugget
-  windfall cascades all the way up to blocks. Your pinned slots are
+  windfall cascades all the way up to blocks. Your locked stacks are
   never touched, and renamed or enchanted stacks are left alone.
 
 - BIOME CHART I & II are live (Explorer, tiers 2-3). Own the node and a
@@ -768,8 +777,10 @@ WHAT IS NEW IN 0.3.0
     Steady Grid        - the crafting grid keeps its contents when you
                          close the table
     Deft Hands         - an empty hotbar slot refills itself from your bag
-    Locked Slots       - ALT-CLICK any slot to pin it. Nothing the mod does
-                         will ever move a pinned slot.
+    Locked Items       - ALT-CLICK a stack to lock it, like a Terraria
+                         favourite. Nothing the mod does will ever move
+                         it, and no shortcut takes it out of your bag;
+                         the mark stays on the item wherever you put it.
     Tidy Storage       - a chest is tidied again every time you close it
     Artisan's Order    - choose category / name / count as the sort rule
     Quartermaster's Call - tops up the stacks you already carry from
@@ -779,7 +790,7 @@ WHAT IS NEW IN 0.3.0
     that kind of thing - oak planks join the chest of birch and spruce,
     ruby ingots join the chest of iron and gold. It never starts a pile of
     its own, so anything without a home stays on you. Hotbar, armour and
-    pinned slots are never touched, and furnaces, hoppers and ender chests
+    locked items are never touched, and furnaces, hoppers and ender chests
     are never filled.
 
 - ENCHANTER additions

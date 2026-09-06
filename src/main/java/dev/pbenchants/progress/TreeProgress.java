@@ -54,10 +54,10 @@ public final class TreeProgress {
 	public final Set<String> seen = new HashSet<>();
 
 	/**
-	 * Inventory slots the player pinned: sorting, auto-refill and Quick Stack
-	 * step around them. One bit per slot, which covers the 41 an inventory has
-	 * with room to spare. Player-wide rather than per-tree; it lives on the
-	 * Artisan tree because that is the class that grants the ability to set it.
+	 * Legacy: the slot bitmask Locked Slots kept until 0.8.5. The lock is a mark
+	 * on the item now ({@code storage.ItemLock}), so nothing reads this any
+	 * more; it stays in the codec so an older save loads without complaint,
+	 * and is written back untouched.
 	 */
 	public long lockedSlots;
 
@@ -152,14 +152,4 @@ public final class TreeProgress {
 		counters.put(counterId, total);
 	}
 
-	public boolean slotLocked(int slot) {
-		return slot >= 0 && slot < Long.SIZE && (lockedSlots & (1L << slot)) != 0L;
-	}
-
-	public void setSlotLocked(int slot, boolean locked) {
-		if (slot < 0 || slot >= Long.SIZE) {
-			return;
-		}
-		lockedSlots = locked ? lockedSlots | (1L << slot) : lockedSlots & ~(1L << slot);
-	}
 }

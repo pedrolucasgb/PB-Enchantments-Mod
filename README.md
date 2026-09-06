@@ -272,7 +272,7 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 | **Seeker's Eye** I–II | 1 / 2 | Ctrl+F for slots: type in the magnifier field and every matching slot turns yellow — your inventory, then the open container too, with the query remembered from one chest to the next |
 | **Steady Grid** | 1 | The 3×3 grid keeps its contents when you close a crafting table and hands them back next time |
 | **Deft Hands** | 2 | A hotbar stack that runs out refills itself from your backpack |
-| **Locked Slots** | 3 | Alt-click any slot to pin it — sorting, auto-refill, Quick Stack and Restock all step around it |
+| **Locked Items** | 3 | Alt-click a stack to lock it (Terraria's favourite): the mark rides on the item, sorting, auto-refill, Quick Stack, Restock and Auto Block step around it, and no shortcut takes it out of your inventory — your own hand still moves it anywhere |
 | **Tidy Storage** | 3 | A container is tidied again every time you close it, so one you sorted stays sorted |
 | **Artisan's Order** | 3 | Pick the sort rule: category, name or count |
 | **Quartermaster's Call** | 4 | Tops up the stacks you already carry from containers within 8 blocks — never hands you something new |
@@ -286,7 +286,7 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 - **Fill order:** partial stacks are topped up before empty slots are used, so a chest with three half-stacks of cobblestone ends with full stacks rather than five scattered piles.
 - **Containers:** chests (a double chest counts as one), trapped chests, barrels and placed shulker boxes. Furnaces, hoppers, droppers, dispensers and brewing stands are excluded — accidentally filling a hopper is a griefing machine. Ender chests are out too: quietly emptying your pockets into a shared void would be a trap.
 - **Access:** only containers you could legitimately open. A locked container without the key, or a chest under a solid block or a sitting cat, is simply not there — the same path a real right-click takes, so claim mods that hook it work by construction.
-- **Never touched:** armour, offhand, the crafting grid, pinned slots, and the hotbar.
+- **Never touched:** armour, offhand, the crafting grid, locked items, and the hotbar.
 - **Server-authoritative.** Unlike every client-side storage mod, none of this can be done on the client: the tree state is the server's, so the client only expresses intent.
 
 ### Sword nodes (Path of the Blade)

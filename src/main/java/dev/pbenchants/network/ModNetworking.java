@@ -54,12 +54,12 @@ public final class ModNetworking {
 
 		// Artisan buttons live in the inventory screen, not the skill screen, and
 		// change the world rather than the tree — so they get their own channel
-		// and do not drag a full progress snapshot behind every press. The lock
-		// toggle is the exception: it edits the tree, so it re-syncs below.
+		// and do not drag a full progress snapshot behind every press. The two
+		// that edit the tree re-sync below; the item lock edits the item, and
+		// vanilla's container sync carries that.
 		ServerPlayNetworking.registerGlobalReceiver(ArtisanActionPayload.TYPE, (payload, context) -> {
 			ArtisanHandler.handle(context.player(), payload);
-			if (payload.action() == ArtisanActionPayload.Action.TOGGLE_SLOT_LOCK
-				|| payload.action() == ArtisanActionPayload.Action.CYCLE_SORT_MODE
+			if (payload.action() == ArtisanActionPayload.Action.CYCLE_SORT_MODE
 				|| payload.action() == ArtisanActionPayload.Action.TOGGLE_AUTO_BLOCK) {
 				sendState(context.player());
 			}
@@ -158,7 +158,6 @@ public final class ModNetworking {
 			hash = 31 * hash + treeProgress.unlockedTiers;
 			hash = 31 * hash + treeProgress.purchased.hashCode();
 			hash = 31 * hash + treeProgress.counters.hashCode();
-			hash = 31 * hash + Long.hashCode(treeProgress.lockedSlots);
 		}
 		return hash;
 	}
@@ -173,7 +172,6 @@ public final class ModNetworking {
 				treeProgress.unlockedTiers,
 				new HashSet<>(treeProgress.purchased),
 				new HashMap<>(treeProgress.counters),
-				treeProgress.lockedSlots,
 				dev.pbenchants.skill.GateChecklists.synced(treeProgress.seen)
 			));
 		}

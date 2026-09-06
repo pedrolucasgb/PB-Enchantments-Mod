@@ -6,6 +6,7 @@ import dev.pbenchants.client.gui.SkillTreeStyle;
 import dev.pbenchants.client.mixin.ContainerScreenAccessor;
 import dev.pbenchants.network.ArtisanActionPayload;
 import dev.pbenchants.perk.AutoBlock;
+import dev.pbenchants.storage.ItemLock;
 import dev.pbenchants.storage.SortMode;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -336,7 +337,8 @@ public final class ArtisanScreenHooks {
 
 	/**
 	 * Everything the mod paints onto a container: the yellow behind the slots
-	 * Seeker's Eye matched, and the gold corner on the pinned ones.
+	 * Seeker's Eye matched, and the gold frame on every locked stack — in the
+	 * bag or in the chest, since the mark travels with the item.
 	 */
 	private static void drawOverlay(Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY,
 			float delta) {
@@ -344,10 +346,6 @@ public final class ArtisanScreenHooks {
 			return;
 		}
 		boolean searching = ArtisanSearch.available() && !ArtisanSearch.query().isEmpty();
-		boolean pinning = ClientArtisanState.owns("slot_lock");
-		if (!searching && !pinning) {
-			return;
-		}
 		int left = ((ContainerScreenAccessor) container).pbenchants$leftPos();
 		int top = ((ContainerScreenAccessor) container).pbenchants$topPos();
 
@@ -356,28 +354,30 @@ public final class ArtisanScreenHooks {
 				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 16, top + slot.y + 16, MATCH_FILL);
 				graphics.outline(left + slot.x, top + slot.y, 16, 16, SkillTreeStyle.GOLD);
 			}
-			if (pinning && slot.container instanceof Inventory
-				&& ClientArtisanState.slotLocked(slot.getContainerSlot())) {
-				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 4, top + slot.y + 4,
+			if (ItemLock.locked(slot.getItem())) {
+				graphics.outline(left + slot.x - 1, top + slot.y - 1, 18, 18, SkillTreeStyle.GOLD);
+				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 5, top + slot.y + 5,
 					SkillTreeStyle.GOLD);
 			}
 		}
 	}
 
-	// ---------- pinned slots ----------
+	// ---------- locked items ----------
 
 	/**
-	 * Alt-click pins the slot under the cursor. Alt is free in vanilla, it needs
-	 * no keybind to explain, and holding it makes the intent unambiguous — a
-	 * plain click on a pinned slot still picks the item up, because pinning is
-	 * about what the <em>mod</em> may move, not about what you may.
+	 * Alt-click locks the stack under the cursor, or releases it. Alt is free
+	 * in vanilla, it needs no keybind to explain, and holding it makes the
+	 * intent unambiguous — a plain click on a locked stack still picks it up,
+	 * because the lock is about what the <em>mod</em> may move, not about what
+	 * you may. Only the player's own slots: a stack in a chest is released by
+	 * bringing it back first.
 	 */
 	private static boolean pinClicked(AbstractContainerScreen<?> screen, MouseButtonEvent event) {
-		if (!event.hasAltDown() || !ClientArtisanState.owns("slot_lock")) {
+		if (!event.hasAltDown() || !ClientArtisanState.owns(ItemLock.NODE)) {
 			return false;
 		}
 		Slot slot = slotAt(screen, event.x(), event.y());
-		if (slot == null || !(slot.container instanceof Inventory)) {
+		if (slot == null || !(slot.container instanceof Inventory) || slot.getItem().isEmpty()) {
 			return false;
 		}
 		ClientPlayNetworking.send(ArtisanActionPayload.lock(slot.getContainerSlot()));

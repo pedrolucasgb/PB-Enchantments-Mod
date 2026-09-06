@@ -135,6 +135,8 @@ public class PBEnchantsClient implements ClientModInitializer {
 		// Why a borrowed tool feels dead, and why a librarian will not sell a
 		// book yet — both read the same per-holder check as the gameplay hooks.
 		LockedItemTooltip.register();
+		// The gold frame on a locked stack, explained on the stack itself.
+		ItemLockTooltip.register();
 
 		// The Artisan class lives in the inventory screen rather than the skill
 		// screen: its row of icon buttons, the Seeker's Eye search field and the

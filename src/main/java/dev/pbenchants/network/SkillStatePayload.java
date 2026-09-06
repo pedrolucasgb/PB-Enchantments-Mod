@@ -26,7 +26,7 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 	 *             cannot list them anyway
 	 */
 	public record TreeState(int unlockedTiers, Set<String> purchased, Map<String, Integer> counters,
-		long lockedSlots, Set<String> seen) {
+		Set<String> seen) {
 	}
 
 	public static final Type<SkillStatePayload> TYPE =
@@ -52,13 +52,12 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 			for (int j = 0; j < counterCount; j++) {
 				counters.put(buf.readUtf(), buf.readVarInt());
 			}
-			long lockedSlots = buf.readLong();
 			int seenCount = buf.readVarInt();
 			Set<String> seen = new HashSet<>();
 			for (int j = 0; j < seenCount; j++) {
 				seen.add(buf.readUtf());
 			}
-			trees.put(treeId, new TreeState(unlocked, purchased, counters, lockedSlots, seen));
+			trees.put(treeId, new TreeState(unlocked, purchased, counters, seen));
 		}
 		return new SkillStatePayload(debugMaster, trees);
 	}
@@ -80,7 +79,6 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 				buf.writeUtf(counter.getKey());
 				buf.writeVarInt(counter.getValue());
 			}
-			buf.writeLong(state.lockedSlots());
 			buf.writeVarInt(state.seen().size());
 			for (String seenEntry : state.seen()) {
 				buf.writeUtf(seenEntry);

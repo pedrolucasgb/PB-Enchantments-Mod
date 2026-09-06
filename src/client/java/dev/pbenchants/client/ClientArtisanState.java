@@ -5,12 +5,11 @@ import dev.pbenchants.perk.AutoBlock;
 import dev.pbenchants.storage.SortMode;
 
 /**
- * The client's view of the Artisan tree: which buttons to draw and which slots
- * are pinned.
+ * The client's view of the Artisan tree: which buttons to draw.
  *
- * <p>All of it is advisory. Every button re-checks its node on the server, and
- * the pin markers here are only a picture of the long the server sent — the
- * server is the one that refuses to move a pinned slot.
+ * <p>All of it is advisory. Every button re-checks its node on the server.
+ * (Locked items need nothing here: the mark rides on the stack, which the
+ * screen already has.)
  */
 public final class ClientArtisanState {
 	private static final String TREE = "artisan";
@@ -20,12 +19,6 @@ public final class ClientArtisanState {
 
 	public static boolean owns(String nodeId) {
 		return ClientSkillState.owns(TREE, nodeId);
-	}
-
-	public static boolean slotLocked(int slot) {
-		SkillStatePayload.TreeState state = ClientSkillState.tree(TREE);
-		return state != null && slot >= 0 && slot < Long.SIZE
-			&& (state.lockedSlots() & (1L << slot)) != 0L;
 	}
 
 	/** The sort order the player picked, mirroring {@code StorageTracker.sortMode}. */

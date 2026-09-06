@@ -72,6 +72,9 @@ public class PBEnchants implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModAttachments.init();
+		// The Locked Items mark is a data component, and the registry closes
+		// early: before anything can put one on a stack.
+		dev.pbenchants.storage.ItemLock.register();
 		dev.pbenchants.track.PlacedLogs.init();
 		// The sword tree is the first part of the mod whose balance depends on
 		// what kind of server it is running on. Two switches, read once.
