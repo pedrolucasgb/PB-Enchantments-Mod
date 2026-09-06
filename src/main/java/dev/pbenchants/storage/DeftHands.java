@@ -158,7 +158,7 @@ public final class DeftHands {
 	private static boolean refill(Inventory inventory, int hotbarSlot, Item wanted) {
 		for (int slot = StorageOps.BACKPACK_START; slot < StorageOps.BACKPACK_END; slot++) {
 			ItemStack candidate = inventory.getItem(slot);
-			if (candidate.isEmpty() || !candidate.is(wanted) || ItemLock.locked(candidate)) {
+			if (candidate.isEmpty() || !candidate.is(wanted) || ItemLock.held(candidate)) {
 				continue;
 			}
 			inventory.setItem(hotbarSlot, candidate);

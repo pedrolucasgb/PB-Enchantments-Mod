@@ -141,6 +141,12 @@ public class PBEnchants implements ModInitializer {
 			DiggyDiggyHole.onUseBlock(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
 		UseItemCallback.EVENT.register((player, level, hand) ->
 			DiggyDiggyHole.onUseItem(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
+		// Artisan: a shulker box right-clicked at nothing opens in the hand.
+		// Same shape as the shovel above — the client passes, the server opens.
+		UseItemCallback.EVENT.register((player, level, hand) ->
+			dev.pbenchants.perk.ShulkerSight.onUseItem(player, hand)
+				? InteractionResult.SUCCESS
+				: InteractionResult.PASS);
 
 		// Indestructible: a spent item is inert, and that has to include the
 		// right click — a bow that still draws, a crossbow that still loads and

@@ -6,9 +6,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 /**
- * The line under a locked stack: what the gold frame means, and how to take it
+ * The line under a marked stack: what the frame means, and how to take it
  * off. On every screen the stack shows up in, not just the inventory, because
- * the mark travels with the item.
+ * the marks travel with the item.
  */
 public final class ItemLockTooltip {
 	private ItemLockTooltip() {
@@ -18,6 +18,10 @@ public final class ItemLockTooltip {
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> {
 			if (ItemLock.locked(stack)) {
 				lines.add(Component.translatable("item.pbenchants.item_lock.tip").withStyle(ChatFormatting.GOLD));
+			}
+			if (ItemLock.voided(stack)) {
+				lines.add(Component.translatable("item.pbenchants.void_mark.tip")
+					.withStyle(ChatFormatting.LIGHT_PURPLE));
 			}
 		});
 	}

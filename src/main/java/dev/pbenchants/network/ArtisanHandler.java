@@ -14,6 +14,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -39,6 +41,7 @@ public final class ArtisanHandler {
 			case RESTOCK -> restock(player);
 			case TOGGLE_ITEM_LOCK -> toggleLock(player, payload.slot());
 			case TOGGLE_AUTO_BLOCK -> toggleAutoBlock(player);
+			case TOGGLE_VOID_MARK -> toggleVoidMark(player, payload.slot());
 		}
 	}
 
@@ -108,13 +111,57 @@ public final class ArtisanHandler {
 		}
 		boolean locking = !ItemLock.locked(stack);
 		ItemLock.setLocked(stack, locking);
-		player.getInventory().setChanged();
+		markChanged(player, slot);
 		player.sendSystemMessage(
 			Component.translatable(locking ? "msg.pbenchants.item_lock.on" : "msg.pbenchants.item_lock.off",
 				stack.getHoverName())
 				.withStyle(locking ? ChatFormatting.GOLD : ChatFormatting.GRAY),
 			true);
 		click(player);
+	}
+
+	/** Void Mark: the same gesture with the other button, the same rules. */
+	private static void toggleVoidMark(ServerPlayer player, int slot) {
+		if (!owns(player, ItemLock.VOID_NODE) || slot < 0 || slot >= player.getInventory().getContainerSize()) {
+			return;
+		}
+		ItemStack stack = player.getInventory().getItem(slot);
+		if (stack.isEmpty()) {
+			return;
+		}
+		boolean marking = !ItemLock.voided(stack);
+		ItemLock.setVoided(stack, marking);
+		markChanged(player, slot);
+		player.sendSystemMessage(
+			Component.translatable(marking ? "msg.pbenchants.void_mark.on" : "msg.pbenchants.void_mark.off",
+				stack.getHoverName())
+				.withStyle(marking ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GRAY),
+			true);
+		click(player);
+	}
+
+	/**
+	 * Gets a freshly marked stack onto the player's screen <em>now</em>.
+	 *
+	 * <p>The screen learns about a changed slot when the menu's end-of-tick
+	 * sweep finds the server's stack no longer {@code matches} what the client
+	 * was last sent — and that comparison goes through
+	 * {@code isSameItemSameComponents}, which the lock mixin has taught to
+	 * ignore the marks. So a mark on its own never looked like a change, and
+	 * the frame only appeared once the stack moved for some other reason.
+	 * Forgetting what the client was last sent for that one slot makes the
+	 * next sweep send it again, marks and all.
+	 */
+	private static void markChanged(ServerPlayer player, int inventorySlot) {
+		player.getInventory().setChanged();
+		AbstractContainerMenu menu = player.containerMenu;
+		for (Slot menuSlot : menu.slots) {
+			if (menuSlot.container == player.getInventory() && menuSlot.getContainerSlot() == inventorySlot) {
+				menu.setRemoteSlot(menuSlot.index, ItemStack.EMPTY);
+				return;
+			}
+		}
+		menu.broadcastFullState();
 	}
 
 	private static void toggleAutoBlock(ServerPlayer player) {

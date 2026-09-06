@@ -100,7 +100,7 @@ public final class AutoBlock {
 		for (Packing packing : active) {
 			int count = 0;
 			for (int slot = 0; slot < items.size(); slot++) {
-				if (!ItemLock.locked(items.get(slot)) && plain(items.get(slot), packing.from())) {
+				if (!ItemLock.held(items.get(slot)) && plain(items.get(slot), packing.from())) {
 					count += items.get(slot).getCount();
 				}
 			}
@@ -108,7 +108,7 @@ public final class AutoBlock {
 				int toRemove = 9;
 				for (int slot = 0; slot < items.size() && toRemove > 0; slot++) {
 					ItemStack stack = items.get(slot);
-					if (ItemLock.locked(stack)) {
+					if (ItemLock.held(stack)) {
 						continue;
 					}
 					if (!plain(stack, packing.from())) {
