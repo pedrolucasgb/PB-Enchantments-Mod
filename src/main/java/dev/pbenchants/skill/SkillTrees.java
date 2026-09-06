@@ -336,6 +336,110 @@ public final class SkillTrees {
 		)
 	);
 
+	// ---------- Beacon — Path of the Beacon ----------
+	/**
+	 * The first tree about a block rather than a tool. Its one rule: the
+	 * beacon never reads anyone's skills — every node changes what the
+	 * <em>receiving</em> player gets out of a vanilla beacon, or unlocks a
+	 * thing that works the same for everyone (see {@code perk.BeamReceiver}).
+	 * The flagship is Deepslate Breaker with Resonant Haste: inside a full
+	 * Haste pyramid, deepslate breaks in a single tick. The four nodes marked
+	 * future are the blocks, the lantern and the teleport, which need assets
+	 * the mod does not have yet.
+	 */
+	public static final SkillTree BEACON = new SkillTree(
+		"beacon",
+		Items.BEACON,
+		List.of(
+			// Tier 1 — Star Seeker: the fortress, the skulls, the first metal.
+			new SkillTier(5, List.of(
+				new GateRequirement("kill_wither_skeletons", 25),
+				new GateRequirement("collect_wither_skull", 1),
+				new GateRequirement("place_metal_blocks", 9),
+				new GateRequirement("visit_fortress", 1)
+			)),
+			// Tier 2 — Star Bearer: the boss, and a beacon lit.
+			new SkillTier(10, List.of(
+				new GateRequirement("slay_wither", 1),
+				new GateRequirement("craft_beacon", 1),
+				new GateRequirement("activate_beacon", 1),
+				new GateRequirement("pay_beacon", 8)
+			)),
+			// Tier 3 — Pyramid Builder: all four layers, every power, two hours.
+			new SkillTier(15, List.of(
+				new GateRequirement("pyramid_tier_4", 1),
+				new GateRequirement("beacon_effect_checklist", 5),
+				new GateRequirement("minutes_in_beam", 120),
+				new GateRequirement("place_pyramid_blocks", 164)
+			)),
+			// Tier 4 — Lightkeeper
+			new SkillTier(20, List.of(
+				new GateRequirement("slay_wither", 5),
+				new GateRequirement("beacons_activated", 3),
+				new GateRequirement("minutes_in_beam", 600),
+				new GateRequirement("place_pyramid_blocks", 500)
+			)),
+			// Tier 5 — Avatar of the Beam
+			new SkillTier(30, List.of(
+				new GateRequirement("slay_wither", 15),
+				new GateRequirement("beacons_activated", 6),
+				new GateRequirement("minutes_in_beam", 2000),
+				new GateRequirement("minutes_regenerating", 60)
+			))
+		),
+		List.of(
+			// Tier 1
+			SkillNode.of("skull_collector", 0, 4, SkillType.PASSIVE).icon(Items.WITHER_SKELETON_SKULL)
+				.costing(mat(Items.BONE, 16), mat(Items.COAL, 8)),
+			SkillNode.of("wither_ward", 0, 3, SkillType.PASSIVE).icon(Items.WITHER_ROSE)
+				.costing(mat(Items.BONE, 8), mat(Items.SOUL_SAND, 4)),
+			SkillNode.of("beam_sense", 0, 5, SkillType.PASSIVE).icon(Items.SPYGLASS)
+				.costing(mat(Items.GLASS, 16), mat(Items.GLOWSTONE_DUST, 4)),
+			// Tier 2
+			SkillNode.of("deepslate_breaker", 1, 6, SkillType.PASSIVE).icon(Items.DEEPSLATE)
+				.costing(mat(Items.COBBLED_DEEPSLATE, 64), mat(Items.IRON_INGOT, 8)),
+			SkillNode.of("reach_of_the_beam_1", 1, 5, SkillType.PASSIVE).icon(Items.BEACON)
+				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.GLASS, 16)),
+			SkillNode.of("lingering_light_1", 1, 5, SkillType.PASSIVE).icon(Items.TORCH)
+				.costing(mat(Items.GLOWSTONE_DUST, 16), mat(Items.GOLD_INGOT, 8)),
+			SkillNode.of("thrifty_offering", 1, 6, SkillType.PASSIVE).icon(Items.GOLD_INGOT)
+				.costing(mat(Items.EMERALD, 4), mat(Items.GOLD_INGOT, 8)),
+			// Tier 3 — the selling point first.
+			SkillNode.of("resonant_haste", 2, 10, SkillType.PASSIVE).icon(Items.NETHERITE_PICKAXE)
+				.costing(mat(Items.DIAMOND_BLOCK, 1), mat(Items.GLOWSTONE_DUST, 32), mat(Items.NETHER_STAR, 1)),
+			SkillNode.chained("reach_of_the_beam_2", 2, 8, "reach_of_the_beam_1", SkillType.PASSIVE).icon(Items.BEACON)
+				.costing(mat(Items.IRON_BLOCK, 16), mat(Items.GLASS, 32)),
+			SkillNode.chained("lingering_light_2", 2, 7, "lingering_light_1", SkillType.PASSIVE).icon(Items.SOUL_TORCH)
+				.costing(mat(Items.GLOWSTONE_DUST, 32), mat(Items.GOLD_INGOT, 16)),
+			SkillNode.of("early_regeneration", 2, 8, SkillType.PASSIVE).icon(Items.GLISTERING_MELON_SLICE)
+				.costing(mat(Items.GOLDEN_APPLE, 8), mat(Items.GLOWSTONE_DUST, 16)),
+			SkillNode.of("prism_1", 2, 8, SkillType.PASSIVE).icon(Items.PRISMARINE_CRYSTALS)
+				.costing(mat(Items.PRISMARINE_CRYSTALS, 32), mat(Items.AMETHYST_SHARD, 4)),
+			// Tier 4
+			SkillNode.chained("reach_of_the_beam_3", 3, 10, "reach_of_the_beam_2", SkillType.PASSIVE).icon(Items.BEACON)
+				.costing(mat(Items.DIAMOND, 4), mat(Items.GLASS, 64)),
+			SkillNode.chained("lingering_light_3", 3, 9, "lingering_light_2", SkillType.PASSIVE).icon(Items.GLOWSTONE)
+				.costing(mat(Items.GLOWSTONE, 16), mat(Items.GOLD_BLOCK, 1)),
+			SkillNode.chained("prism_2", 3, 9, "prism_1", SkillType.PASSIVE).icon(Items.AMETHYST_SHARD)
+				.costing(mat(Items.PRISMARINE_CRYSTALS, 32), mat(Items.AMETHYST_SHARD, 8)),
+			SkillNode.of("brighter_beam", 3, 12, SkillType.PASSIVE).icon(Items.DIAMOND_BLOCK)
+				.costing(mat(Items.DIAMOND_BLOCK, 4), mat(Items.NETHER_STAR, 1)),
+			SkillNode.of("hallowed_core", 3, 10, SkillType.ITEM).icon(Items.SOUL_LANTERN)
+				.costing(mat(Items.GLOWSTONE, 32), mat(Items.TOTEM_OF_UNDYING, 1), mat(Items.SOUL_SOIL, 4)).future(),
+			SkillNode.of("star_lantern", 3, 10, SkillType.ITEM).icon(Items.LANTERN)
+				.costing(mat(Items.NETHER_STAR, 1), mat(Items.LANTERN, 1), mat(Items.GOLD_INGOT, 8)).future(),
+			SkillNode.of("beamwalk", 3, 14, SkillType.ACTIVE).icon(Items.ENDER_EYE)
+				.costing(mat(Items.ENDER_PEARL, 8), mat(Items.ECHO_SHARD, 1), mat(Items.AMETHYST_SHARD, 4)).future(),
+			// Tier 5 — three finishers, buyable together.
+			SkillNode.of("sunless_core", 4, 20, SkillType.ITEM).icon(Items.CRYING_OBSIDIAN)
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.OBSIDIAN, 32), mat(Items.NETHER_STAR, 1)).future(),
+			SkillNode.of("starfall", 4, 20, SkillType.PASSIVE).icon(Items.NETHER_STAR)
+				.costing(mat(Items.WITHER_SKELETON_SKULL, 16), mat(Items.NETHER_STAR, 1)),
+			SkillNode.of("phantom_tier", 4, 20, SkillType.PASSIVE).icon(Items.EMERALD_BLOCK)
+				.costing(mat(Items.DIAMOND_BLOCK, 4), mat(Items.EMERALD_BLOCK, 1))
+		)
+	);
+
 	// ---------- Enchanter — Path of the Arcane ----------
 	public static final SkillTree ENCHANTER = new SkillTree(
 		"enchanter",
@@ -1071,14 +1175,14 @@ public final class SkillTrees {
 	 * commands, the advancements and the state packet all read this list.
 	 */
 	public static final List<SkillTree> ORDER =
-		List.of(PICKAXE, AXE, GROUND, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR, BOW);
+		List.of(PICKAXE, AXE, GROUND, BEACON, ENCHANTER, EXPLORER, ARTISAN, SWORD, ARMOR, BOW);
 
 	/**
 	 * Trees whose balance is still being play-tested. Fully playable — the
 	 * skill screen just stamps an "in testing" badge on their tabs and nodes
 	 * so nobody mistakes their numbers for final.
 	 */
-	public static final Set<String> IN_TESTING = Set.of("sword", "armor", "bow", "ground");
+	public static final Set<String> IN_TESTING = Set.of("sword", "armor", "bow", "ground", "beacon");
 
 	/**
 	 * Classes the design calls for but that have no tree yet. They show up as

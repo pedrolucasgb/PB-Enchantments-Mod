@@ -110,6 +110,8 @@ public class PBEnchantsClient implements ClientModInitializer {
 		GoalTrackerHud.register();
 		// A held ability that keeps breaking blocks by itself has to be visible.
 		DiggyHud.register();
+		// Beacon: the nearest lit beacon and the timers on its powers.
+		BeamSenseHud.register();
 
 		// Lets common code (enchanting menu logic) check enchanter perk
 		// ownership on the client via the synced skill state.
@@ -128,6 +130,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 			GoalTracker.clear();
 			ProgressChimes.clear();
 			DiggyHud.clear();
+			BeamSenseHud.clear();
 			hintCountdown = -1;
 			screenOpen = false;
 		});

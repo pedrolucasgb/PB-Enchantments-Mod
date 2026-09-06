@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.8.5-beta
+Version 0.9.0-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,53 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.9.0-beta
+-------------------------
+- THE BEACON TREE, PATH OF THE BEACON. A new class about a block rather
+  than a tool, built so the beacon itself never reads anyone's skills:
+  every node changes what YOU receive from a vanilla beacon. Its gates
+  are the beacon's own story - wither skeletons and skulls in a
+  fortress, the Wither, a beacon crafted and paid, all four layers,
+  every one of the five powers, hours under the beam. Marked "in
+  testing". Four nodes (Hallowed Core, Star Lantern, Beamwalk, Sunless
+  Core) are visible but wait for a later update.
+
+- DEEPSLATE BREAKS IN ONE TICK. Deepslate Breaker (+75% on deepslate
+  and everything cut from it, not its ores) and Resonant Haste (a
+  beacon's Haste II becomes Haste III) with an Efficiency V diamond or
+  netherite pickaxe under a full Haste pyramid: instant, no crack
+  animation. /pbenchants debug speed shows the numbers.
+
+- THE BEAM REACHES FURTHER AND STAYS LONGER. Reach of the Beam I-III
+  (10/20/40 blocks beyond the range), Lingering Light I-III (30 s /
+  90 s / 5 min after you leave), Early Regeneration, Brighter Beam,
+  Phantom Tier, and Prism - one extra power of your choice, picked
+  with /pbenchants attune <power>.
+
+- BEAM SENSE, THRIFTY OFFERING, SKULL COLLECTOR, WITHER WARD, STARFALL.
+  A HUD column pointing at the nearest lit beacon with your beacon
+  powers and their timers; one beacon payment in four handed back;
+  skulls at about 6%; the Wither effect's damage halved; one Wither in
+  five dropping a second star.
+
+- SHULKER SIGHT (Artisan tier 4). Right-click with a shulker box in
+  hand, aimed at nothing, and it opens right there. Everything you do
+  is written into the box as you do it. Aim at a block and it is placed
+  as ever; the box's own slot cannot be picked up while it is open.
+
+- VOID MARK (Artisan tier 5). Alt + right-click a stack in your
+  inventory and, while it stays in your bag, every item of that kind
+  you pick up - by hand or by any magnet - is destroyed on the spot.
+  The marked stack is left as it is. Alt + right-click again to stop.
+  Does nothing in creative mode.
+
+- FEWER, LARGER XP ORBS. An award is one orb carrying the whole amount,
+  and nearby awards fold into it. The total is unchanged, Mending too;
+  the minute spent standing in a cloud of orbs is gone.
+
+- FIXED: a locked stack shows its gold frame the moment you lock it,
+  instead of when the stack next moves.
 
 WHAT IS NEW IN 0.8.5-beta
 -------------------------

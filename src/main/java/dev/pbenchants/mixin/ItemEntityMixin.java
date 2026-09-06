@@ -46,5 +46,7 @@ public class ItemEntityMixin {
 		if (taken > 0 && pbenchants$preTouchItem == Items.APPLE) {
 			FarmingTracker.onApplePickup(serverPlayer, taken);
 		}
+		// Beacon: the wither skeleton skull, picked up by hand.
+		dev.pbenchants.track.BeaconTracker.onPickup(serverPlayer, pbenchants$preTouchItem, taken);
 	}
 }

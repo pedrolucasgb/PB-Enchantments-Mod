@@ -201,6 +201,11 @@ public class LivingEntityMixin {
 			if (source.is(DamageTypes.FALL) && ArmorPerks.hasKineticPlating(player)) {
 				amount *= ArmorPerks.KINETIC_REMAINDER;
 			}
+			// Beacon: Wither Ward halves what the Wither effect takes off you.
+			if (source.is(DamageTypes.WITHER)
+				&& dev.pbenchants.perk.BeaconPerks.owns(player, dev.pbenchants.perk.BeaconPerks.WITHER_WARD)) {
+				amount *= dev.pbenchants.perk.BeaconPerks.WITHER_WARD_REMAINDER;
+			}
 		}
 		return amount * pbenchants$guardiansAura(level, self);
 	}

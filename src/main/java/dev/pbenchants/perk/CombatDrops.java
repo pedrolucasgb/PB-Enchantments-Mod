@@ -58,6 +58,18 @@ public final class CombatDrops {
 		boolean headhunter = CombatPerks.owns(player, CombatPerks.HEADHUNTER)
 			&& CombatPerks.appliesTo(victim)
 			&& headOf(victim.getType()) != null;
+		// Beacon: Skull Collector and Starfall drop their extra right here,
+		// beside the body, so the magnet's sweep below pockets them too.
+		if (victim.getType() == EntityTypes.WITHER_SKELETON
+			&& BeaconPerks.owns(player, BeaconPerks.SKULL_COLLECTOR)
+			&& level.getRandom().nextFloat() < BeaconPerks.SKULL_COLLECTOR_EXTRA) {
+			dropBeside(level, victim, Items.WITHER_SKELETON_SKULL);
+		}
+		if (victim.getType() == EntityTypes.WITHER
+			&& BeaconPerks.owns(player, BeaconPerks.STARFALL)
+			&& level.getRandom().nextFloat() < BeaconPerks.STARFALL_CHANCE) {
+			dropBeside(level, victim, Items.NETHER_STAR);
+		}
 		if (magnet || butcher || headhunter) {
 			PENDING.add(new Pending(level, victim.position(), player, victim.getType(),
 				magnet, butcher, headhunter));
@@ -135,6 +147,10 @@ public final class CombatDrops {
 	}
 
 	/** Same pickup bookkeeping as the Miner's Magnet, so advancements keep firing. */
+	private static void dropBeside(ServerLevel level, LivingEntity victim, net.minecraft.world.item.Item item) {
+		level.addFreshEntity(new ItemEntity(level, victim.getX(), victim.getY(), victim.getZ(), new ItemStack(item)));
+	}
+
 	private static void collect(ServerPlayer player, ItemEntity drop) {
 		ItemStack stack = drop.getItem();
 		int before = stack.getCount();
@@ -146,6 +162,8 @@ public final class CombatDrops {
 		if (taken <= 0) {
 			return;
 		}
+		// Beacon: a skull the magnet pocketed never went through the pickup mixin.
+		dev.pbenchants.track.BeaconTracker.onPickup(player, stack.getItem(), taken);
 		player.take(drop, taken);
 		if (stack.isEmpty()) {
 			drop.discard();
