@@ -18,8 +18,15 @@ import java.util.Set;
  * requests it and after every successful action.
  */
 public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> trees) implements CustomPacketPayload {
+	/**
+	 * @param seen the name-based checklist entries the client can draw a roster
+	 *             for — only those kinds cross the wire (see
+	 *             {@code GateChecklists.synced}); the biome and recipe lists
+	 *             would be hundreds of strings a second for a tooltip that
+	 *             cannot list them anyway
+	 */
 	public record TreeState(int unlockedTiers, Set<String> purchased, Map<String, Integer> counters,
-		long lockedSlots) {
+		Set<String> seen) {
 	}
 
 	public static final Type<SkillStatePayload> TYPE =
@@ -45,7 +52,12 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 			for (int j = 0; j < counterCount; j++) {
 				counters.put(buf.readUtf(), buf.readVarInt());
 			}
-			trees.put(treeId, new TreeState(unlocked, purchased, counters, buf.readLong()));
+			int seenCount = buf.readVarInt();
+			Set<String> seen = new HashSet<>();
+			for (int j = 0; j < seenCount; j++) {
+				seen.add(buf.readUtf());
+			}
+			trees.put(treeId, new TreeState(unlocked, purchased, counters, seen));
 		}
 		return new SkillStatePayload(debugMaster, trees);
 	}
@@ -67,7 +79,10 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 				buf.writeUtf(counter.getKey());
 				buf.writeVarInt(counter.getValue());
 			}
-			buf.writeLong(state.lockedSlots());
+			buf.writeVarInt(state.seen().size());
+			for (String seenEntry : state.seen()) {
+				buf.writeUtf(seenEntry);
+			}
 		}
 	}
 

@@ -3,6 +3,7 @@ package dev.pbenchants.mixin;
 import dev.pbenchants.perk.ArmorPerks;
 import dev.pbenchants.perk.Indestructible;
 import dev.pbenchants.perk.ItemAuthority;
+import dev.pbenchants.storage.ItemLock;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -72,6 +73,36 @@ public class ItemStackMixin {
 		at = @At("HEAD"), argsOnly = true)
 	private int pbenchants$shieldWearsSlower(int amount, int ignored, LivingEntity holder, InteractionHand hand) {
 		return ArmorPerks.shieldDurability(holder, (ItemStack) (Object) this, amount);
+	}
+
+	/**
+	 * Locked Items: the mark does not make a stack a different kind of stack.
+	 * This is the one comparison every merge in the game goes through — a
+	 * pickup off the ground, a click of one stack onto another, a shift-click
+	 * out of a chest, {@code Inventory.add} — so answering it with the mark
+	 * ignored is what lets a locked pile of 15 diamond blocks take the 16th,
+	 * and stay locked, because vanilla grows the stack that was already there.
+	 * Once that stack is full the next one starts from the item that arrived,
+	 * which carries no mark: a plain, unlocked stack, until the player says
+	 * otherwise. Only asked when exactly one side is marked; two marked or two
+	 * plain stacks take vanilla's own path untouched.
+	 */
+	@Inject(method = "isSameItemSameComponents", at = @At("HEAD"), cancellable = true)
+	private static void pbenchants$lockIsNotADifference(ItemStack a, ItemStack b,
+			CallbackInfoReturnable<Boolean> cir) {
+		boolean lockedA = ItemLock.locked(a);
+		if (lockedA == ItemLock.locked(b)) {
+			return;
+		}
+		if (!a.is(b.getItem())) {
+			cir.setReturnValue(false);
+			return;
+		}
+		ItemStack bare = (lockedA ? a : b).copy();
+		ItemLock.setLocked(bare, false);
+		cir.setReturnValue(lockedA
+			? ItemStack.isSameItemSameComponents(bare, b)
+			: ItemStack.isSameItemSameComponents(a, bare));
 	}
 
 	@Inject(method = "getDestroySpeed", at = @At("HEAD"), cancellable = true)

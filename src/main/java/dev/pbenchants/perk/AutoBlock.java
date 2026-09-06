@@ -3,6 +3,7 @@ package dev.pbenchants.perk;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
+import dev.pbenchants.storage.ItemLock;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -93,23 +94,23 @@ public final class AutoBlock {
 		if (active.isEmpty()) {
 			return;
 		}
-		// Still the Artisan progress: an unbought slot lock simply locks nothing.
+		// A locked stack is left loose: that is what locking it asked for.
 		NonNullList<ItemStack> items = player.getInventory().getNonEquipmentItems();
 
 		for (Packing packing : active) {
 			int count = 0;
 			for (int slot = 0; slot < items.size(); slot++) {
-				if (!artisan.slotLocked(slot) && plain(items.get(slot), packing.from())) {
+				if (!ItemLock.locked(items.get(slot)) && plain(items.get(slot), packing.from())) {
 					count += items.get(slot).getCount();
 				}
 			}
 			while (count - packing.keepLoose() >= 9) {
 				int toRemove = 9;
 				for (int slot = 0; slot < items.size() && toRemove > 0; slot++) {
-					if (artisan.slotLocked(slot)) {
+					ItemStack stack = items.get(slot);
+					if (ItemLock.locked(stack)) {
 						continue;
 					}
-					ItemStack stack = items.get(slot);
 					if (!plain(stack, packing.from())) {
 						continue;
 					}

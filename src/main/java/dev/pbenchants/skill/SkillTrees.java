@@ -263,7 +263,7 @@ public final class SkillTrees {
 			new SkillTier(30, List.of(
 				new GateRequirement("dig_soft_total", 10000),
 				new GateRequirement("harvest_crops_total", 5000),
-				new GateRequirement("crop_checklist", 11),
+				new GateRequirement("crop_checklist", 12),
 				new GateRequirement("replant_with_green_thumb", 500)
 			))
 		),
@@ -509,7 +509,8 @@ public final class SkillTrees {
 				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.SLIME_BALL, 16)),
 			SkillNode.of("waypoint", 3, 10, SkillType.ACTIVE).icon(Items.AMETHYST_SHARD)
 				.costing(mat(Items.AMETHYST_SHARD, 8), mat(Items.ECHO_SHARD, 1), mat(Items.GOLD_INGOT, 4)),
-			// Tier 5 — capstone (pick one)
+			// Tier 5 — two capstones, buyable together (no exclusiveWith: the
+			// sky and the sea are not a choice a wanderer should have to make)
 			SkillNode.of("endless_horizon", 4, 20, SkillType.PASSIVE).icon(Items.FIREWORK_ROCKET)
 				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.FIREWORK_ROCKET, 64), mat(Items.PHANTOM_MEMBRANE, 16)),
 			SkillNode.of("pufferfish_lungs", 4, 20, SkillType.PASSIVE).icon(Items.PUFFERFISH)

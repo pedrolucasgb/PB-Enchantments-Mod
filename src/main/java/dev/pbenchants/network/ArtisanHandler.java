@@ -4,6 +4,7 @@ import dev.pbenchants.perk.AutoBlock;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
+import dev.pbenchants.storage.ItemLock;
 import dev.pbenchants.storage.SortMode;
 import dev.pbenchants.storage.StorageOps;
 import dev.pbenchants.track.StorageTracker;
@@ -13,6 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * The server half of every Artisan button.
@@ -35,7 +37,7 @@ public final class ArtisanHandler {
 			case CYCLE_SORT_MODE -> cycleSortMode(player);
 			case QUICK_STACK -> quickStack(player);
 			case RESTOCK -> restock(player);
-			case TOGGLE_SLOT_LOCK -> toggleLock(player, payload.slot());
+			case TOGGLE_ITEM_LOCK -> toggleLock(player, payload.slot());
 			case TOGGLE_AUTO_BLOCK -> toggleAutoBlock(player);
 		}
 	}
@@ -89,17 +91,30 @@ public final class ArtisanHandler {
 	}
 
 	/**
-	 * Pinning is the one action with no cost and no reach, so it only needs the
+	 * Locking is the one action with no cost and no reach, so it only needs the
 	 * node and a slot index inside the inventory. An out-of-range index is
 	 * dropped rather than clamped: a client that sends one is confused, and
-	 * guessing what it meant would pin the wrong slot.
+	 * guessing what it meant would lock the wrong stack. The mark goes on the
+	 * stack itself (see {@link ItemLock}); vanilla's own container sync carries
+	 * it back to the screen, so no snapshot is sent for it.
 	 */
 	private static void toggleLock(ServerPlayer player, int slot) {
-		if (!owns(player, "slot_lock") || slot < 0 || slot >= player.getInventory().getContainerSize()) {
+		if (!owns(player, ItemLock.NODE) || slot < 0 || slot >= player.getInventory().getContainerSize()) {
 			return;
 		}
-		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
-		progress.setSlotLocked(slot, !progress.slotLocked(slot));
+		ItemStack stack = player.getInventory().getItem(slot);
+		if (stack.isEmpty()) {
+			return;
+		}
+		boolean locking = !ItemLock.locked(stack);
+		ItemLock.setLocked(stack, locking);
+		player.getInventory().setChanged();
+		player.sendSystemMessage(
+			Component.translatable(locking ? "msg.pbenchants.item_lock.on" : "msg.pbenchants.item_lock.off",
+				stack.getHoverName())
+				.withStyle(locking ? ChatFormatting.GOLD : ChatFormatting.GRAY),
+			true);
+		click(player);
 	}
 
 	private static void toggleAutoBlock(ServerPlayer player) {

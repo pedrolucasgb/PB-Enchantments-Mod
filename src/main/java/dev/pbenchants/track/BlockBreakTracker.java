@@ -223,8 +223,11 @@ public final class BlockBreakTracker {
 
 	/**
 	 * One checklist read three times: any five at tier 3, any eight at tier 4, all
-	 * eleven at tier 5. Which five come first is the player's to choose, the same
-	 * way the ore and wood lists work.
+	 * twelve at tier 5. Which five come first is the player's to choose, the same
+	 * way the ore and wood lists work. The torchflower line is the bloom, not the
+	 * seedling — see {@link HoeCrops#isMature} — and the pitcher line is the grown
+	 * two-block plant; {@code isHarvestable} above has already ruled out the
+	 * pitcher crop's earlier stages before this is asked.
 	 */
 	private static int cropBit(BlockState state) {
 		if (state.is(Blocks.WHEAT)) return 0;
@@ -237,7 +240,8 @@ public final class BlockBreakTracker {
 		if (state.is(Blocks.COCOA)) return 7;
 		if (state.is(Blocks.SWEET_BERRY_BUSH)) return 8;
 		if (state.is(Blocks.SUGAR_CANE)) return 9;
-		if (state.is(Blocks.TORCHFLOWER_CROP)) return 10;
+		if (state.is(Blocks.TORCHFLOWER)) return 10;
+		if (state.is(Blocks.PITCHER_CROP)) return 11;
 		return -1;
 	}
 

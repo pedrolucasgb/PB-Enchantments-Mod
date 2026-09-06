@@ -100,8 +100,10 @@ public final class HoeHarvest {
 		if (!replant && wheatFortune == 0 && golden == 0 && poison == 0 && !magnet) {
 			return;
 		}
-		PENDING.add(new Pending(serverLevel, serverPlayer.getUUID(), pos, state.getBlock(),
-			replant, wheatFortune, golden, poison, magnet));
+		// A pitcher plant hit at the top drops at its foot, and a harvested
+		// torchflower goes back in the ground as the seedling, not the bloom.
+		PENDING.add(new Pending(serverLevel, serverPlayer.getUUID(), HoeCrops.rootOf(state, pos),
+			HoeCrops.replantBlock(state.getBlock()), replant, wheatFortune, golden, poison, magnet));
 	}
 
 	/** Called at the end of every server tick, once every drop of the tick has spawned. */

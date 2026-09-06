@@ -553,6 +553,11 @@ public class SkillTreeScreen extends Screen {
 			tip.append(Component.literal("\n"))
 				.append(Component.translatable("screen.pbenchants.in_testing").withColor(0xFFA94D));
 		}
+		if (!node.exclusiveWith().isEmpty()) {
+			tip.append(Component.literal("\n"))
+				.append(Component.translatable("screen.pbenchants.choice_tip", choiceGroupNames(node))
+					.withColor(SkillTreeStyle.CHOICE & 0xFFFFFF));
+		}
 		if (nodeState == NodeState.OWNED) {
 			if (node.pveOnly()) {
 				tip.append(Component.literal("\n"))
@@ -581,10 +586,68 @@ public class SkillTreeScreen extends Screen {
 		MutableComponent tip = Component.empty().append(tree.tierName(tier)).append(Component.literal("\n"));
 		int unlocked = state == null ? 0 : state.unlockedTiers();
 		if (tier < unlocked) {
-			return tip.append(Component.translatable("screen.pbenchants.unlocked").withColor(0x5FBF4F));
+			tip.append(Component.translatable("screen.pbenchants.unlocked").withColor(0x5FBF4F));
+		} else {
+			tip.append(Component.translatable("screen.pbenchants.unlock_cost_tier",
+				XpMath.pointsForLevel(tree.tiers().get(tier).accessCost())).withColor(0x9AA1AD));
 		}
-		return tip.append(Component.translatable("screen.pbenchants.unlock_cost_tier",
-			XpMath.pointsForLevel(tree.tiers().get(tier).accessCost())).withColor(0x9AA1AD));
+		for (List<SkillNode> group : choiceGroups(tree, tier)) {
+			tip.append(Component.literal("\n"))
+				.append(Component.translatable("screen.pbenchants.choice_tier", names(group))
+					.withColor(SkillTreeStyle.CHOICE & 0xFFFFFF));
+		}
+		return tip;
+	}
+
+	// ---------- pick-one groups ----------
+
+	/**
+	 * The pick-one groups of a tier, each in the tree's own order: every node
+	 * that names siblings, grouped with the siblings it names. A node is listed
+	 * once even though every member of a group names all the others.
+	 */
+	private static List<List<SkillNode>> choiceGroups(SkillTree tree, int tier) {
+		List<List<SkillNode>> groups = new ArrayList<>();
+		List<String> placed = new ArrayList<>();
+		for (SkillNode node : tree.nodesInTier(tier)) {
+			if (node.exclusiveWith().isEmpty() || placed.contains(node.id())) {
+				continue;
+			}
+			List<SkillNode> group = choiceGroup(tree, node);
+			for (SkillNode member : group) {
+				placed.add(member.id());
+			}
+			groups.add(group);
+		}
+		return groups;
+	}
+
+	/** This node and the siblings it shuts, in the order the column draws them. */
+	private static List<SkillNode> choiceGroup(SkillTree tree, SkillNode node) {
+		List<SkillNode> group = new ArrayList<>();
+		for (SkillNode candidate : tree.nodesInTier(node.tier())) {
+			if (candidate.id().equals(node.id()) || node.exclusiveWith().contains(candidate.id())) {
+				group.add(candidate);
+			}
+		}
+		return group;
+	}
+
+	/** "Aegis, Immortal Line, Living Armor" — a group as the lang strings take it. */
+	private static String names(List<SkillNode> group) {
+		StringBuilder sb = new StringBuilder();
+		for (SkillNode member : group) {
+			if (sb.length() > 0) {
+				sb.append(", ");
+			}
+			sb.append(member.displayName().getString());
+		}
+		return sb.toString();
+	}
+
+	private String choiceGroupNames(SkillNode node) {
+		SkillTree tree = SkillTrees.byId(treeId);
+		return tree == null ? node.displayName().getString() : names(choiceGroup(tree, node));
 	}
 
 	// ---------- actions ----------
@@ -1116,10 +1179,25 @@ public class SkillTreeScreen extends Screen {
 				Component.translatable("screen.pbenchants.requires", SkillNode.displayName(node.requires())),
 				x, y, has ? SkillTreeStyle.GREEN : SkillTreeStyle.BAD, 11);
 		}
-		for (String exclusive : node.exclusiveWith()) {
+		if (!node.exclusiveWith().isEmpty()) {
+			// The one decision in the tree that cannot be undone for free, so it
+			// gets a heading of its own, the whole group by name, and where the
+			// player stands in it — before the description, not after.
+			y += 2;
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.choice_title"),
+				x, y, SkillTreeStyle.CHOICE, 11);
 			y = wrappedText(graphics,
-				Component.translatable("screen.pbenchants.exclusive", SkillNode.displayName(exclusive)),
-				x, y, SkillTreeStyle.DIM, 11);
+				Component.translatable("screen.pbenchants.choice_body", choiceGroupNames(node)),
+				x, y, SkillTreeStyle.MUTED, 10);
+			String blocker = node.blockedBy(state.purchased()::contains);
+			if (blocker != null) {
+				y = wrappedText(graphics,
+					Component.translatable("screen.pbenchants.choice_blocked", SkillNode.displayName(blocker)),
+					x, y, SkillTreeStyle.BAD, 10);
+			} else if (owned) {
+				y = wrappedText(graphics, Component.translatable("screen.pbenchants.choice_owned"),
+					x, y, SkillTreeStyle.GREEN, 10);
+			}
 		}
 		y += 4;
 		// Keyed on the full node id, not the family: every rank describes only
@@ -1154,6 +1232,14 @@ public class SkillTreeScreen extends Screen {
 				: Component.translatable("screen.pbenchants.unlock_cost_tier",
 					XpMath.pointsForLevel(tier.accessCost())),
 			x, y, open ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 13);
+
+		for (List<SkillNode> group : choiceGroups(tree, selectedTier)) {
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.choice_title"),
+				x, y, SkillTreeStyle.CHOICE, 11);
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.choice_body", names(group)),
+				x, y, SkillTreeStyle.MUTED, 10);
+			y += 3;
+		}
 
 		graphics.text(font, Component.translatable("screen.pbenchants.gate"), x, y, SkillTreeStyle.GOLD);
 		y += 10;
@@ -1237,6 +1323,30 @@ public class SkillTreeScreen extends Screen {
 					.getVisualOrderText());
 			}
 		}
+
+		// A name roster is thirty-odd lines long — too tall for one entry per
+		// line — so it reads as two wrapped paragraphs: what is done, what is
+		// left. The count on each says how the gate's own number was reached.
+		List<GateChecklists.SeenEntry> roster = GateChecklists.seenRoster(gate.id());
+		if (!roster.isEmpty()) {
+			List<String> met = new ArrayList<>();
+			List<String> left = new ArrayList<>();
+			for (GateChecklists.SeenEntry entry : roster) {
+				(GateChecklists.seen(state.seen(), gate.id(), entry.id()) ? met : left)
+					.add(entry.name().getString());
+			}
+			lines.add(FormattedCharSequence.EMPTY);
+			if (!met.isEmpty()) {
+				lines.addAll(font.split(
+					Component.translatable("screen.pbenchants.roster_met", met.size(), String.join(", ", met))
+						.withColor(SkillTreeStyle.GREEN & 0xFFFFFF), GATE_TOOLTIP_WRAP));
+			}
+			if (!left.isEmpty()) {
+				lines.addAll(font.split(
+					Component.translatable("screen.pbenchants.roster_missing", left.size(), String.join(", ", left))
+						.withColor(SkillTreeStyle.MUTED & 0xFFFFFF), GATE_TOOLTIP_WRAP));
+			}
+		}
 		return lines;
 	}
 
@@ -1295,6 +1405,21 @@ public class SkillTreeScreen extends Screen {
 				x, y, SkillTreeStyle.MUTED, 11);
 			y = drawMaterials(graphics, node, x, y);
 			y += 2;
+			if (!node.exclusiveWith().isEmpty()) {
+				List<SkillNode> others = new ArrayList<>();
+				SkillTree owner = SkillTrees.byId(treeId);
+				if (owner != null) {
+					for (SkillNode member : choiceGroup(owner, node)) {
+						if (!member.id().equals(node.id())) {
+							others.add(member);
+						}
+					}
+				}
+				y = wrappedText(graphics,
+					Component.translatable("screen.pbenchants.confirm.choice_warning", names(others)),
+					x, y, SkillTreeStyle.CHOICE, 10);
+				y += 2;
+			}
 			ModEnchantments.Grant grant = ModEnchantments.NODE_GRANTS.get(node.id());
 			String bodyKey;
 			if (!node.enchantable()) {

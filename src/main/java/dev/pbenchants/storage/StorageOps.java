@@ -26,8 +26,9 @@ import java.util.function.IntPredicate;
  * safe rather than clever:
  *
  * <ul>
- *   <li><b>Locked slots are never touched.</b> Pin your pickaxe and no amount
- *       of sorting, stacking or restocking will move it.</li>
+ *   <li><b>Locked items are never touched.</b> Lock your pickaxe and no amount
+ *       of sorting, stacking or restocking will move it — in your bag or in a
+ *       chest you put it in.</li>
  *   <li><b>The hotbar, armour and offhand are never touched</b> by Quick Stack —
  *       what is on your bar is what you chose to have on your bar.</li>
  * </ul>
@@ -55,51 +56,40 @@ public final class StorageOps {
 	 * Rearranges a whole container: identical stacks merged, then laid out in
 	 * the chosen order from slot 0. Returns true when anything actually moved,
 	 * so pressing Sort on an already-sorted chest is a no-op rather than a
-	 * counter that ticks for free.
+	 * counter that ticks for free. A locked stack stays exactly where it is and
+	 * the rest is laid out around it.
 	 */
 	public static boolean sortContainer(Container container, SortMode mode) {
-		List<ItemStack> contents = new ArrayList<>();
-		for (int slot = 0; slot < container.getContainerSize(); slot++) {
-			ItemStack stack = container.getItem(slot);
-			if (!stack.isEmpty()) {
-				contents.add(stack.copy());
-			}
-		}
-		List<ItemStack> sorted = mergeAndSort(contents, mode);
-
-		boolean changed = false;
-		for (int slot = 0; slot < container.getContainerSize(); slot++) {
-			ItemStack wanted = slot < sorted.size() ? sorted.get(slot) : ItemStack.EMPTY;
-			if (!ItemStack.matches(container.getItem(slot), wanted)) {
-				container.setItem(slot, wanted);
-				changed = true;
-			}
-		}
-		if (changed) {
-			container.setChanged();
-		}
-		return changed;
+		return sortRange(container, 0, container.getContainerSize(), mode);
 	}
 
 	/**
 	 * Sorts the player's backpack. The hotbar, armour and offhand are left
 	 * alone — a Sort button that reshuffles your hotbar mid-fight is a bug with
-	 * a nice icon — and so is every pinned slot, whose contents stay exactly
-	 * where they are while everything around them is rearranged.
+	 * a nice icon — and so is every locked stack, which stays exactly where it
+	 * is while everything around it is rearranged.
 	 */
 	public static boolean sortInventory(ServerPlayer player, SortMode mode) {
-		Inventory inventory = player.getInventory();
-		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
+		return sortRange(player.getInventory(), BACKPACK_START, BACKPACK_END, mode);
+	}
 
+	/**
+	 * The one sort: the slots of {@code [from, to)} that do not hold a locked
+	 * stack are emptied into a list, merged, ordered, and written back over
+	 * those same slots in order. The locked ones are not in the list, so they
+	 * are neither moved nor merged into.
+	 */
+	private static boolean sortRange(Container container, int from, int to, SortMode mode) {
 		List<Integer> slots = new ArrayList<>();
 		List<ItemStack> contents = new ArrayList<>();
-		for (int slot = BACKPACK_START; slot < BACKPACK_END; slot++) {
-			if (progress.slotLocked(slot)) {
+		for (int slot = from; slot < to; slot++) {
+			ItemStack stack = container.getItem(slot);
+			if (ItemLock.locked(stack)) {
 				continue;
 			}
 			slots.add(slot);
-			if (!inventory.getItem(slot).isEmpty()) {
-				contents.add(inventory.getItem(slot).copy());
+			if (!stack.isEmpty()) {
+				contents.add(stack.copy());
 			}
 		}
 		List<ItemStack> sorted = mergeAndSort(contents, mode);
@@ -108,10 +98,13 @@ public final class StorageOps {
 		for (int index = 0; index < slots.size(); index++) {
 			ItemStack wanted = index < sorted.size() ? sorted.get(index) : ItemStack.EMPTY;
 			int slot = slots.get(index);
-			if (!ItemStack.matches(inventory.getItem(slot), wanted)) {
-				inventory.setItem(slot, wanted);
+			if (!ItemStack.matches(container.getItem(slot), wanted)) {
+				container.setItem(slot, wanted);
 				changed = true;
 			}
+		}
+		if (changed) {
+			container.setChanged();
 		}
 		return changed;
 	}
@@ -190,11 +183,8 @@ public final class StorageOps {
 		int moved = 0;
 
 		for (int slot = BACKPACK_START; slot < BACKPACK_END; slot++) {
-			if (progress.slotLocked(slot)) {
-				continue;
-			}
 			ItemStack stack = inventory.getItem(slot);
-			if (stack.isEmpty()) {
+			if (stack.isEmpty() || ItemLock.locked(stack)) {
 				continue;
 			}
 			moved += pour(stack, containers, touched,
@@ -244,17 +234,13 @@ public final class StorageOps {
 		if (containers.isEmpty()) {
 			return new Outcome(0, 0);
 		}
-		TreeProgress progress = SkillService.progress(player, SkillTrees.ARTISAN);
 		Inventory inventory = player.getInventory();
 		Set<Integer> touched = new HashSet<>();
 		int moved = 0;
 
 		for (int slot = 0; slot < BACKPACK_END; slot++) {
-			if (progress.slotLocked(slot)) {
-				continue;
-			}
 			ItemStack held = inventory.getItem(slot);
-			if (held.isEmpty() || held.getCount() >= held.getMaxStackSize()) {
+			if (held.isEmpty() || ItemLock.locked(held) || held.getCount() >= held.getMaxStackSize()) {
 				continue;
 			}
 			for (int index = 0; index < containers.size() && held.getCount() < held.getMaxStackSize(); index++) {
@@ -285,7 +271,7 @@ public final class StorageOps {
 		boolean changed = false;
 		for (int slot = 0; slot < container.getContainerSize() && !stack.isEmpty(); slot++) {
 			ItemStack target = container.getItem(slot);
-			if (target.isEmpty() || !ItemStack.isSameItemSameComponents(target, stack)) {
+			if (target.isEmpty() || ItemLock.locked(target) || !ItemStack.isSameItemSameComponents(target, stack)) {
 				continue;
 			}
 			int room = Math.min(target.getMaxStackSize(), container.getMaxStackSize()) - target.getCount();
@@ -317,7 +303,7 @@ public final class StorageOps {
 				break;
 			}
 			ItemStack source = container.getItem(slot);
-			if (source.isEmpty() || !ItemStack.isSameItemSameComponents(source, held)) {
+			if (source.isEmpty() || ItemLock.locked(source) || !ItemStack.isSameItemSameComponents(source, held)) {
 				continue;
 			}
 			int taken = Math.min(held.getMaxStackSize() - held.getCount(), source.getCount());

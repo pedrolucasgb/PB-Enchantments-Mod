@@ -27,9 +27,10 @@ public class SkillNodeWidget extends AbstractWidget {
 	/** Icon box; leaves 3px of padding around a 16x16 item. */
 	private static final int ICON = 16;
 
-	/** Corner glyphs: owned, and not-built-yet. */
+	/** Corner glyphs: owned, not-built-yet, and one-of-a-pick-one-group. */
 	private static final String CHECK = "✓";
 	private static final String STAR = "★";
+	private static final String SCALES = "⚖";
 
 	private final SkillNode node;
 	private final NodeState state;
@@ -108,7 +109,11 @@ public class SkillNodeWidget extends AbstractWidget {
 			SkillTreeStyle.typeColor(node.type()));
 
 		int labelX = iconX + ICON + 3;
-		boolean corner = state == NodeState.OWNED || state == NodeState.FUTURE;
+		// A node that shuts its siblings when bought wears the scales while the
+		// choice is still open; once it is made, the ✓ and the red frame say it.
+		boolean choice = !node.exclusiveWith().isEmpty()
+			&& (state == NodeState.AVAILABLE || state == NodeState.LOCKED);
+		boolean corner = state == NodeState.OWNED || state == NodeState.FUTURE || choice;
 		// Leave the corner glyph its own space instead of letting the name run under it.
 		int room = x + width - 3 - labelX - (corner ? 9 : 0);
 		if (room >= 20) {
@@ -120,6 +125,8 @@ public class SkillNodeWidget extends AbstractWidget {
 			graphics.text(font, CHECK, x + width - 8, y + 2, SkillTreeStyle.GREEN);
 		} else if (state == NodeState.FUTURE) {
 			graphics.text(font, STAR, x + width - 8, y + 2, SkillTreeStyle.SOON);
+		} else if (choice) {
+			graphics.text(font, SCALES, x + width - 8, y + 2, SkillTreeStyle.CHOICE);
 		}
 	}
 

@@ -93,6 +93,8 @@ public final class SkillTreeStyle {
 	public static final int GOLD_DEEP = 0xFF8A6A1E;
 	public static final int BAD = 0xFFE86B6B;
 	public static final int SOON = 0xFFFFA94D;
+	/** The pick-one warning: a capstone that shuts its siblings when bought. */
+	public static final int CHOICE = 0xFFE8A45F;
 	public static final int XP_GREEN = 0xFF80FF20;
 
 	/** Height of a node tile, and the pitch between two stacked nodes. */

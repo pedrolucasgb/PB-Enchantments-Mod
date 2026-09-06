@@ -20,7 +20,7 @@ import net.minecraft.resources.Identifier;
  * sends a packet at all.
  *
  * @param action what the player pressed
- * @param slot   inventory slot for {@link Action#TOGGLE_SLOT_LOCK}, else -1
+ * @param slot   inventory slot for {@link Action#TOGGLE_ITEM_LOCK}, else -1
  */
 public record ArtisanActionPayload(Action action, int slot) implements CustomPacketPayload {
 	public enum Action {
@@ -34,8 +34,8 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 		QUICK_STACK,
 		/** Quartermaster's Call: top up what you already carry. */
 		RESTOCK,
-		/** Locked Slots: pin or unpin one inventory slot. */
-		TOGGLE_SLOT_LOCK,
+		/** Locked Items: mark or release the stack in one inventory slot. */
+		TOGGLE_ITEM_LOCK,
 		/** Auto Block: enable or disable automatic material compression. */
 		TOGGLE_AUTO_BLOCK
 	}
@@ -51,7 +51,7 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 	}
 
 	public static ArtisanActionPayload lock(int slot) {
-		return new ArtisanActionPayload(Action.TOGGLE_SLOT_LOCK, slot);
+		return new ArtisanActionPayload(Action.TOGGLE_ITEM_LOCK, slot);
 	}
 
 	private static ArtisanActionPayload read(FriendlyByteBuf buf) {

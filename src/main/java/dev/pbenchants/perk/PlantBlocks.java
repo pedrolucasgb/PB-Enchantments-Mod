@@ -45,6 +45,7 @@ public final class PlantBlocks {
 	 * </ul>
 	 */
 	private static final Set<Block> EXTRA = Set.of(
+		Blocks.TORCHFLOWER,
 		Blocks.NETHER_WART,
 		Blocks.COCOA,
 		Blocks.MELON,
