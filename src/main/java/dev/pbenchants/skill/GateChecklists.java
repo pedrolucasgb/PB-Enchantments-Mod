@@ -1,15 +1,23 @@
 package dev.pbenchants.skill;
 
 import dev.pbenchants.progress.TreeProgress;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The contents of every gate that is a <b>closed list</b> rather than a running
@@ -22,9 +30,15 @@ import java.util.Map;
  * set the bits, the skill screen reads them back into a tick-list, and both
  * sides agree because they read the same table.
  *
- * <p>Only closed lists live here. "Kill 30 distinct hostile mobs" or "visit 45
- * biomes" have no finite roster to tick off — any thirty will do — so they stay
- * plain counters and get a description in the tooltip instead of a list.
+ * <p>Only closed lists keep a bitmask. "Visit 45 biomes" or "craft 100 distinct
+ * items" have no finite roster to tick off — any forty-five will do — so they
+ * stay plain counters (backed by {@link TreeProgress#seen}) and get a
+ * description in the tooltip instead of a list. The hostile-mob list is the
+ * one in between: it is also "any thirty", but the game <em>does</em> know
+ * every monster it can spawn, and a player staring at 12/30 wants to know which
+ * eighteen are left. So that gate gets a <b>name roster</b> — built from the
+ * entity registry on first use, ticked against the seen-set the tracker keeps —
+ * and its entries ride the state packet to the client for the tooltip.
  *
  * <p>Entry names borrow vanilla's own translations wherever the entry is a
  * block or a mob, so a new language costs nothing here; only the entries with
@@ -41,7 +55,31 @@ public final class GateChecklists {
 	public record Entry(int bit, Component name) {
 	}
 
+	/**
+	 * One line of a name roster.
+	 *
+	 * @param id   what the tracker records, e.g. {@code "minecraft:zombie"}
+	 * @param name what the line reads on screen
+	 */
+	public record SeenEntry(String id, Component name) {
+	}
+
 	private static final Map<String, List<Entry>> ENTRIES = new LinkedHashMap<>();
+
+	/**
+	 * The gates that are a name roster, and the kind {@link TreeProgress#see}
+	 * records their entries under.
+	 */
+	private static final Map<String, String> SEEN_KINDS = Map.of("mob_checklist", "mob");
+
+	/**
+	 * Monsters the registry lists but survival never meets. Left off the
+	 * roster so nobody goes hunting for a giant.
+	 */
+	private static final Set<String> UNREACHABLE_HOSTILES = Set.of("minecraft:giant", "minecraft:illusioner");
+
+	/** Rosters built on first use — the registry is frozen by then, static init is too early. */
+	private static final Map<String, List<SeenEntry>> SEEN_ROSTERS = new HashMap<>();
 
 	static {
 		// Pickaxe — every ore in the game, in the order BlockBreakTracker
@@ -93,7 +131,9 @@ public final class GateChecklists {
 		// Enchanter — one of every kind of gear taken off the table.
 		// Ground — every plant a hoe harvests, in the order BlockBreakTracker
 		// assigns them. Read at three targets: any five at tier 3, any eight at
-		// tier 4, all eleven at tier 5.
+		// tier 4, all twelve at tier 5. The last two are named by what you
+		// harvest — the torchflower bloom and the grown pitcher plant — since
+		// the seedling blocks are not the harvest.
 		put("crop_checklist",
 			block(0, Blocks.WHEAT),
 			block(1, Blocks.CARROTS),
@@ -105,7 +145,8 @@ public final class GateChecklists {
 			block(7, Blocks.COCOA),
 			block(8, Blocks.SWEET_BERRY_BUSH),
 			block(9, Blocks.SUGAR_CANE),
-			block(10, Blocks.TORCHFLOWER_CROP));
+			block(10, Blocks.TORCHFLOWER),
+			block(11, Blocks.PITCHER_PLANT));
 		put("enchant_type_checklist",
 			entry(0, "sword"),
 			entry(1, "pickaxe"),
@@ -178,6 +219,66 @@ public final class GateChecklists {
 			width |= 1 << entry.bit();
 		}
 		return width;
+	}
+
+	/** The seen-kind a name-roster gate ticks against, or null for every other gate. */
+	@Nullable
+	public static String seenKind(String gateId) {
+		return SEEN_KINDS.get(gateId);
+	}
+
+	/**
+	 * The slice of a seen-set the client needs: only the kinds a roster exists
+	 * for. The rest stays on the server, where the counter it feeds is enough.
+	 */
+	public static Set<String> synced(Set<String> seen) {
+		Set<String> out = new HashSet<>();
+		for (String entry : seen) {
+			int slash = entry.indexOf('/');
+			if (slash > 0 && SEEN_KINDS.containsValue(entry.substring(0, slash))) {
+				out.add(entry);
+			}
+		}
+		return out;
+	}
+
+	/** Whether one roster line is ticked, read off a synced seen-set. */
+	public static boolean seen(Set<String> seen, String gateId, String id) {
+		String kind = SEEN_KINDS.get(gateId);
+		return kind != null && seen.contains(kind + "/" + id);
+	}
+
+	/**
+	 * Every line a name-roster gate can tick, or an empty list for any other
+	 * gate. The hostile roster is every entity type the game files under the
+	 * monster category — so a mob added by a data pack or another mod lists
+	 * itself — sorted by the name the player will read.
+	 */
+	public static List<SeenEntry> seenRoster(String gateId) {
+		String kind = SEEN_KINDS.get(gateId);
+		if (kind == null) {
+			return List.of();
+		}
+		return SEEN_ROSTERS.computeIfAbsent(kind, GateChecklists::buildRoster);
+	}
+
+	private static List<SeenEntry> buildRoster(String kind) {
+		if (!kind.equals("mob")) {
+			return List.of();
+		}
+		List<SeenEntry> roster = new ArrayList<>();
+		for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
+			if (type.getCategory() != MobCategory.MONSTER) {
+				continue;
+			}
+			String id = BuiltInRegistries.ENTITY_TYPE.getKey(type).toString();
+			if (UNREACHABLE_HOSTILES.contains(id)) {
+				continue;
+			}
+			roster.add(new SeenEntry(id, type.getDescription()));
+		}
+		roster.sort(Comparator.comparing(entry -> entry.name().getString()));
+		return List.copyOf(roster);
 	}
 
 	private static void put(String gateId, Entry... entries) {

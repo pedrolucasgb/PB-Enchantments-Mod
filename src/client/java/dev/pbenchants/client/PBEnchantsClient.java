@@ -6,6 +6,7 @@ import dev.pbenchants.network.EnchantPreviewPayload;
 import dev.pbenchants.network.SkillActionPayload;
 import dev.pbenchants.network.ScreenStatePayload;
 import dev.pbenchants.network.SkillStatePayload;
+import dev.pbenchants.perk.ExplorerPerks;
 import dev.pbenchants.perk.PerkAccess;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -24,6 +25,19 @@ public class PBEnchantsClient implements ClientModInitializer {
 		"key.pbenchants.open_tree",
 		InputConstants.Type.KEYSYM,
 		GLFW.GLFW_KEY_K,
+		KeyMapping.Category.MISC
+	));
+
+	/**
+	 * Night Eyes on and off. A client-side switch over a client-side picture:
+	 * the node keeps being owned, the lightmap just stops reading it. G is
+	 * free in vanilla and sits next to the movement keys, where a "see in the
+	 * dark" switch is reached for without looking.
+	 */
+	public static final KeyMapping TOGGLE_NIGHT_EYES_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+		"key.pbenchants.toggle_night_eyes",
+		InputConstants.Type.KEYSYM,
+		GLFW.GLFW_KEY_G,
 		KeyMapping.Category.MISC
 	));
 
@@ -155,7 +169,32 @@ public class PBEnchantsClient implements ClientModInitializer {
 				}
 			}
 			closedByKey = false;
+
+			while (TOGGLE_NIGHT_EYES_KEY.consumeClick()) {
+				toggleNightEyes(client);
+			}
 		});
+	}
+
+	/**
+	 * The Night Eyes switch. Answered on the action bar rather than in chat:
+	 * it is pressed in the dark, mid-walk, and the answer is the screen
+	 * changing — the line only names which way it went. Pressing it without
+	 * the node says where the node is instead of doing nothing.
+	 */
+	private static void toggleNightEyes(Minecraft client) {
+		if (client.player == null) {
+			return;
+		}
+		Component line;
+		if (!ClientSkillState.owns("explorer", ExplorerPerks.NIGHT_EYES)) {
+			line = Component.translatable("msg.pbenchants.night_eyes.locked").withStyle(ChatFormatting.RED);
+		} else if (ClientSettings.toggleNightEyes()) {
+			line = Component.translatable("msg.pbenchants.night_eyes.on").withStyle(ChatFormatting.YELLOW);
+		} else {
+			line = Component.translatable("msg.pbenchants.night_eyes.off").withStyle(ChatFormatting.GRAY);
+		}
+		client.gui.hud.setOverlayMessage(line, false);
 	}
 
 	/**

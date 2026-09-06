@@ -13,19 +13,21 @@ import java.nio.file.Path;
  * world, kept in {@code config/pbenchants-client.json} next to the server-side
  * {@code pbenchants.json}.
  *
- * <p>Only one so far: whether the skill screen paints itself solid or lets the
- * world show through, which is a matter of taste (and of wanting to keep an eye
- * on the cave you are standing in) rather than of balance, so it is neither
- * synced nor validated by the server.
+ * <p>Two so far: whether the skill screen paints itself solid or lets the
+ * world show through, and whether Night Eyes is switched on. Both are a
+ * matter of taste (or of wanting to see a cave the way it really is for a
+ * screenshot) rather than of balance, so neither is synced nor validated by
+ * the server — Night Eyes is a picture on this client and nothing else.
  *
- * <p>Hand-parsed for the same reason the server config is: one boolean does not
- * justify a JSON dependency, and an unreadable file falls back to the default
- * with a line in the log rather than taking the game down.
+ * <p>Hand-parsed for the same reason the server config is: two booleans do
+ * not justify a JSON dependency, and an unreadable file falls back to the
+ * defaults with a line in the log rather than taking the game down.
  */
 public final class ClientSettings {
 	private static final String FILE_NAME = "pbenchants-client.json";
 
 	private static boolean translucentTree = false;
+	private static boolean nightEyes = true;
 	private static boolean loaded = false;
 
 	private ClientSettings() {
@@ -44,6 +46,24 @@ public final class ClientSettings {
 		save();
 	}
 
+	/**
+	 * Whether an owned Night Eyes is currently drawing. On by default — the
+	 * node was bought to see in the dark — and the toggle key flips it for
+	 * the moments when real darkness is wanted.
+	 */
+	public static boolean nightEyes() {
+		ensureLoaded();
+		return nightEyes;
+	}
+
+	/** Flips Night Eyes and writes the choice straight back to disk. Returns the new state. */
+	public static boolean toggleNightEyes() {
+		ensureLoaded();
+		nightEyes = !nightEyes;
+		save();
+		return nightEyes;
+	}
+
 	private static void ensureLoaded() {
 		if (!loaded) {
 			load();
@@ -57,7 +77,9 @@ public final class ClientSettings {
 			return;
 		}
 		try {
-			translucentTree = readFlag(Files.readString(path, StandardCharsets.UTF_8), "translucent_tree", false);
+			String text = Files.readString(path, StandardCharsets.UTF_8);
+			translucentTree = readFlag(text, "translucent_tree", false);
+			nightEyes = readFlag(text, "night_eyes", true);
 		} catch (IOException | RuntimeException failure) {
 			PBEnchants.LOGGER.warn("Could not read {} — using defaults ({})", FILE_NAME, failure.toString());
 		}
@@ -67,10 +89,11 @@ public final class ClientSettings {
 		Path path = path();
 		String content = """
 			{
-			  "_comment": "translucent_tree: the skill screen lets the world show through instead of painting a solid backdrop.",
-			  "translucent_tree": %s
+			  "_comment": "translucent_tree: the skill screen lets the world show through instead of painting a solid backdrop. night_eyes: whether an owned Night Eyes is switched on (the toggle key flips it).",
+			  "translucent_tree": %s,
+			  "night_eyes": %s
 			}
-			""".formatted(translucentTree);
+			""".formatted(translucentTree, nightEyes);
 		try {
 			Files.createDirectories(path.getParent());
 			Files.writeString(path, content, StandardCharsets.UTF_8);

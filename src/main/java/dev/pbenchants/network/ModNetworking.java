@@ -173,7 +173,8 @@ public final class ModNetworking {
 				treeProgress.unlockedTiers,
 				new HashSet<>(treeProgress.purchased),
 				new HashMap<>(treeProgress.counters),
-				treeProgress.lockedSlots
+				treeProgress.lockedSlots,
+				dev.pbenchants.skill.GateChecklists.synced(treeProgress.seen)
 			));
 		}
 		LAST_SYNC.put(player.getUUID(), fingerprint(player));

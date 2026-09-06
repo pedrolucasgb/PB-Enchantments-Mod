@@ -213,7 +213,7 @@ The one class that carries two tools. The shovel and the hoe work the same subst
 
 And *nothing in this tree digs below the floor you are standing on*. Flat Earth and Diggy Diggy Hole both clip at the player's own Y, so the class that moves the most earth per second is also the one that cannot drop you into a cave you did not see: you clear a layer, step down, and clear the next.
 
-**Gates.** The shovel half counts blocks broken with a shovel in hand, split by material (sand, gravel, clay, soul sand); the hoe half counts crops taken at full growth, farmland tilled and bone meal spent. The crop checklist is one eleven-bit mask read at three targets — five distinct crops at tier 3, eight at tier 4, all eleven at tier 5 — the same trick the ore and wood checklists use, so which five come first is the player's to choose.
+**Gates.** The shovel half counts blocks broken with a shovel in hand, split by material (sand, gravel, clay, soul sand); the hoe half counts crops taken at full growth, farmland tilled and bone meal spent. The crop checklist is one twelve-bit mask read at three targets — five distinct crops at tier 3, eight at tier 4, all twelve at tier 5 (the torchflower line is the bloom, the pitcher line the grown two-block plant) — the same trick the ore and wood checklists use, so which five come first is the player's to choose.
 
 ### Enchanter nodes (Path of the Arcane)
 | Node | Tier | Effect |

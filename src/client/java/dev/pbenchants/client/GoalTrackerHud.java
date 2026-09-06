@@ -4,6 +4,7 @@ import dev.pbenchants.PBEnchants;
 import dev.pbenchants.client.gui.SkillTreeStyle;
 import dev.pbenchants.network.SkillStatePayload;
 import dev.pbenchants.skill.GateRequirement;
+import dev.pbenchants.skill.MaterialCost;
 import dev.pbenchants.skill.SkillNode;
 import dev.pbenchants.skill.SkillTier;
 import dev.pbenchants.skill.SkillTree;
@@ -23,12 +24,19 @@ import java.util.List;
 
 /**
  * The pinned-goal tracker: a small scoreboard on the right edge of the screen
- * showing the gate achievements still missing for the one node or tier the
- * player pinned with the skill screen's Track button.
+ * showing everything still between the player and the one node or tier they
+ * pinned with the skill screen's Track button — the gate achievements, then
+ * the price: XP in hand against XP needed, and every material with how many
+ * of it the bag holds.
  *
- * <p>Counters come from the same synced snapshot the skill screen reads, so
- * the lines tick up live as the player plays — the whole point of pinning a
- * goal is not having to reopen the tree to see how far along the grind is.
+ * <p>Counters come from the same synced snapshot the skill screen reads, and
+ * the material counts straight off the local inventory, so the lines tick up
+ * live as the player plays — the whole point of pinning a goal is not having
+ * to reopen the tree to see how far along the grind is, and "ready to unlock"
+ * only ever shows once every line is a tick.
+ *
+ * <p>An unlocked goal keeps its price on screen, greyed, so the tracker still
+ * says what the thing cost after the fact.
  */
 public final class GoalTrackerHud {
 	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "goal_tracker");
@@ -60,8 +68,8 @@ public final class GoalTrackerHud {
 		}
 
 		List<Line> lines = pin.nodeId() != null
-			? nodeLines(tree, tree.node(pin.nodeId()), state)
-			: tierLines(tree, pin.tier(), state);
+			? nodeLines(player, tree, tree.node(pin.nodeId()), state)
+			: tierLines(player, tree, pin.tier(), state);
 		if (lines.isEmpty()) {
 			return;
 		}
@@ -75,37 +83,54 @@ public final class GoalTrackerHud {
 		}
 	}
 
-	private static List<Line> tierLines(SkillTree tree, int tierIndex, SkillStatePayload.TreeState state) {
+	private static List<Line> tierLines(LocalPlayer player, SkillTree tree, int tierIndex,
+			SkillStatePayload.TreeState state) {
 		List<Line> lines = new ArrayList<>();
 		if (tierIndex < 0 || tierIndex >= tree.tiers().size()) {
 			return lines;
 		}
+		SkillTier tier = tree.tiers().get(tierIndex);
+		int cost = XpMath.pointsForLevel(tier.accessCost());
 		lines.add(new Line("⚑ " + tree.tierName(tierIndex).getString(), SkillTreeStyle.GOLD));
 		lines.add(new Line(tree.shortName().getString() + " — "
 			+ Component.translatable("hud.pbenchants.track.tier", tierIndex + 1).getString(), SkillTreeStyle.MUTED));
 		if (tierIndex < state.unlockedTiers()) {
 			lines.add(new Line(Component.translatable("hud.pbenchants.track.unlocked").getString(),
 				SkillTreeStyle.GREEN));
+			lines.add(new Line(Component.translatable("hud.pbenchants.track.paid", cost).getString(),
+				SkillTreeStyle.DIM));
 			return lines;
 		}
-		SkillTier tier = tree.tiers().get(tierIndex);
-		if (addGateLines(lines, tier, state)) {
-			lines.add(new Line(Component.translatable("hud.pbenchants.track.gate_done",
-				XpMath.pointsForLevel(tier.accessCost())).getString(), SkillTreeStyle.GOLD));
+		boolean gateDone = addGateLines(lines, tier, state);
+		if (gateDone) {
+			lines.add(new Line(Component.translatable("hud.pbenchants.track.gate_done").getString(),
+				SkillTreeStyle.GREEN));
+		}
+		boolean xpOk = addXpLine(lines, player, cost);
+		if (gateDone && xpOk) {
+			lines.add(new Line(Component.translatable("hud.pbenchants.track.ready").getString(),
+				SkillTreeStyle.GOLD));
 		}
 		return lines;
 	}
 
-	private static List<Line> nodeLines(SkillTree tree, SkillNode node, SkillStatePayload.TreeState state) {
+	private static List<Line> nodeLines(LocalPlayer player, SkillTree tree, SkillNode node,
+			SkillStatePayload.TreeState state) {
 		List<Line> lines = new ArrayList<>();
 		if (node == null) {
 			return lines;
 		}
+		int cost = XpMath.pointsForLevel(node.unlockCost());
 		lines.add(new Line("⚑ " + node.displayName().getString(), SkillTreeStyle.GOLD));
 		lines.add(new Line(tree.shortName().getString(), SkillTreeStyle.MUTED));
 		if (state.purchased().contains(node.id())) {
 			lines.add(new Line(Component.translatable("hud.pbenchants.track.unlocked").getString(),
 				SkillTreeStyle.GREEN));
+			lines.add(new Line(Component.translatable("hud.pbenchants.track.paid", cost).getString(),
+				SkillTreeStyle.DIM));
+			for (MaterialCost material : node.materials()) {
+				lines.add(new Line("  " + material.label().getString(), SkillTreeStyle.DIM));
+			}
 			return lines;
 		}
 
@@ -128,11 +153,39 @@ public final class GoalTrackerHud {
 			lines.add(new Line("□ " + Component.translatable("hud.pbenchants.track.requires",
 				SkillNode.displayName(node.requires()).getString()).getString(), SkillTreeStyle.BAD));
 		}
-		if (!blocked) {
-			lines.add(new Line(Component.translatable("hud.pbenchants.track.ready",
-				XpMath.pointsForLevel(node.unlockCost())).getString(), SkillTreeStyle.GOLD));
+		String blocker = node.blockedBy(state.purchased()::contains);
+		if (blocker != null) {
+			blocked = true;
+			lines.add(new Line("✖ " + Component.translatable("hud.pbenchants.track.blocked_by",
+				SkillNode.displayName(blocker).getString()).getString(), SkillTreeStyle.BAD));
+		}
+
+		// The price, line by line, whatever else is in the way: the materials
+		// can be gathered while the gate is still being ground.
+		lines.add(new Line(Component.translatable("hud.pbenchants.track.cost").getString(), SkillTreeStyle.MUTED));
+		boolean paid = addXpLine(lines, player, cost);
+		for (MaterialCost material : node.materials()) {
+			int held = material.held(player);
+			boolean done = held >= material.count();
+			paid &= done;
+			lines.add(new Line((done ? "✓ " : "□ ") + material.label().getString()
+				+ " " + held + "/" + material.count(), done ? SkillTreeStyle.GREEN : SkillTreeStyle.TEXT));
+		}
+		if (!blocked && paid) {
+			lines.add(new Line(Component.translatable("hud.pbenchants.track.ready").getString(),
+				SkillTreeStyle.GOLD));
 		}
 		return lines;
+	}
+
+	/** One "✓/□ XP have/need" line. Returns true when the wallet covers it. */
+	private static boolean addXpLine(List<Line> lines, LocalPlayer player, int cost) {
+		int have = XpMath.totalPoints(player);
+		boolean done = have >= cost;
+		lines.add(new Line((done ? "✓ " : "□ ")
+			+ Component.translatable("hud.pbenchants.track.xp", Math.min(have, cost), cost).getString(),
+			done ? SkillTreeStyle.GREEN : SkillTreeStyle.TEXT));
+		return done;
 	}
 
 	/** One "✓/□ name 3/10" line per gate. Returns true when every line is complete. */

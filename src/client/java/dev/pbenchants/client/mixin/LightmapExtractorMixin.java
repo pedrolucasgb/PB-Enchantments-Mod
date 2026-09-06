@@ -1,5 +1,6 @@
 package dev.pbenchants.client.mixin;
 
+import dev.pbenchants.client.ClientSettings;
 import dev.pbenchants.perk.ExplorerPerks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -31,14 +32,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *
  * <p>Client-only: this is a picture, not a rule, and it reads the synced skill
  * snapshot through {@link ExplorerPerks}, so an unmodded client on a modded
- * server simply sees vanilla darkness.
+ * server simply sees vanilla darkness. The toggle key (G by default) flips
+ * {@link ClientSettings#nightEyes()}, and a switched-off Night Eyes leaves the
+ * state exactly as vanilla wrote it.
  */
 @Mixin(LightmapRenderStateExtractor.class)
 public class LightmapExtractorMixin {
 	@Inject(method = "extract", at = @At("RETURN"))
 	private void pbenchants$nightEyes(LightmapRenderState state, float partialTick, CallbackInfo ci) {
 		LocalPlayer player = Minecraft.getInstance().player;
-		if (player == null || !ExplorerPerks.seesInTheDark(player)) {
+		if (player == null || !ClientSettings.nightEyes() || !ExplorerPerks.seesInTheDark(player)) {
 			return;
 		}
 		state.nightVisionEffectIntensity =

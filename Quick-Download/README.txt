@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.8.4-beta
+Version 0.8.5-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,49 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.8.5-beta
+-------------------------
+- NIGHT EYES HAS A SWITCH. Press G to turn the Explorer's Night Eyes
+  off and back on. The node stays yours; the key only decides whether
+  it draws. Pressing it without the node tells you where the node is.
+  The choice is remembered between sessions, and the key can be
+  rebound in Controls.
+
+- THE HOSTILE MOB CHECKLIST SHOWS WHO IS MISSING. Hovering the Sword
+  tier-7 line lists every monster the game can spawn: the ones you
+  have killed in green, the ones still to go below them. Any thirty
+  still count - the list is there so you know where to look.
+
+- THE HUD TRACKER LISTS THE PRICE, ITEM BY ITEM. A pinned node no
+  longer says only "Ready to unlock": it shows your XP against the
+  cost and every material with how many you carry, ticked as you
+  gather them, even while the tier gate is still in the way. "Ready
+  to unlock" only appears once everything is in hand. An unlocked
+  node or tier keeps its cost on screen, greyed.
+
+- TORCHFLOWERS AND PITCHER PLANTS NOW COUNT AS HARVESTS. A torchflower
+  only ever counted as its seedling (the bloom is the harvest) and the
+  pitcher plant was not on the crop list at all. Both now feed the
+  harvest counters and the crop checklist, which grows from eleven
+  lines to twelve; the Landshaper gate wants all twelve. Harvest them
+  with a hoe like every other crop - Green Thumb replants both and
+  Harvest Swing takes a bed of them in one swing.
+
+- GREEN THUMB NO LONGER LETS A HOE BREAK UNRIPE NETHER WART. The guard
+  covered farmland crops only; it now also refuses nether wart before
+  its last stage, the torchflower until it blooms and the pitcher
+  plant until it stands two blocks tall. Sneaking still breaks
+  anything; cane, cocoa and berries are still not guarded.
+
+- EVERY PICK-ONE TIER EXPLAINS ITSELF. The Sword, Armor and Bow
+  capstones are a one-way choice, and the screen now says so wherever
+  you might miss it: a scales mark on each node of the group, a
+  warning on the tier header and in its panel, the whole group by
+  name on the node card with where you stand in it, and a last
+  warning on the confirmation card before the XP is spent. It also
+  says what undoing costs: selling the node back returns a fifth of
+  the XP and none of the materials.
 
 WHAT IS NEW IN 0.8.4-beta
 -------------------------
