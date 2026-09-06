@@ -84,8 +84,10 @@ WHAT IS NEW IN 0.8.5-beta
   included. Sort, Quick Stack, Restock, Deft Hands and Auto Block step
   around it, and no shortcut takes it out of your inventory - not a
   shift-click into a container, not the drop key - while your own hand
-  still moves it anywhere. Alt-click again to release. Pins from older
-  versions are cleared: lock the items again.
+  still moves it anywhere. Alt-click again to release. More of the same
+  item still stacks into a locked pile until it is full, and the pile
+  keeps its lock; only the overflow starts a plain, unlocked stack. Pins
+  from older versions are cleared: lock the items again.
 
 - EVERY PICK-ONE TIER EXPLAINS ITSELF. The Sword, Armor and Bow
   capstones are a one-way choice, and the screen now says so wherever

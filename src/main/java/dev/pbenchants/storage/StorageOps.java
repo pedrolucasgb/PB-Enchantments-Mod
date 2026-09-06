@@ -271,7 +271,7 @@ public final class StorageOps {
 		boolean changed = false;
 		for (int slot = 0; slot < container.getContainerSize() && !stack.isEmpty(); slot++) {
 			ItemStack target = container.getItem(slot);
-			if (target.isEmpty() || !ItemStack.isSameItemSameComponents(target, stack)) {
+			if (target.isEmpty() || ItemLock.locked(target) || !ItemStack.isSameItemSameComponents(target, stack)) {
 				continue;
 			}
 			int room = Math.min(target.getMaxStackSize(), container.getMaxStackSize()) - target.getCount();
@@ -303,7 +303,7 @@ public final class StorageOps {
 				break;
 			}
 			ItemStack source = container.getItem(slot);
-			if (source.isEmpty() || !ItemStack.isSameItemSameComponents(source, held)) {
+			if (source.isEmpty() || ItemLock.locked(source) || !ItemStack.isSameItemSameComponents(source, held)) {
 				continue;
 			}
 			int taken = Math.min(held.getMaxStackSize() - held.getCount(), source.getCount());

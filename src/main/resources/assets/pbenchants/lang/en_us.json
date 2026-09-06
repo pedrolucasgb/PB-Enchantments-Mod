@@ -621,7 +621,7 @@
 	"node.pbenchants.deft_hands": "Deft Hands",
 	"node.pbenchants.deft_hands.desc": "Passive: when a hotbar stack runs out, the same item refills from your backpack automatically. A locked stack is never the one pulled up.",
 	"node.pbenchants.slot_lock": "Locked Items",
-	"node.pbenchants.slot_lock.desc": "Passive: alt-click any stack in your inventory to lock it, and alt-click again to release it. A locked stack wears a gold frame and keeps it wherever you carry it, in a chest included: Sort, Quick Stack, Restock, Deft Hands and Auto Block all step around it, and no shortcut takes it out of your inventory — not a shift-click into a container, not the drop key. Your own hand still moves it anywhere. A locked stack never merges with an unlocked one of the same item. This is the safety rail the capstone needs.",
+	"node.pbenchants.slot_lock.desc": "Passive: alt-click any stack in your inventory to lock it, and alt-click again to release it. A locked stack wears a gold frame and keeps it wherever you carry it, in a chest included: Sort, Quick Stack, Restock, Deft Hands and Auto Block all step around it, and no shortcut takes it out of your inventory — not a shift-click into a container, not the drop key. Your own hand still moves it anywhere. More of the same item still stacks into a locked pile until it is full, and the pile keeps its lock; only what overflows starts a plain, unlocked stack. This is the safety rail the capstone needs.",
 	"msg.pbenchants.item_lock.on": "Locked: %s",
 	"msg.pbenchants.item_lock.off": "Released: %s",
 	"msg.pbenchants.item_lock.kept": "That stack is locked — alt-click it in your inventory to release it first.",

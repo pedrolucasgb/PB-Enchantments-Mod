@@ -26,10 +26,13 @@ import net.minecraft.world.item.ItemStack;
  * with the item, synced to the client with the item, and copied when the item
  * is copied — and it needs no progress state at all.
  *
- * <p>One consequence worth knowing: a marked stack is a different stack from
- * an unmarked one of the same item, so the two never merge. Pick up more dirt
- * and it starts its own pile next to the locked one, which is exactly what a
- * lock should mean.
+ * <p>A component would normally make a marked stack a different kind of stack
+ * from a plain one — and a locked pile of dirt that refused the dirt you dig
+ * up is not a lock, it is a nuisance. So {@code ItemStackMixin} makes the
+ * mark invisible to {@code isSameItemSameComponents}: more of the same item
+ * still stacks into a locked pile until it is full, the pile keeps its mark
+ * (vanilla grows the stack that was already there), and only what overflows
+ * starts a plain, unlocked stack of its own.
  *
  * <p>The component id lives under {@link PBEnchants#DATA_NS}: it is written
  * into item data a world keeps, like every other persisted id of the mod.
