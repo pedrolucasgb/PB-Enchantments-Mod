@@ -409,7 +409,7 @@ public final class PBEnchantsCommand {
 			+ "  |  Mason's Grip " + roman0(dev.pbenchants.perk.MiningSpeed.masonsGripRank(player))
 			+ "  |  Lumberjack's Arms " + roman0(dev.pbenchants.perk.MiningSpeed.lumberjacksArmsRank(player))
 			+ "  |  Obsidian Breaker " + (SkillService.owns(player, SkillTrees.PICKAXE, "obsidian_breaker") ? "yes" : "no")
-			+ "  |  Resonant Haste " + (SkillService.owns(player, SkillTrees.BEACON, dev.pbenchants.perk.BeaconPerks.RESONANT_HASTE) ? "yes" : "no")
+			+ "  |  Resonant Haste " + roman0(dev.pbenchants.perk.BeaconPerks.resonantHasteRank(player))
 			+ "  |  Haste now " + hasteNow(player))
 			.withStyle(ChatFormatting.AQUA));
 

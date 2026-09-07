@@ -51,9 +51,8 @@ WHAT IS NEW IN 0.9.0-beta
   every node changes what YOU receive from a vanilla beacon. Its gates
   are the beacon's own story - wither skeletons and skulls in a
   fortress, the Wither, a beacon crafted and paid, all four layers,
-  every one of the five powers, hours under the beam. Marked "in
-  testing". Four nodes (Hallowed Core, Star Lantern, Beamwalk, Sunless
-  Core) are visible but wait for a later update.
+  every one of the five powers, a few hours under the beam. Marked "in
+  testing".
 
 - DEEPSLATE BREAKS IN ONE TICK - UNDER A BEACON. Resonant Haste turns
   a full Haste pyramid's Haste II into Haste IV. With an Efficiency V
@@ -74,7 +73,8 @@ WHAT IS NEW IN 0.9.0-beta
   five dropping a second star.
 
 - SHULKER SIGHT (Artisan tier 4). Right-click with a shulker box in
-  hand, aimed at nothing, and it opens right there. Everything you do
+  hand, aimed at nothing - or sneak and right-click anywhere - and it
+  opens right there. Everything you do
   is written into the box as you do it. Aim at a block and it is placed
   as ever; the box's own slot cannot be picked up while it is open.
 

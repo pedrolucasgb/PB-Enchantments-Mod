@@ -12,17 +12,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.BlockItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
 
 /**
  * Shulker Sight — a shulker box opens in your hand.
  *
- * <p>Right-click with a shulker box at nothing in particular (aim at a block
- * and it is placed, as ever) and its 27 slots open as if it stood on the
- * ground. The screen is vanilla's own shulker screen; what is different is
+ * <p>Right-click with a shulker box at nothing in particular, or sneak and
+ * right-click anywhere (a plain click on a block still places it), and its
+ * 27 slots open as if it stood on the ground. The screen is vanilla's own shulker screen; what is different is
  * where the contents live. They are read out of the item's
  * {@code container} component into a plain 27-slot container when the screen
  * opens, and written straight back into the same item every time a slot
@@ -54,6 +53,18 @@ public final class ShulkerSight {
 	 * exactly as the other use-item perks do.
 	 */
 	public static boolean onUseItem(Player player, InteractionHand hand) {
+		return open(player, hand);
+	}
+
+	/**
+	 * A right-click that hit a block: only while sneaking, so that a plain
+	 * click still places the box. Returning true cancels the placement.
+	 */
+	public static boolean onUseBlock(Player player, InteractionHand hand) {
+		return player.isShiftKeyDown() && open(player, hand);
+	}
+
+	private static boolean open(Player player, InteractionHand hand) {
 		ItemStack held = player.getItemInHand(hand);
 		if (!isShulkerBox(held) || !(player instanceof ServerPlayer serverPlayer)) {
 			return false;
@@ -70,9 +81,9 @@ public final class ShulkerSight {
 		return true;
 	}
 
+	/** The item tag rather than the block class: every colour, and whatever a data pack adds to it. */
 	public static boolean isShulkerBox(ItemStack stack) {
-		return !stack.isEmpty() && stack.getItem() instanceof BlockItem blockItem
-			&& blockItem.getBlock() instanceof ShulkerBoxBlock;
+		return !stack.isEmpty() && stack.is(ItemTags.SHULKER_BOXES);
 	}
 
 	/**

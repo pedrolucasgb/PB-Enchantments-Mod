@@ -29,7 +29,8 @@ public final class BeaconPerks {
 	public static final String WITHER_WARD = "wither_ward";
 	public static final String BEAM_SENSE = "beam_sense";
 	public static final String THRIFTY_OFFERING = "thrifty_offering";
-	public static final String RESONANT_HASTE = "resonant_haste";
+	/** Resonant Haste I and II: a beacon's Haste II becomes III, then IV. */
+	public static final String[] RESONANT_HASTE = {"resonant_haste_1", "resonant_haste_2"};
 	public static final String EARLY_REGENERATION = "early_regeneration";
 	public static final String BRIGHTER_BEAM = "brighter_beam";
 	public static final String STARFALL = "starfall";
@@ -91,6 +92,10 @@ public final class BeaconPerks {
 
 	public static int prismRank(Player player) {
 		return PerkAccess.rank(player, SkillTrees.BEACON, PRISM);
+	}
+
+	public static int resonantHasteRank(Player player) {
+		return PerkAccess.rank(player, SkillTrees.BEACON, RESONANT_HASTE);
 	}
 
 	/** The rank of Prism a choice needs, by its index in {@link #ATTUNEMENTS}. */

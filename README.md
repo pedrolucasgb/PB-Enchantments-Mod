@@ -277,7 +277,7 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 | **Tidy Storage** | 3 | A container is tidied again every time you close it, so one you sorted stays sorted |
 | **Artisan's Order** | 3 | Pick the sort rule: category, name or count |
 | **Quartermaster's Call** | 4 | Tops up the stacks you already carry from containers within 8 blocks — never hands you something new |
-| **Shulker Sight** | 4 | Right-click with a shulker box in hand, aimed at nothing, and it opens right there: vanilla's shulker screen, written back into the item as you go. Aim at a block and it is placed as ever; the slot it sits in cannot be picked up while it is open, so a box never ends up inside itself |
+| **Shulker Sight** | 4 | Right-click with a shulker box in hand, aimed at nothing — or sneak and right-click anywhere — and it opens right there: vanilla's shulker screen, written back into the item as you go. Aim at a block and it is placed as ever; the slot it sits in cannot be picked up while it is open, so a box never ends up inside itself |
 | **Auto Block** | 4 | Nine of an ore material pack into the block on the spot; a button in the inventory switches it off |
 | **Hand of Order** | 5 | Terraria's *Quick Stack to Nearby Chests* — see below |
 | **Void Mark** | 5 | Alt + right-click a stack and it becomes a filter: while it stays in your bag, every item of that kind you pick up — by hand or by any magnet — is destroyed on the spot. The marked stack is left as it is, Sort and Quick Stack step around it, and it does nothing in creative. Mark one cobblestone before a quarry and the bag stays clear |
@@ -298,7 +298,7 @@ The first tree about a block rather than a tool, and it lives by one rule: **the
 
 The flagship is **instant deepslate, only under a beacon**. Deepslate is hardness 3, so a pickaxe needs destroy speed 90 to break it in one tick; an Efficiency V netherite pickaxe is 35 and Mason's Grip III makes it 56. **Resonant Haste** turns a full Haste pyramid's Haste II into Haste IV (×1.8), which lands at 100.8 — one tick, no crack animation, the same answer on the client and the server. Haste III would stop at 89.6 and Mason's Grip II at 88.2, both two ticks, so the instamine is exactly beam + full grip + Efficiency V and never the pickaxe alone; step out of the beam and deepslate is deepslate again. Deepslate *ores* keep their own hardness. `/pbenchants debug speed` reports every number in that sentence.
 
-The gates are the beacon's own story: wither skeletons and their skulls in a fortress, the Wither itself, a beacon crafted and paid, all four layers, every one of the five powers received, and hours under the beam. The tree is marked *in testing*.
+The gates are the beacon's own story: wither skeletons and their skulls in a fortress, the Wither itself, a beacon crafted and paid, all four layers, every one of the five powers received, and a few hours under the beam (half an hour for tier 3, an hour and a half for tier 4, three for tier 5; six Withers in all by the last tier). The tree is marked *in testing*.
 
 | Node | Tier | Effect |
 |---|---|---|
@@ -308,11 +308,10 @@ The gates are the beacon's own story: wither skeletons and their skulls in a for
 | **Reach of the Beam** I–III | 2 / 3 / 4 | You receive a beacon's powers from 10 / 20 / 40 blocks beyond its range |
 | **Lingering Light** I–III | 2 / 3 / 4 | A beacon's powers stay with you 30 s / 90 s / 5 min after you leave the beam, instead of about nine seconds |
 | **Thrifty Offering** | 2 | One payment in four is handed back |
-| **Resonant Haste** | 3 | Haste II from a beacon becomes Haste IV for you — with Efficiency V and Mason's Grip III, deepslate breaks in one tick while you are in the beam |
+| **Resonant Haste** I–II | 3 / 4 | Haste II from a beacon becomes Haste III, then IV — at IV, with Efficiency V and Mason's Grip III, deepslate breaks in one tick while you are in the beam |
 | **Early Regeneration** | 3 | Any beacon on two layers or more also gives you Regeneration I |
 | **Prism** I–II | 3 / 4 | One extra power you receive inside any beacon: Night Vision or Fire Resistance, then Slow Falling or Saturation (a bite per pulse). A Prism row appears above any beacon's window, one click per choice; `/pbenchants attune <power>` does the same from chat |
 | **Brighter Beam** | 4 | On a full pyramid the primary comes one level stronger whatever the secondary choice, so the secondary slot is free for Regeneration. Haste never passes IV |
-| **Hallowed Core**, **Star Lantern**, **Beamwalk**, **Sunless Core** | 4 / 5 | Visible in the tree, coming in a later update: the no-spawn block, the lantern that replays a beam, the beacon-to-beacon teleport, and the block that lets a beacon skip the sky |
 | **Starfall** | 5 | One Wither in five drops a second nether star |
 | **Phantom Tier** | 5 | For you a pyramid counts one layer higher — three layers give the powers of four, secondary and Brighter Beam included. The range stays the beacon's own |
 
@@ -525,7 +524,7 @@ public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, GROUND, ENCHAN
 ```
 
 That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
-the class from `SkillTrees.PLANNED` (the greyed "coming soon" tabs), add `tree.pbenchants.sword`,
+the class from `SkillTrees.PLANNED` if it was announced there (the list is empty today), add `tree.pbenchants.sword`,
 `tree.pbenchants.sword.short` and one `tier.pbenchants.sword.<n>` per tier to `en_us.json`, and one
 advancement JSON per tier under `data/toolmastery/advancement/sword/` if they should show up in the **L**
 screen. A tree is as many tiers as its list is long — the Sword tree is seven, and the GUI reads the
@@ -536,7 +535,7 @@ nothing about *displaying* the class does.
 
 **Seven-tier trees scroll.** A tier column never shrinks below a readable width, so the Sword and Armor trees are wider than the window and the tree pans sideways: the wheel over the tree, or the bar under it, whose thumb is as wide a share of the track as the viewport is of the tree. Five-tier trees are laid out exactly as they always were and show no bar at all.
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the one future class still greyed out in the tab strip (Builder).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the Beacon plan's blocks and items (Hallowed Core, Sunless Core, Star Lantern, Beamwalk — `docs/plans/path-of-the-beacon.md`). Nothing is greyed out in the tab strip or the trees any more: what is there is playable.
 
 ## License
 

@@ -141,10 +141,16 @@ public class PBEnchants implements ModInitializer {
 			DiggyDiggyHole.onUseBlock(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
 		UseItemCallback.EVENT.register((player, level, hand) ->
 			DiggyDiggyHole.onUseItem(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
-		// Artisan: a shulker box right-clicked at nothing opens in the hand.
-		// Same shape as the shovel above — the client passes, the server opens.
+		// Artisan: a shulker box right-clicked at nothing, or sneak-clicked
+		// at anything, opens in the hand. Same shape as the shovel above —
+		// the client passes, the server opens; SUCCESS on the block callback
+		// is what stops the box from being placed.
 		UseItemCallback.EVENT.register((player, level, hand) ->
 			dev.pbenchants.perk.ShulkerSight.onUseItem(player, hand)
+				? InteractionResult.SUCCESS
+				: InteractionResult.PASS);
+		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
+			dev.pbenchants.perk.ShulkerSight.onUseBlock(player, hand)
 				? InteractionResult.SUCCESS
 				: InteractionResult.PASS);
 

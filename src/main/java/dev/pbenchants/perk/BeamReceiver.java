@@ -41,8 +41,8 @@ import java.util.Objects;
  *       player's effects (not its range).</li>
  *   <li><b>Brighter Beam</b>: on a full pyramid the primary is one level
  *       stronger whatever the secondary choice.</li>
- *   <li><b>Resonant Haste</b>: a Haste that would be II is IV instead.
- *       Vanilla's ceiling is II (a full pyramid with Haste in both slots).
+ *   <li><b>Resonant Haste</b> I–II: a Haste that would be II is III, then
+ *       IV. Vanilla's ceiling is II (a full pyramid with Haste in both slots).
  *       Deepslate is hardness 3, so one tick needs destroy speed 90: an
  *       Efficiency V netherite pickaxe is 35, Mason's Grip III makes it 56,
  *       and Haste IV (x1.8) lands at 100.8; diamond lands at 97.9. Haste
@@ -151,17 +151,17 @@ public final class BeamReceiver {
 		return out;
 	}
 
-	/** Resonant Haste: II becomes IV, and nothing ever goes past IV. */
+	/**
+	 * Resonant Haste: II becomes III at rank I and IV at rank II, and nothing
+	 * ever goes past IV. Each Haste level is +20% destroy speed and +10%
+	 * attack speed; only IV reaches the deepslate line.
+	 */
 	private static int resonate(ServerPlayer player, Holder<MobEffect> effect, int amplifier) {
-		if (amplifier == 1 && Objects.equals(effect, MobEffects.HASTE)
-			&& BeaconPerks.owns(player, BeaconPerks.RESONANT_HASTE)) {
-			return RESONANT_HASTE_AMPLIFIER;
+		if (amplifier == 1 && Objects.equals(effect, MobEffects.HASTE)) {
+			return amplifier + BeaconPerks.resonantHasteRank(player);
 		}
 		return amplifier;
 	}
-
-	/** Haste IV. Each Haste level is +20% destroy speed and +10% attack speed. */
-	private static final int RESONANT_HASTE_AMPLIFIER = 3;
 
 	private static int attunedDuration(Holder<MobEffect> effect, int duration) {
 		if (Objects.equals(effect, MobEffects.SATURATION)) {
