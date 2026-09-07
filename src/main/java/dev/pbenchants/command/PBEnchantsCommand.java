@@ -444,24 +444,13 @@ public final class PBEnchantsCommand {
 			return 0;
 		}
 		int index = dev.pbenchants.perk.BeaconPerks.ATTUNEMENT_NAMES.indexOf(power);
-		if (index < 0) {
-			source.sendFailure(Component.translatable("msg.pbenchants.attune.unknown",
-				String.join(", ", dev.pbenchants.perk.BeaconPerks.ATTUNEMENT_NAMES)));
+		dev.pbenchants.perk.BeaconPerks.Attuned result = dev.pbenchants.perk.BeaconPerks.attune(player, index);
+		if (!result.ok()) {
+			source.sendFailure(result.message());
 			return 0;
 		}
-		int needed = dev.pbenchants.perk.BeaconPerks.rankFor(index);
-		if (dev.pbenchants.perk.BeaconPerks.prismRank(player) < needed) {
-			source.sendFailure(Component.translatable("msg.pbenchants.attune.locked", roman(needed)));
-			return 0;
-		}
-		SkillService.progress(player, SkillTrees.BEACON).counters
-			.put(dev.pbenchants.perk.BeaconPerks.ATTUNE_COUNTER, index);
 		dev.pbenchants.network.ModNetworking.sendState(player);
-		var effect = dev.pbenchants.perk.BeaconPerks.ATTUNEMENTS.get(index);
-		source.sendSystemMessage((effect == null
-			? Component.translatable("msg.pbenchants.attune.none")
-			: Component.translatable("msg.pbenchants.attune.set", effect.value().getDisplayName()))
-			.withStyle(ChatFormatting.AQUA));
+		source.sendSystemMessage(result.message().copy().withStyle(ChatFormatting.AQUA));
 		return 1;
 	}
 

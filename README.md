@@ -310,7 +310,7 @@ The gates are the beacon's own story: wither skeletons and their skulls in a for
 | **Thrifty Offering** | 2 | One payment in four is handed back |
 | **Resonant Haste** | 3 | Haste II from a beacon becomes Haste IV for you — with Efficiency V and Mason's Grip III, deepslate breaks in one tick while you are in the beam |
 | **Early Regeneration** | 3 | Any beacon on two layers or more also gives you Regeneration I |
-| **Prism** I–II | 3 / 4 | One extra power you receive inside any beacon: Night Vision or Fire Resistance, then Slow Falling or Saturation (a bite per pulse). Pick it with `/pbenchants attune <power>` |
+| **Prism** I–II | 3 / 4 | One extra power you receive inside any beacon: Night Vision or Fire Resistance, then Slow Falling or Saturation (a bite per pulse). A Prism row appears above any beacon's window, one click per choice; `/pbenchants attune <power>` does the same from chat |
 | **Brighter Beam** | 4 | On a full pyramid the primary comes one level stronger whatever the secondary choice, so the secondary slot is free for Regeneration. Haste never passes IV |
 | **Hallowed Core**, **Star Lantern**, **Beamwalk**, **Sunless Core** | 4 / 5 | Visible in the tree, coming in a later update: the no-spawn block, the lantern that replays a beam, the beacon-to-beacon teleport, and the block that lets a beacon skip the sky |
 | **Starfall** | 5 | One Wither in five drops a second nether star |

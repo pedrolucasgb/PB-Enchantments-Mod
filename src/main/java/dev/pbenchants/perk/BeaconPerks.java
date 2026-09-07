@@ -98,6 +98,34 @@ public final class BeaconPerks {
 		return attunement >= 0 && attunement < ATTUNEMENT_RANK.length ? ATTUNEMENT_RANK[attunement] : Integer.MAX_VALUE;
 	}
 
+	/** What {@link #attune} has to say: whether the choice took, and the line to tell the player. */
+	public record Attuned(boolean ok, net.minecraft.network.chat.Component message) {
+	}
+
+	/**
+	 * Makes Prism's choice for this player — the beacon screen's row and the
+	 * {@code /pbenchants attune} command both land here. Refuses an index off
+	 * the list and a choice the player's Prism rank has not opened; the
+	 * caller re-syncs the tree state so the screen can show the new frame.
+	 */
+	public static Attuned attune(ServerPlayer player, int index) {
+		if (index < 0 || index >= ATTUNEMENTS.size()) {
+			return new Attuned(false, net.minecraft.network.chat.Component.translatable("msg.pbenchants.attune.unknown",
+				String.join(", ", ATTUNEMENT_NAMES)));
+		}
+		int needed = rankFor(index);
+		if (prismRank(player) < needed) {
+			return new Attuned(false, net.minecraft.network.chat.Component.translatable("msg.pbenchants.attune.locked",
+				dev.pbenchants.skill.SkillNode.roman(needed)));
+		}
+		SkillService.progress(player, SkillTrees.BEACON).counters.put(ATTUNE_COUNTER, index);
+		Holder<MobEffect> effect = ATTUNEMENTS.get(index);
+		return new Attuned(true, effect == null
+			? net.minecraft.network.chat.Component.translatable("msg.pbenchants.attune.none")
+			: net.minecraft.network.chat.Component.translatable("msg.pbenchants.attune.set",
+				effect.value().getDisplayName()));
+	}
+
 	/**
 	 * The extra power this player has chosen to receive inside any beacon, or
 	 * null. A choice made under a rank the player no longer holds (sold back)

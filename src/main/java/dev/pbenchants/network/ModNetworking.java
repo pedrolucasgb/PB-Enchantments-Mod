@@ -37,6 +37,21 @@ public final class ModNetworking {
 		PayloadTypeRegistry.clientboundPlay().register(AbilityStatePayload.TYPE, AbilityStatePayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ScreenStatePayload.TYPE, ScreenStatePayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(AttunePayload.TYPE, AttunePayload.CODEC);
+
+		// Beacon: Prism's choice, pressed on the beacon screen. The server
+		// judges the rank, stores the index in the tree's counters and pushes
+		// the snapshot back — the gold frame on the screen reads that.
+		ServerPlayNetworking.registerGlobalReceiver(AttunePayload.TYPE, (payload, context) -> {
+			ServerPlayer player = context.player();
+			dev.pbenchants.perk.BeaconPerks.Attuned result =
+				dev.pbenchants.perk.BeaconPerks.attune(player, payload.index());
+			player.sendSystemMessage(result.message().copy()
+				.withStyle(result.ok() ? net.minecraft.ChatFormatting.AQUA : net.minecraft.ChatFormatting.RED), true);
+			if (result.ok()) {
+				sendState(player);
+			}
+		});
 
 		// The client needs the snapshot from login on, not from the first time the
 		// tree screen is opened: the speed passives are computed client-side while

@@ -145,6 +145,8 @@ public class PBEnchantsClient implements ClientModInitializer {
 		// screen: its row of icon buttons, the Seeker's Eye search field and the
 		// pinned-slot markers attach to whatever container the player opens.
 		ArtisanScreenHooks.register();
+		// Beacon: Prism's choice of extra power, as a row on the beacon screen.
+		PrismScreenHooks.register();
 
 		// Speed passives are computed on both sides; on this one the answer comes
 		// from the synced snapshot, and only ever for the local player.

@@ -65,7 +65,7 @@ WHAT IS NEW IN 0.9.0-beta
   (10/20/40 blocks beyond the range), Lingering Light I-III (30 s /
   90 s / 5 min after you leave), Early Regeneration, Brighter Beam,
   Phantom Tier, and Prism - one extra power of your choice, picked
-  with /pbenchants attune <power>.
+  from a row above any beacon's window (or /pbenchants attune).
 
 - BEAM SENSE, THRIFTY OFFERING, SKULL COLLECTOR, WITHER WARD, STARFALL.
   A HUD column pointing at the nearest lit beacon with your beacon
