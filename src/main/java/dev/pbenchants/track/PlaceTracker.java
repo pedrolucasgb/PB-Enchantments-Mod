@@ -50,5 +50,7 @@ public final class PlaceTracker {
 			progress.see("workstation", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString(),
 				"workstation_checklist");
 		}
+		// Beacon: the metal blocks a pyramid is built from.
+		BeaconTracker.onPlace(serverPlayer, state);
 	}
 }

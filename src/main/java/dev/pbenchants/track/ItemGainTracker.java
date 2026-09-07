@@ -61,6 +61,7 @@ public final class ItemGainTracker {
 			SkillService.addCount(serverPlayer, SkillTrees.BOW, "craft_crossbow", amount);
 		}
 		ArmorTracker.onCraft(serverPlayer, stack);
+		BeaconTracker.onCraft(serverPlayer, stack, amount);
 		// Fletcher's Bench: arrows leave the grid in double yield.
 		dev.pbenchants.perk.BowPerks.onCraftTake(serverPlayer, stack, amount);
 		trackArtisanCraft(serverPlayer, stack, amount);

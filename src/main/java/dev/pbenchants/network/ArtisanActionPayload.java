@@ -20,7 +20,8 @@ import net.minecraft.resources.Identifier;
  * sends a packet at all.
  *
  * @param action what the player pressed
- * @param slot   inventory slot for {@link Action#TOGGLE_ITEM_LOCK}, else -1
+ * @param slot   inventory slot for {@link Action#TOGGLE_ITEM_LOCK} and
+ *               {@link Action#TOGGLE_VOID_MARK}, else -1
  */
 public record ArtisanActionPayload(Action action, int slot) implements CustomPacketPayload {
 	public enum Action {
@@ -37,7 +38,9 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 		/** Locked Items: mark or release the stack in one inventory slot. */
 		TOGGLE_ITEM_LOCK,
 		/** Auto Block: enable or disable automatic material compression. */
-		TOGGLE_AUTO_BLOCK
+		TOGGLE_AUTO_BLOCK,
+		/** Void Mark: make the stack in one inventory slot a filter, or stop. */
+		TOGGLE_VOID_MARK
 	}
 
 	public static final Type<ArtisanActionPayload> TYPE =
@@ -52,6 +55,10 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 
 	public static ArtisanActionPayload lock(int slot) {
 		return new ArtisanActionPayload(Action.TOGGLE_ITEM_LOCK, slot);
+	}
+
+	public static ArtisanActionPayload voidMark(int slot) {
+		return new ArtisanActionPayload(Action.TOGGLE_VOID_MARK, slot);
 	}
 
 	private static ArtisanActionPayload read(FriendlyByteBuf buf) {

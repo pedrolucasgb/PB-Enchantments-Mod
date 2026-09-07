@@ -4,7 +4,7 @@
 
 Every tool class has its own skill tree. You earn access by **playing the class** (achievement gates), pay for unlocks with **XP levels plus materials**, and receive **real enchantments** that integrate with the enchanting table, anvil and `/enchant` — but only at the levels you have unlocked.
 
-> Version **0.8.0-beta** · mod id: `pbenchants` · package `dev.pbenchants` · save-data namespace: `toolmastery`
+> Version **0.9.0-beta** · mod id: `pbenchants` · package `dev.pbenchants` · save-data namespace: `toolmastery`
 > (the mod shipped as *Tool Mastery* before the rename — everything a world persists kept the old namespace on purpose, so existing worlds carry all progress, advancements and enchanted items across the rename)
 >
 > **Download page: [pedrolucasgb.github.io/PB-Enchantments-Mod](https://pedrolucasgb.github.io/PB-Enchantments-Mod/)**
@@ -129,7 +129,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 
 ---
 
-## Implemented so far (Pickaxe, Axe, Ground, Enchanter, Explorer, Artisan, Sword, Armor & Bow)
+## Implemented so far (Pickaxe, Axe, Ground, Beacon, Enchanter, Explorer, Artisan, Sword, Armor & Bow)
 
 ### Core systems
 - ✅ Per-player skill progress (tiers, nodes, counters) persisted via data attachments
@@ -141,6 +141,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 - ✅ A level-up chime when a tier opens, and a lighter one when the goal pinned to the HUD scoreboard is finally ready to buy (never both for the same event)
 - ✅ Client–server sync via custom payloads; all actions validated on the server
 - ✅ `/pbenchants` command suite with tab completion
+- ✅ Experience arrives in fewer, larger orbs: every award is one orb carrying the whole amount, and an award that lands within a block and a half of an orb the mod made is folded into it. A Rich Vein swing or a mob farm's pile is a handful of orbs, not a cloud you stand in for a minute; totals and Mending are unchanged
 
 ### Real enchantments (data-driven, era 26.x)
 | Enchantment | Tool | Levels | Effect |
@@ -276,7 +277,10 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 | **Tidy Storage** | 3 | A container is tidied again every time you close it, so one you sorted stays sorted |
 | **Artisan's Order** | 3 | Pick the sort rule: category, name or count |
 | **Quartermaster's Call** | 4 | Tops up the stacks you already carry from containers within 8 blocks — never hands you something new |
-| **Hand of Order** | capstone | Terraria's *Quick Stack to Nearby Chests* — see below |
+| **Shulker Sight** | 4 | Right-click with a shulker box in hand, aimed at nothing — or sneak and right-click anywhere — and it opens right there: vanilla's shulker screen, written back into the item as you go. Aim at a block and it is placed as ever; the slot it sits in cannot be picked up while it is open, so a box never ends up inside itself |
+| **Auto Block** | 4 | Nine of an ore material pack into the block on the spot; a button in the inventory switches it off |
+| **Hand of Order** | 5 | Terraria's *Quick Stack to Nearby Chests* — see below |
+| **Void Mark** | 5 | Alt + right-click a stack and it becomes a filter: while it stays in your bag, every item of that kind you pick up — by hand or by any magnet — is destroyed on the spot. The marked stack is left as it is, Sort and Quick Stack step around it, and it does nothing in creative. Mark one cobblestone before a quarry and the bag stays clear |
 
 **Hand of Order.** Press the button and every item in your backpack flies to the nearby container that already keeps that kind of thing. The rule that makes it safe is that half: an item is only ever deposited into a container that **already knows its kind**, so Quick Stack joins the organisation you built and never invents one. Anything with no home stays on you.
 
@@ -288,6 +292,32 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 - **Access:** only containers you could legitimately open. A locked container without the key, or a chest under a solid block or a sitting cat, is simply not there — the same path a real right-click takes, so claim mods that hook it work by construction.
 - **Never touched:** armour, offhand, the crafting grid, locked items, and the hotbar.
 - **Server-authoritative.** Unlike every client-side storage mod, none of this can be done on the client: the tree state is the server's, so the client only expresses intent.
+
+### Beacon nodes (Path of the Beacon)
+The first tree about a block rather than a tool, and it lives by one rule: **the beacon never reads anyone's skills.** A beacon is a shared block, so every node either changes what the *receiving* player gets out of a vanilla beacon, or unlocks a thing that works the same for everyone. Six people under one pyramid can each leave with different powers and the block is none the wiser — which is what keeps the tree safe on a server. All of it hangs off a single point, the pulse a beacon sends every four seconds, so nothing can disagree with anything.
+
+The flagship is **instant deepslate, only under a beacon**. Deepslate is hardness 3, so a pickaxe needs destroy speed 90 to break it in one tick; an Efficiency V netherite pickaxe is 35 and Mason's Grip III makes it 56. **Resonant Haste** turns a full Haste pyramid's Haste II into Haste IV (×1.8), which lands at 100.8 — one tick, no crack animation, the same answer on the client and the server. Haste III would stop at 89.6 and Mason's Grip II at 88.2, both two ticks, so the instamine is exactly beam + full grip + Efficiency V and never the pickaxe alone; step out of the beam and deepslate is deepslate again. Deepslate *ores* keep their own hardness. `/pbenchants debug speed` reports every number in that sentence.
+
+The gates are the beacon's own story: wither skeletons and their skulls in a fortress, the Wither itself, a beacon crafted and paid, all four layers, every one of the five powers received, and a few hours under the beam (half an hour for tier 3, an hour and a half for tier 4, three for tier 5; six Withers in all by the last tier). The tree is marked *in testing*.
+
+| Node | Tier | Effect |
+|---|---|---|
+| **Skull Collector** | 1 | A wither skeleton you kill drops its skull about 6% of the time instead of 2.5% |
+| **Wither Ward** | 1 | The Wither effect's damage to you is halved |
+| **Beam Sense** | 1 | A HUD column in the top-left: the nearest lit beacon within 128 blocks with its distance and direction, then every beacon power you are under with the seconds it has left |
+| **Reach of the Beam** I–III | 2 / 3 / 4 | You receive a beacon's powers from 10 / 20 / 40 blocks beyond its range |
+| **Lingering Light** I–III | 2 / 3 / 4 | A beacon's powers stay with you 30 s / 90 s / 5 min after you leave the beam, instead of about nine seconds |
+| **Thrifty Offering** | 2 | One payment in four is handed back |
+| **Resonant Haste** I–II | 3 / 4 | Haste II from a beacon becomes Haste III, then IV — at IV, with Efficiency V and Mason's Grip III, deepslate breaks in one tick while you are in the beam |
+| **Early Regeneration** | 3 | Any beacon on two layers or more also gives you Regeneration I |
+| **Prism** I–II | 3 / 4 | Each beacon can add one extra power for you: Night Vision or Fire Resistance, then Absorption or Luck. The choice is per beacon — a Prism row above that beacon's window, one click; switching takes the old power off you at once — so a base with three beacons can add three. `/pbenchants attune <power>` while looking at the beacon does the same from chat |
+| **Brighter Beam** | 4 | On a full pyramid the primary comes one level stronger whatever the secondary choice, so the secondary slot is free for Regeneration. Haste never passes IV |
+| **Starfall** | 5 | One Wither in five drops a second nether star |
+| **Phantom Tier** | 5 | For you a pyramid counts one layer higher — three layers give the powers of four, secondary and Brighter Beam included. The range stays the beacon's own |
+
+- **Every pulse is receiver-side.** Range, level and choices are read off the beacon, never written; a player inside two beams is credited by both, which is the price of never storing anything on the block.
+- **Haste from anywhere else** is left alone: Resonant Haste upgrades the pulse it comes from, not a Haste II a command handed out.
+- **Time in the beam** is four seconds per pulse that reaches you, so the tier gates measured in minutes are wall-clock minutes under a beacon.
 
 ### Sword nodes (Path of the Blade)
 The combat class, and the first tree that is **seven tiers** rather than five. It covers every weapon that hits — sword, trident, mace, axe-as-weapon and the 26.2 spear — because most of what makes a combat node interesting is weapon-agnostic, and four more tabs would not fit the strip. Seven tiers rather than five because the node list was long enough that a five-tier version handed out the class-defining nodes far too early.
@@ -433,6 +463,7 @@ Enchanted books are the third way onto a tool, next to the enchanting table and 
 - ✅ **No click-into-refusal.** The offer renders with vanilla's barred arrow and the book's tooltip names the rank you still owe.
 - ✅ **One book per librarian, one pool for the whole mod.** The offer joins the vanilla *apprentice* pool, from which a librarian draws two trades for life — so mod books never crowd the vanilla book trades out of a village. Every enchantment sits in the same pool at the same weight: a Rich Vein book is exactly as rare as a Keen Edge one, which is the point. Rare is the intended feel; the tree, not the village, is the reliable route.
 - ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#toolmastery:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
+- ✅ **Two books sold outright at level 1.** A novice librarian can also offer *Indestructible* and *Slipstream* as dedicated trades, and Slipstream additionally sits in the vanilla pools — `#minecraft:tradeable`, `#minecraft:non_treasure` and `#minecraft:on_random_loot` — so it turns up in chest loot and in the librarian's ordinary book offers too. The counter rule above still applies to every one of them.
 
 **Price.** 24 emeralds flat plus vanilla's own rank-scaled book price, so a rank I lands around 30 and a rank III up near the 64 ceiling. Books are deliberately expensive: emeralds are a currency the progression does not otherwise touch, and a cheap book would make the skill screen's Enchant button dead UI.
 
@@ -494,7 +525,7 @@ public static final List<SkillTree> ORDER = List.of(PICKAXE, AXE, GROUND, ENCHAN
 ```
 
 That is the whole GUI side — the tab, its icon, the tier columns and the details panel all follow. Drop
-the class from `SkillTrees.PLANNED` (the greyed "coming soon" tabs), add `tree.pbenchants.sword`,
+the class from `SkillTrees.PLANNED` if it was announced there (the list is empty today), add `tree.pbenchants.sword`,
 `tree.pbenchants.sword.short` and one `tier.pbenchants.sword.<n>` per tier to `en_us.json`, and one
 advancement JSON per tier under `data/toolmastery/advancement/sword/` if they should show up in the **L**
 screen. A tree is as many tiers as its list is long — the Sword tree is seven, and the GUI reads the
@@ -505,7 +536,7 @@ nothing about *displaying* the class does.
 
 **Seven-tier trees scroll.** A tier column never shrinks below a readable width, so the Sword and Armor trees are wider than the window and the tree pans sideways: the wheel over the tree, or the bar under it, whose thumb is as wide a share of the track as the viewport is of the tree. Five-tier trees are laid out exactly as they always were and show no bar at all.
 
-See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the one future class still greyed out in the tab strip (Builder).
+See the [open issues](../../issues) — one issue per upcoming feature, including the remaining passive nodes, the Axe finishers (Everbloom, Bountiful Grove), and the Beacon plan's blocks and items (Hallowed Core, Sunless Core, Star Lantern, Beamwalk — `docs/plans/path-of-the-beacon.md`). Nothing is greyed out in the tab strip or the trees any more: what is there is playable.
 
 ## License
 

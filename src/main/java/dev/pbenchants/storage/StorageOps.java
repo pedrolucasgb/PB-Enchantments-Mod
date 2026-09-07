@@ -84,7 +84,7 @@ public final class StorageOps {
 		List<ItemStack> contents = new ArrayList<>();
 		for (int slot = from; slot < to; slot++) {
 			ItemStack stack = container.getItem(slot);
-			if (ItemLock.locked(stack)) {
+			if (ItemLock.held(stack)) {
 				continue;
 			}
 			slots.add(slot);
@@ -184,7 +184,7 @@ public final class StorageOps {
 
 		for (int slot = BACKPACK_START; slot < BACKPACK_END; slot++) {
 			ItemStack stack = inventory.getItem(slot);
-			if (stack.isEmpty() || ItemLock.locked(stack)) {
+			if (stack.isEmpty() || ItemLock.held(stack)) {
 				continue;
 			}
 			moved += pour(stack, containers, touched,
@@ -240,7 +240,7 @@ public final class StorageOps {
 
 		for (int slot = 0; slot < BACKPACK_END; slot++) {
 			ItemStack held = inventory.getItem(slot);
-			if (held.isEmpty() || ItemLock.locked(held) || held.getCount() >= held.getMaxStackSize()) {
+			if (held.isEmpty() || ItemLock.held(held) || held.getCount() >= held.getMaxStackSize()) {
 				continue;
 			}
 			for (int index = 0; index < containers.size() && held.getCount() < held.getMaxStackSize(); index++) {
@@ -271,7 +271,7 @@ public final class StorageOps {
 		boolean changed = false;
 		for (int slot = 0; slot < container.getContainerSize() && !stack.isEmpty(); slot++) {
 			ItemStack target = container.getItem(slot);
-			if (target.isEmpty() || ItemLock.locked(target) || !ItemStack.isSameItemSameComponents(target, stack)) {
+			if (target.isEmpty() || ItemLock.held(target) || !ItemStack.isSameItemSameComponents(target, stack)) {
 				continue;
 			}
 			int room = Math.min(target.getMaxStackSize(), container.getMaxStackSize()) - target.getCount();
@@ -303,7 +303,7 @@ public final class StorageOps {
 				break;
 			}
 			ItemStack source = container.getItem(slot);
-			if (source.isEmpty() || ItemLock.locked(source) || !ItemStack.isSameItemSameComponents(source, held)) {
+			if (source.isEmpty() || ItemLock.held(source) || !ItemStack.isSameItemSameComponents(source, held)) {
 				continue;
 			}
 			int taken = Math.min(held.getMaxStackSize() - held.getCount(), source.getCount());

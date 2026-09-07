@@ -58,6 +58,8 @@ public final class BiomeTracker {
 			Identifier id = registry.getKey(structure);
 			if (id != null) {
 				progress.see("struct", id.toString(), "structure_checklist");
+				// Beacon: the fortress is where the skulls are.
+				BeaconTracker.onStructure(player, id.toString());
 			}
 		}
 	}

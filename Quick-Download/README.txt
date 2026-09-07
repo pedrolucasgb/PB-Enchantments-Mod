@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.8.5-beta
+Version 0.9.0-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,59 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.9.0-beta
+-------------------------
+- THE BEACON TREE, PATH OF THE BEACON. A new class about a block rather
+  than a tool, built so the beacon itself never reads anyone's skills:
+  every node changes what YOU receive from a vanilla beacon. Its gates
+  are the beacon's own story - wither skeletons and skulls in a
+  fortress, the Wither, a beacon crafted and paid, all four layers,
+  every one of the five powers, a few hours under the beam. Marked "in
+  testing".
+
+- DEEPSLATE BREAKS IN ONE TICK - UNDER A BEACON. Resonant Haste turns
+  a full Haste pyramid's Haste II into Haste IV. With an Efficiency V
+  diamond or netherite pickaxe and Mason's Grip III: instant deepslate,
+  no crack animation, while you stand in the beam. Step out and it is
+  deepslate again. /pbenchants debug speed shows the numbers.
+
+- THE BEAM REACHES FURTHER AND STAYS LONGER. Reach of the Beam I-III
+  (10/20/40 blocks beyond the range), Lingering Light I-III (30 s /
+  90 s / 5 min after you leave), Early Regeneration, Brighter Beam,
+  Phantom Tier, and Prism - one extra power per beacon (Night Vision,
+  Fire Resistance, then Absorption or Luck), picked from a row above
+  that beacon's window; switching drops the old power at once.
+
+- BEAM SENSE, THRIFTY OFFERING, SKULL COLLECTOR, WITHER WARD, STARFALL.
+  A HUD column pointing at the nearest lit beacon with your beacon
+  powers and their timers; one beacon payment in four handed back;
+  skulls at about 6%; the Wither effect's damage halved; one Wither in
+  five dropping a second star.
+
+- SHULKER SIGHT (Artisan tier 4). Right-click with a shulker box in
+  hand, aimed at nothing - or sneak and right-click anywhere - and it
+  opens right there. Everything you do
+  is written into the box as you do it. Aim at a block and it is placed
+  as ever; the box's own slot cannot be picked up while it is open.
+
+- VOID MARK (Artisan tier 5). Alt + right-click a stack in your
+  inventory and, while it stays in your bag, every item of that kind
+  you pick up - by hand or by any magnet - is destroyed on the spot.
+  The marked stack is left as it is. Alt + right-click again to stop.
+  Does nothing in creative mode.
+
+- FEWER, LARGER XP ORBS. An award is one orb carrying the whole amount,
+  and nearby awards fold into it. The total is unchanged, Mending too;
+  the minute spent standing in a cloud of orbs is gone.
+
+- SLIPSTREAM IN THE STANDARD BOOK POOLS. The Elytra enchantment now
+  shows up in vanilla enchanted-book loot and librarian book offers,
+  and a level-1 librarian can sell a Slipstream book outright, like
+  Indestructible. Buying and using it still needs the rank.
+
+- FIXED: a locked stack shows its gold frame the moment you lock it,
+  instead of when the stack next moves.
 
 WHAT IS NEW IN 0.8.5-beta
 -------------------------

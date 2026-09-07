@@ -110,6 +110,8 @@ public class PBEnchantsClient implements ClientModInitializer {
 		GoalTrackerHud.register();
 		// A held ability that keeps breaking blocks by itself has to be visible.
 		DiggyHud.register();
+		// Beacon: the nearest lit beacon and the timers on its powers.
+		BeamSenseHud.register();
 
 		// Lets common code (enchanting menu logic) check enchanter perk
 		// ownership on the client via the synced skill state.
@@ -128,6 +130,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 			GoalTracker.clear();
 			ProgressChimes.clear();
 			DiggyHud.clear();
+			BeamSenseHud.clear();
 			hintCountdown = -1;
 			screenOpen = false;
 		});
@@ -142,6 +145,8 @@ public class PBEnchantsClient implements ClientModInitializer {
 		// screen: its row of icon buttons, the Seeker's Eye search field and the
 		// pinned-slot markers attach to whatever container the player opens.
 		ArtisanScreenHooks.register();
+		// Beacon: Prism's choice of extra power, as a row on the beacon screen.
+		PrismScreenHooks.register();
 
 		// Speed passives are computed on both sides; on this one the answer comes
 		// from the synced snapshot, and only ever for the local player.

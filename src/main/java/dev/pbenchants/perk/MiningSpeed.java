@@ -77,7 +77,13 @@ public final class MiningSpeed {
 		return pickaxe(player, held, state) * axe(player, held, state) * shovel(player, held, state);
 	}
 
-	/** Mason's Grip and Obsidian Breaker. The two target sets never overlap. */
+	/**
+	 * Mason's Grip and Obsidian Breaker. The two target sets never overlap.
+	 * Deepslate is a Mason's Grip target (it is base stone), and the grip is
+	 * deliberately the only pickaxe-side factor there: instant deepslate is
+	 * a beacon's to grant — Resonant Haste's Haste IV times Mason's Grip
+	 * III times Efficiency V, see {@code BeamReceiver}.
+	 */
 	private static float pickaxe(Player player, ItemStack held, BlockState state) {
 		if (!held.is(ItemTags.PICKAXES)) {
 			return 1.0F;

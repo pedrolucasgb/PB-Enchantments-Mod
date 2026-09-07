@@ -158,6 +158,16 @@ public final class GateChecklists {
 			entry(7, "book"),
 			entry(8, "other"));
 
+		// Beacon — the five powers a beacon can grant, in BeaconTracker's
+		// order. Regeneration is a clock of its own (minutes_regenerating),
+		// not a line here.
+		put("beacon_effect_checklist",
+			effect(0, net.minecraft.world.effect.MobEffects.SPEED),
+			effect(1, net.minecraft.world.effect.MobEffects.HASTE),
+			effect(2, net.minecraft.world.effect.MobEffects.RESISTANCE),
+			effect(3, net.minecraft.world.effect.MobEffects.JUMP_BOOST),
+			effect(4, net.minecraft.world.effect.MobEffects.STRENGTH));
+
 		// Sword — the four the game calls bosses. The dragon has a gate of its
 		// own at tier 5; this is the collection.
 		put("boss_checklist",
@@ -291,6 +301,10 @@ public final class GateChecklists {
 
 	private static Entry mob(int bit, EntityType<?> type) {
 		return new Entry(bit, type.getDescription());
+	}
+
+	private static Entry effect(int bit, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+		return new Entry(bit, effect.value().getDisplayName());
 	}
 
 	private static Entry entry(int bit, String name) {

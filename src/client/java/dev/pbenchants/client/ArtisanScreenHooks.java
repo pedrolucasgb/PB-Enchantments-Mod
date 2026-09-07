@@ -26,6 +26,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -61,6 +62,9 @@ public final class ArtisanScreenHooks {
 
 	/** The yellow behind a slot Seeker's Eye matched — see-through, so the item still reads. */
 	private static final int MATCH_FILL = 0x66FFE14D;
+
+	/** The frame and corner of a stack wearing the Void Mark: a purple no chest in the game uses. */
+	private static final int VOID_MARK = 0xFFC060E0;
 
 	/** This screen's buttons, in the order they are laid out from the corner leftwards. */
 	private static final List<ArtisanIconButton> BUTTONS = new ArrayList<>();
@@ -354,33 +358,52 @@ public final class ArtisanScreenHooks {
 				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 16, top + slot.y + 16, MATCH_FILL);
 				graphics.outline(left + slot.x, top + slot.y, 16, 16, SkillTreeStyle.GOLD);
 			}
-			if (ItemLock.locked(slot.getItem())) {
+			ItemStack stack = slot.getItem();
+			boolean locked = ItemLock.locked(stack);
+			boolean voided = ItemLock.voided(stack);
+			if (locked) {
 				graphics.outline(left + slot.x - 1, top + slot.y - 1, 18, 18, SkillTreeStyle.GOLD);
 				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 5, top + slot.y + 5,
 					SkillTreeStyle.GOLD);
 			}
+			if (voided) {
+				// The frame is the lock's when both marks are on; the corner
+				// square in the opposite corner is what says "filter".
+				if (!locked) {
+					graphics.outline(left + slot.x - 1, top + slot.y - 1, 18, 18, VOID_MARK);
+				}
+				graphics.fill(left + slot.x + 11, top + slot.y + 11, left + slot.x + 16, top + slot.y + 16,
+					VOID_MARK);
+			}
 		}
 	}
 
-	// ---------- locked items ----------
+	// ---------- locked items and the void mark ----------
 
 	/**
-	 * Alt-click locks the stack under the cursor, or releases it. Alt is free
-	 * in vanilla, it needs no keybind to explain, and holding it makes the
-	 * intent unambiguous — a plain click on a locked stack still picks it up,
-	 * because the lock is about what the <em>mod</em> may move, not about what
-	 * you may. Only the player's own slots: a stack in a chest is released by
+	 * Alt-click locks the stack under the cursor, or releases it; alt +
+	 * right-click gives it the Void Mark, or takes it away. Alt is free in
+	 * vanilla, it needs no keybind to explain, and holding it makes the intent
+	 * unambiguous — a plain click on a marked stack still picks it up, because
+	 * the marks are about what the <em>mod</em> may do, not about what you
+	 * may. Only the player's own slots: a stack in a chest is released by
 	 * bringing it back first.
 	 */
 	private static boolean pinClicked(AbstractContainerScreen<?> screen, MouseButtonEvent event) {
-		if (!event.hasAltDown() || !ClientArtisanState.owns(ItemLock.NODE)) {
+		if (!event.hasAltDown()) {
+			return false;
+		}
+		boolean right = event.button() == 1;
+		if (!ClientArtisanState.owns(right ? ItemLock.VOID_NODE : ItemLock.NODE)) {
 			return false;
 		}
 		Slot slot = slotAt(screen, event.x(), event.y());
 		if (slot == null || !(slot.container instanceof Inventory) || slot.getItem().isEmpty()) {
 			return false;
 		}
-		ClientPlayNetworking.send(ArtisanActionPayload.lock(slot.getContainerSlot()));
+		ClientPlayNetworking.send(right
+			? ArtisanActionPayload.voidMark(slot.getContainerSlot())
+			: ArtisanActionPayload.lock(slot.getContainerSlot()));
 		return true;
 	}
 

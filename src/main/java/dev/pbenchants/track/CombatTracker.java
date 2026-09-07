@@ -65,6 +65,8 @@ public final class CombatTracker {
 	 * pace itself in a pen.
 	 */
 	public static void onKill(ServerPlayer player, LivingEntity victim) {
+		// Beacon: the same death feeds its own counters, kept apart from these.
+		BeaconTracker.onKill(player, victim);
 		TreeProgress progress = progress(player);
 		boolean hostile = victim instanceof Enemy;
 		if (hostile) {

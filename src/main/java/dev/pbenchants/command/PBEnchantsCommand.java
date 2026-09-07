@@ -91,6 +91,13 @@ public final class PBEnchantsCommand {
 							context.getSource(),
 							StringArgumentType.getString(context, "tree"),
 							StringArgumentType.getString(context, "node"))))))
+			// Beacon: Prism's choice of extra power. A picker in the skill
+			// screen is the plan; the command is what ships first.
+			.then(Commands.literal("attune")
+				.then(Commands.argument("power", StringArgumentType.word())
+					.suggests((context, builder) ->
+						SharedSuggestionProvider.suggest(dev.pbenchants.perk.BeaconPerks.ATTUNEMENT_NAMES, builder))
+					.executes(context -> attune(context.getSource(), StringArgumentType.getString(context, "power")))))
 			.then(Commands.literal("debug")
 				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(Commands.literal("master")
@@ -401,7 +408,9 @@ public final class PBEnchantsCommand {
 		source.sendSystemMessage(Component.literal("Holding: " + held.getHoverName().getString()
 			+ "  |  Mason's Grip " + roman0(dev.pbenchants.perk.MiningSpeed.masonsGripRank(player))
 			+ "  |  Lumberjack's Arms " + roman0(dev.pbenchants.perk.MiningSpeed.lumberjacksArmsRank(player))
-			+ "  |  Obsidian Breaker " + (SkillService.owns(player, SkillTrees.PICKAXE, "obsidian_breaker") ? "yes" : "no"))
+			+ "  |  Obsidian Breaker " + (SkillService.owns(player, SkillTrees.PICKAXE, "obsidian_breaker") ? "yes" : "no")
+			+ "  |  Resonant Haste " + roman0(dev.pbenchants.perk.BeaconPerks.resonantHasteRank(player))
+			+ "  |  Haste now " + hasteNow(player))
 			.withStyle(ChatFormatting.AQUA));
 
 		for (net.minecraft.world.level.block.Block block : SPEED_SAMPLES) {
@@ -426,6 +435,40 @@ public final class PBEnchantsCommand {
 
 	private static String roman0(int rank) {
 		return rank == 0 ? "-" : roman(rank);
+	}
+
+	/** /pbenchants attune <power> - Prism's extra beacon power, by name. */
+	private static int attune(CommandSourceStack source, String power) {
+		ServerPlayer player = source.getPlayer();
+		if (player == null) {
+			return 0;
+		}
+		int index = dev.pbenchants.perk.BeaconPerks.ATTUNEMENT_NAMES.indexOf(power);
+		// The choice is per beacon: the one the player is looking at.
+		net.minecraft.world.phys.HitResult hit = player.pick(8.0, 0.0F, false);
+		net.minecraft.core.BlockPos pos = hit instanceof net.minecraft.world.phys.BlockHitResult block
+			&& player.level().getBlockState(block.getBlockPos()).is(net.minecraft.world.level.block.Blocks.BEACON)
+			? block.getBlockPos()
+			: null;
+		if (pos == null) {
+			source.sendFailure(Component.translatable("msg.pbenchants.attune.no_beacon"));
+			return 0;
+		}
+		dev.pbenchants.perk.BeaconPerks.Attuned result =
+			dev.pbenchants.perk.BeaconPerks.attune(player, player.level().dimension(), pos, index);
+		if (!result.ok()) {
+			source.sendFailure(result.message());
+			return 0;
+		}
+		dev.pbenchants.network.ModNetworking.sendState(player);
+		source.sendSystemMessage(result.message().copy().withStyle(ChatFormatting.AQUA));
+		return 1;
+	}
+
+	/** The Haste the player carries this instant, as the speed report needs it: "-", "II", "III". */
+	private static String hasteNow(ServerPlayer player) {
+		var haste = player.getEffect(net.minecraft.world.effect.MobEffects.HASTE);
+		return haste == null ? "-" : roman(haste.getAmplifier() + 1);
 	}
 
 	/** /pbenchants debug strip - take every Tool Mastery enchantment off the held item. */

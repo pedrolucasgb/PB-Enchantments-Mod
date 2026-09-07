@@ -84,25 +84,24 @@ public class ItemStackMixin {
 	 * and stay locked, because vanilla grows the stack that was already there.
 	 * Once that stack is full the next one starts from the item that arrived,
 	 * which carries no mark: a plain, unlocked stack, until the player says
-	 * otherwise. Only asked when exactly one side is marked; two marked or two
-	 * plain stacks take vanilla's own path untouched.
+	 * otherwise. The Void Mark is the same kind of thing — a note the player
+	 * left on the stack, not a property of the item — and is ignored the same
+	 * way. Only asked when the two sides wear different marks; two stacks with
+	 * the same marks, or none, take vanilla's own path untouched.
 	 */
 	@Inject(method = "isSameItemSameComponents", at = @At("HEAD"), cancellable = true)
-	private static void pbenchants$lockIsNotADifference(ItemStack a, ItemStack b,
+	private static void pbenchants$marksAreNotADifference(ItemStack a, ItemStack b,
 			CallbackInfoReturnable<Boolean> cir) {
-		boolean lockedA = ItemLock.locked(a);
-		if (lockedA == ItemLock.locked(b)) {
+		if (ItemLock.locked(a) == ItemLock.locked(b) && ItemLock.voided(a) == ItemLock.voided(b)) {
 			return;
 		}
 		if (!a.is(b.getItem())) {
 			cir.setReturnValue(false);
 			return;
 		}
-		ItemStack bare = (lockedA ? a : b).copy();
-		ItemLock.setLocked(bare, false);
-		cir.setReturnValue(lockedA
-			? ItemStack.isSameItemSameComponents(bare, b)
-			: ItemStack.isSameItemSameComponents(a, bare));
+		// Both bare copies are unmarked, so the recursive call falls straight
+		// through to vanilla.
+		cir.setReturnValue(ItemStack.isSameItemSameComponents(ItemLock.bare(a), ItemLock.bare(b)));
 	}
 
 	@Inject(method = "getDestroySpeed", at = @At("HEAD"), cancellable = true)
