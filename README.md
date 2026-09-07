@@ -296,7 +296,7 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 ### Beacon nodes (Path of the Beacon)
 The first tree about a block rather than a tool, and it lives by one rule: **the beacon never reads anyone's skills.** A beacon is a shared block, so every node either changes what the *receiving* player gets out of a vanilla beacon, or unlocks a thing that works the same for everyone. Six people under one pyramid can each leave with different powers and the block is none the wiser — which is what keeps the tree safe on a server. All of it hangs off a single point, the pulse a beacon sends every four seconds, so nothing can disagree with anything.
 
-The flagship is **instant deepslate**. Deepslate is hardness 3, so a pickaxe needs destroy speed 90 to break it in one tick; an Efficiency V netherite pickaxe is 35. **Deepslate Breaker** (+75%, multiplying with Mason's Grip) and **Resonant Haste** (a beacon's Haste II becomes Haste III) put a full Haste pyramid at 98 — one tick, no crack animation, the same answer on the client and the server. Deepslate *ores* are excluded on purpose: Fortune plus instamine is a farm. `/pbenchants debug speed` reports every number in that sentence.
+The flagship is **instant deepslate, only under a beacon**. Deepslate is hardness 3, so a pickaxe needs destroy speed 90 to break it in one tick; an Efficiency V netherite pickaxe is 35 and Mason's Grip III makes it 56. **Resonant Haste** turns a full Haste pyramid's Haste II into Haste IV (×1.8), which lands at 100.8 — one tick, no crack animation, the same answer on the client and the server. Haste III would stop at 89.6 and Mason's Grip II at 88.2, both two ticks, so the instamine is exactly beam + full grip + Efficiency V and never the pickaxe alone; step out of the beam and deepslate is deepslate again. Deepslate *ores* keep their own hardness. `/pbenchants debug speed` reports every number in that sentence.
 
 The gates are the beacon's own story: wither skeletons and their skulls in a fortress, the Wither itself, a beacon crafted and paid, all four layers, every one of the five powers received, and hours under the beam. The tree is marked *in testing*.
 
@@ -305,14 +305,13 @@ The gates are the beacon's own story: wither skeletons and their skulls in a for
 | **Skull Collector** | 1 | A wither skeleton you kill drops its skull about 6% of the time instead of 2.5% |
 | **Wither Ward** | 1 | The Wither effect's damage to you is halved |
 | **Beam Sense** | 1 | A HUD column in the top-left: the nearest lit beacon within 128 blocks with its distance and direction, then every beacon power you are under with the seconds it has left |
-| **Deepslate Breaker** | 2 | +75% breaking speed with a pickaxe on deepslate and everything cut from it — not its ores |
 | **Reach of the Beam** I–III | 2 / 3 / 4 | You receive a beacon's powers from 10 / 20 / 40 blocks beyond its range |
 | **Lingering Light** I–III | 2 / 3 / 4 | A beacon's powers stay with you 30 s / 90 s / 5 min after you leave the beam, instead of about nine seconds |
 | **Thrifty Offering** | 2 | One payment in four is handed back |
-| **Resonant Haste** | 3 | Haste II from a beacon becomes Haste III for you — the level no beacon can grant |
+| **Resonant Haste** | 3 | Haste II from a beacon becomes Haste IV for you — with Efficiency V and Mason's Grip III, deepslate breaks in one tick while you are in the beam |
 | **Early Regeneration** | 3 | Any beacon on two layers or more also gives you Regeneration I |
 | **Prism** I–II | 3 / 4 | One extra power you receive inside any beacon: Night Vision or Fire Resistance, then Slow Falling or Saturation (a bite per pulse). Pick it with `/pbenchants attune <power>` |
-| **Brighter Beam** | 4 | On a full pyramid the primary comes one level stronger whatever the secondary choice, so the secondary slot is free for Regeneration. Haste never passes III |
+| **Brighter Beam** | 4 | On a full pyramid the primary comes one level stronger whatever the secondary choice, so the secondary slot is free for Regeneration. Haste never passes IV |
 | **Hallowed Core**, **Star Lantern**, **Beamwalk**, **Sunless Core** | 4 / 5 | Visible in the tree, coming in a later update: the no-spawn block, the lantern that replays a beam, the beacon-to-beacon teleport, and the block that lets a beacon skip the sky |
 | **Starfall** | 5 | One Wither in five drops a second nether star |
 | **Phantom Tier** | 5 | For you a pyramid counts one layer higher — three layers give the powers of four, secondary and Brighter Beam included. The range stays the beacon's own |

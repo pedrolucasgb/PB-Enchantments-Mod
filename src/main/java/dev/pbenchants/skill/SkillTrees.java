@@ -342,8 +342,10 @@ public final class SkillTrees {
 	 * beacon never reads anyone's skills — every node changes what the
 	 * <em>receiving</em> player gets out of a vanilla beacon, or unlocks a
 	 * thing that works the same for everyone (see {@code perk.BeamReceiver}).
-	 * The flagship is Deepslate Breaker with Resonant Haste: inside a full
-	 * Haste pyramid, deepslate breaks in a single tick. The four nodes marked
+	 * The flagship is Resonant Haste: a full Haste pyramid gives Haste IV,
+	 * and with Efficiency V and Mason's Grip III deepslate breaks in a
+	 * single tick — only under a beacon, never from the pickaxe alone. The
+	 * four nodes marked
 	 * future are the blocks, the lantern and the teleport, which need assets
 	 * the mod does not have yet.
 	 */
@@ -396,8 +398,6 @@ public final class SkillTrees {
 			SkillNode.of("beam_sense", 0, 5, SkillType.PASSIVE).icon(Items.SPYGLASS)
 				.costing(mat(Items.GLASS, 16), mat(Items.GLOWSTONE_DUST, 4)),
 			// Tier 2
-			SkillNode.of("deepslate_breaker", 1, 6, SkillType.PASSIVE).icon(Items.DEEPSLATE)
-				.costing(mat(Items.COBBLED_DEEPSLATE, 64), mat(Items.IRON_INGOT, 8)),
 			SkillNode.of("reach_of_the_beam_1", 1, 5, SkillType.PASSIVE).icon(Items.BEACON)
 				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.GLASS, 16)),
 			SkillNode.of("lingering_light_1", 1, 5, SkillType.PASSIVE).icon(Items.TORCH)

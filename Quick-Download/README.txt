@@ -55,11 +55,11 @@ WHAT IS NEW IN 0.9.0-beta
   testing". Four nodes (Hallowed Core, Star Lantern, Beamwalk, Sunless
   Core) are visible but wait for a later update.
 
-- DEEPSLATE BREAKS IN ONE TICK. Deepslate Breaker (+75% on deepslate
-  and everything cut from it, not its ores) and Resonant Haste (a
-  beacon's Haste II becomes Haste III) with an Efficiency V diamond or
-  netherite pickaxe under a full Haste pyramid: instant, no crack
-  animation. /pbenchants debug speed shows the numbers.
+- DEEPSLATE BREAKS IN ONE TICK - UNDER A BEACON. Resonant Haste turns
+  a full Haste pyramid's Haste II into Haste IV. With an Efficiency V
+  diamond or netherite pickaxe and Mason's Grip III: instant deepslate,
+  no crack animation, while you stand in the beam. Step out and it is
+  deepslate again. /pbenchants debug speed shows the numbers.
 
 - THE BEAM REACHES FURTHER AND STAYS LONGER. Reach of the Beam I-III
   (10/20/40 blocks beyond the range), Lingering Light I-III (30 s /

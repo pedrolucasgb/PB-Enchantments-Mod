@@ -28,7 +28,6 @@ public final class BeaconPerks {
 	public static final String SKULL_COLLECTOR = "skull_collector";
 	public static final String WITHER_WARD = "wither_ward";
 	public static final String BEAM_SENSE = "beam_sense";
-	public static final String DEEPSLATE_BREAKER = "deepslate_breaker";
 	public static final String THRIFTY_OFFERING = "thrifty_offering";
 	public static final String RESONANT_HASTE = "resonant_haste";
 	public static final String EARLY_REGENERATION = "early_regeneration";

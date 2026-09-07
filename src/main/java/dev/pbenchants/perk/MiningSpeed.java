@@ -38,13 +38,6 @@ public final class MiningSpeed {
 	 */
 	private static final float MASONS_GRIP_STEP = 0.20F;
 	private static final float OBSIDIAN_BREAKER_BONUS = 0.50F;
-	/**
-	 * Deepslate is hardness 3, so instant needs destroy speed 90. Netherite
-	 * Efficiency V is 35; with Haste III (x1.6) that is 56, and this on top
-	 * makes 98. Diamond (34) lands at 95.2. Without Resonant Haste, Haste II
-	 * gives 85.8 — two ticks — and Mason's Grip I carries it over the line.
-	 */
-	private static final float DEEPSLATE_BREAKER_BONUS = 0.75F;
 	private static final float AXE_SPEED_PER_RANK = 0.25F;
 	/** Same step as Mason's Grip: the shovel's grip is the pickaxe's, on soft ground. */
 	private static final float SHOVEL_SPEED_PER_RANK = 0.20F;
@@ -85,11 +78,11 @@ public final class MiningSpeed {
 	}
 
 	/**
-	 * Mason's Grip, Obsidian Breaker and Deepslate Breaker. Obsidian is its
-	 * own branch; deepslate is a Mason's Grip target too (it is base stone),
-	 * so its bonus <em>multiplies</em> with the grip rather than replacing it
-	 * — that product, times a beacon's Haste, is what reaches the instamine
-	 * threshold in {@code BeamReceiver}'s table.
+	 * Mason's Grip and Obsidian Breaker. The two target sets never overlap.
+	 * Deepslate is a Mason's Grip target (it is base stone), and the grip is
+	 * deliberately the only pickaxe-side factor there: instant deepslate is
+	 * a beacon's to grant — Resonant Haste's Haste IV times Mason's Grip
+	 * III times Efficiency V, see {@code BeamReceiver}.
 	 */
 	private static float pickaxe(Player player, ItemStack held, BlockState state) {
 		if (!held.is(ItemTags.PICKAXES)) {
@@ -100,27 +93,10 @@ public final class MiningSpeed {
 				? 1.0F + OBSIDIAN_BREAKER_BONUS
 				: 1.0F;
 		}
-		boolean deepslate = isDeepslateFamily(state);
-		if (!isMasonTarget(state) && !deepslate) {
+		if (!isMasonTarget(state)) {
 			return 1.0F;
 		}
-		float factor = isMasonTarget(state) ? 1.0F + MASONS_GRIP_STEP * masonsGripRank(player) : 1.0F;
-		if (deepslate && PerkAccess.owns(player, SkillTrees.BEACON, BeaconPerks.DEEPSLATE_BREAKER)) {
-			factor *= 1.0F + DEEPSLATE_BREAKER_BONUS;
-		}
-		return factor;
-	}
-
-	/**
-	 * Deepslate and everything cut from it — and not its ores, which are
-	 * harder (4.5) and would make an instamine a Fortune farm.
-	 */
-	public static boolean isDeepslateFamily(BlockState state) {
-		return state.is(Blocks.DEEPSLATE) || state.is(Blocks.COBBLED_DEEPSLATE)
-			|| state.is(Blocks.POLISHED_DEEPSLATE) || state.is(Blocks.DEEPSLATE_BRICKS)
-			|| state.is(Blocks.DEEPSLATE_TILES) || state.is(Blocks.CHISELED_DEEPSLATE)
-			|| state.is(Blocks.INFESTED_DEEPSLATE) || state.is(Blocks.CRACKED_DEEPSLATE_BRICKS)
-			|| state.is(Blocks.CRACKED_DEEPSLATE_TILES);
+		return 1.0F + MASONS_GRIP_STEP * masonsGripRank(player);
 	}
 
 	/** Spade's Grip, and Soul Digger's answer to the slowest floor in the game. */
