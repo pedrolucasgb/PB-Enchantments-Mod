@@ -463,6 +463,7 @@ Enchanted books are the third way onto a tool, next to the enchanting table and 
 - ✅ **No click-into-refusal.** The offer renders with vanilla's barred arrow and the book's tooltip names the rank you still owe.
 - ✅ **One book per librarian, one pool for the whole mod.** The offer joins the vanilla *apprentice* pool, from which a librarian draws two trades for life — so mod books never crowd the vanilla book trades out of a village. Every enchantment sits in the same pool at the same weight: a Rich Vein book is exactly as rare as a Keen Edge one, which is the point. Rare is the intended feel; the tree, not the village, is the reliable route.
 - ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#toolmastery:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
+- ✅ **Two books sold outright at level 1.** A novice librarian can also offer *Indestructible* and *Slipstream* as dedicated trades, and Slipstream additionally sits in the vanilla pools — `#minecraft:tradeable`, `#minecraft:non_treasure` and `#minecraft:on_random_loot` — so it turns up in chest loot and in the librarian's ordinary book offers too. The counter rule above still applies to every one of them.
 
 **Price.** 24 emeralds flat plus vanilla's own rank-scaled book price, so a rank I lands around 30 and a rank III up near the 64 ceiling. Books are deliberately expensive: emeralds are a currency the progression does not otherwise touch, and a cheap book would make the skill screen's Enchant button dead UI.
 

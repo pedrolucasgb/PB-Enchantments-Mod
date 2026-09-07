@@ -88,6 +88,11 @@ WHAT IS NEW IN 0.9.0-beta
   and nearby awards fold into it. The total is unchanged, Mending too;
   the minute spent standing in a cloud of orbs is gone.
 
+- SLIPSTREAM IN THE STANDARD BOOK POOLS. The Elytra enchantment now
+  shows up in vanilla enchanted-book loot and librarian book offers,
+  and a level-1 librarian can sell a Slipstream book outright, like
+  Indestructible. Buying and using it still needs the rank.
+
 - FIXED: a locked stack shows its gold frame the moment you lock it,
   instead of when the stack next moves.
 
