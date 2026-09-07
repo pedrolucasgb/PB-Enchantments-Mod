@@ -444,7 +444,18 @@ public final class PBEnchantsCommand {
 			return 0;
 		}
 		int index = dev.pbenchants.perk.BeaconPerks.ATTUNEMENT_NAMES.indexOf(power);
-		dev.pbenchants.perk.BeaconPerks.Attuned result = dev.pbenchants.perk.BeaconPerks.attune(player, index);
+		// The choice is per beacon: the one the player is looking at.
+		net.minecraft.world.phys.HitResult hit = player.pick(8.0, 0.0F, false);
+		net.minecraft.core.BlockPos pos = hit instanceof net.minecraft.world.phys.BlockHitResult block
+			&& player.level().getBlockState(block.getBlockPos()).is(net.minecraft.world.level.block.Blocks.BEACON)
+			? block.getBlockPos()
+			: null;
+		if (pos == null) {
+			source.sendFailure(Component.translatable("msg.pbenchants.attune.no_beacon"));
+			return 0;
+		}
+		dev.pbenchants.perk.BeaconPerks.Attuned result =
+			dev.pbenchants.perk.BeaconPerks.attune(player, player.level().dimension(), pos, index);
 		if (!result.ok()) {
 			source.sendFailure(result.message());
 			return 0;

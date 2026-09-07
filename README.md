@@ -310,7 +310,7 @@ The gates are the beacon's own story: wither skeletons and their skulls in a for
 | **Thrifty Offering** | 2 | One payment in four is handed back |
 | **Resonant Haste** I–II | 3 / 4 | Haste II from a beacon becomes Haste III, then IV — at IV, with Efficiency V and Mason's Grip III, deepslate breaks in one tick while you are in the beam |
 | **Early Regeneration** | 3 | Any beacon on two layers or more also gives you Regeneration I |
-| **Prism** I–II | 3 / 4 | One extra power you receive inside any beacon: Night Vision or Fire Resistance, then Slow Falling or Saturation (a bite per pulse). A Prism row appears above any beacon's window, one click per choice; `/pbenchants attune <power>` does the same from chat |
+| **Prism** I–II | 3 / 4 | Each beacon can add one extra power for you: Night Vision or Fire Resistance, then Absorption or Luck. The choice is per beacon — a Prism row above that beacon's window, one click; switching takes the old power off you at once — so a base with three beacons can add three. `/pbenchants attune <power>` while looking at the beacon does the same from chat |
 | **Brighter Beam** | 4 | On a full pyramid the primary comes one level stronger whatever the secondary choice, so the secondary slot is free for Regeneration. Haste never passes IV |
 | **Starfall** | 5 | One Wither in five drops a second nether star |
 | **Phantom Tier** | 5 | For you a pyramid counts one layer higher — three layers give the powers of four, secondary and Brighter Beam included. The range stays the beacon's own |

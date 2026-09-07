@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
@@ -32,9 +33,10 @@ import java.util.List;
  * Prism, where a beacon's choices are made: the beacon screen.
  *
  * <p>The beacon window offers the pyramid's powers; this adds one more row,
- * just above the window's top-right corner, for the power the <em>player</em>
- * brings to any beacon. One button per choice — nothing, Night Vision, Fire
- * Resistance, and with Prism II Slow Falling and Saturation — drawn with the
+ * just above the window's top-right corner, for the power <em>this</em>
+ * beacon adds for the player — one per beacon, so a base with three beacons
+ * can add three. One button per choice — nothing, Night Vision, Fire
+ * Resistance, and with Prism II Absorption and Luck — drawn with the
  * same effect sprites vanilla's own buttons use, the current choice framed in
  * gold. A choice rank II has not opened yet is drawn dimmed and says so on
  * hover. Nothing appears at all for a player without the node.
@@ -64,6 +66,7 @@ public final class PrismScreenHooks {
 			if (!(screen instanceof BeaconScreen beacon) || !ClientSkillState.owns("beacon", BeaconPerks.PRISM[0])) {
 				return;
 			}
+			rememberBeacon();
 			attach(beacon);
 			ScreenEvents.afterForeground(screen).register(PrismScreenHooks::drawLabel);
 			ScreenEvents.remove(screen).register(self -> attached = false);
@@ -101,10 +104,25 @@ public final class PrismScreenHooks {
 		graphics.text(font, label, labelX - font.width(label), labelY, SkillTreeStyle.GOLD);
 	}
 
-	/** What the server last said the player chose. */
+	/**
+	 * The counter this beacon's choice sits under. The screen opened off a
+	 * click on the block, so the block under the crosshair when it opened is
+	 * the beacon; the server keys its answer the same way.
+	 */
+	@Nullable
+	private static String key;
+
+	private static void rememberBeacon() {
+		Minecraft client = Minecraft.getInstance();
+		key = client.level != null && client.hitResult instanceof BlockHitResult hit
+			? BeaconPerks.attuneKey(client.level.dimension(), hit.getBlockPos())
+			: null;
+	}
+
+	/** What the server last said the player chose for this beacon. */
 	private static int current() {
 		SkillStatePayload.TreeState state = ClientSkillState.tree("beacon");
-		return state == null ? 0 : state.counters().getOrDefault(BeaconPerks.ATTUNE_COUNTER, 0);
+		return state == null || key == null ? 0 : state.counters().getOrDefault(key, 0);
 	}
 
 	private static final class PrismButton extends AbstractWidget {

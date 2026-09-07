@@ -44,8 +44,19 @@ public final class ModNetworking {
 		// the snapshot back — the gold frame on the screen reads that.
 		ServerPlayNetworking.registerGlobalReceiver(AttunePayload.TYPE, (payload, context) -> {
 			ServerPlayer player = context.player();
+			// The choice belongs to the beacon whose screen is open: its position
+			// comes off that menu, never off the packet.
+			net.minecraft.core.BlockPos pos = player.containerMenu instanceof net.minecraft.world.inventory.BeaconMenu menu
+				? ((dev.pbenchants.mixin.BeaconMenuAccessor) menu).pbenchants$access()
+					.evaluate((level, at) -> at).orElse(null)
+				: null;
+			if (pos == null) {
+				player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("msg.pbenchants.attune.no_beacon")
+					.withStyle(net.minecraft.ChatFormatting.RED), true);
+				return;
+			}
 			dev.pbenchants.perk.BeaconPerks.Attuned result =
-				dev.pbenchants.perk.BeaconPerks.attune(player, payload.index());
+				dev.pbenchants.perk.BeaconPerks.attune(player, player.level().dimension(), pos, payload.index());
 			player.sendSystemMessage(result.message().copy()
 				.withStyle(result.ok() ? net.minecraft.ChatFormatting.AQUA : net.minecraft.ChatFormatting.RED), true);
 			if (result.ok()) {

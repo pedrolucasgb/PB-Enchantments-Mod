@@ -50,7 +50,9 @@ import java.util.Objects;
  *       so the instamine is exactly beacon + full grip + Efficiency V, and
  *       never the pickaxe alone. Never past IV.</li>
  *   <li><b>Early Regeneration</b>: two layers or more add Regeneration I.</li>
- *   <li><b>Prism</b>: the player's attuned extra power joins the list.</li>
+ *   <li><b>Prism</b>: the extra power the player chose for <em>this</em>
+ *       beacon joins the list — one per beacon, so several beacons can add
+ *       several.</li>
  * </ul>
  *
  * <p>The tracker is told what was applied, so time in the beam, the power
@@ -85,13 +87,6 @@ public final class BeamReceiver {
 	/** Vanilla's Night Vision flickers under ten seconds left; a pulse is four seconds apart. */
 	private static final int NIGHT_VISION_PADDING = 10 * 20;
 
-	/**
-	 * Saturation heals a food point every tick it is on, so a pulse hands out
-	 * two ticks of it and no more: a bite every four seconds, not a full
-	 * stomach forever.
-	 */
-	private static final int SATURATION_TICKS = 2;
-
 	private BeamReceiver() {
 	}
 
@@ -112,7 +107,8 @@ public final class BeamReceiver {
 			if (!served.intersects(player.getBoundingBox())) {
 				continue;
 			}
-			List<MobEffectInstance> effects = effectsFor(player, levels, primary, secondary);
+			List<MobEffectInstance> effects = effectsFor(player, levels, primary, secondary,
+				BeaconPerks.attunement(player, level.dimension(), pos));
 			for (MobEffectInstance effect : effects) {
 				player.addEffect(effect);
 			}
@@ -126,7 +122,7 @@ public final class BeamReceiver {
 	 * checked line by line against it.
 	 */
 	public static List<MobEffectInstance> effectsFor(ServerPlayer player, int levels, Holder<MobEffect> primary,
-			@Nullable Holder<MobEffect> secondary) {
+			@Nullable Holder<MobEffect> secondary, @Nullable Holder<MobEffect> attuned) {
 		int tier = BeaconPerks.owns(player, BeaconPerks.PHANTOM_TIER) ? Math.min(FULL_PYRAMID, levels + 1) : levels;
 		int duration = vanillaDuration(levels)
 			+ LINGER_TICKS[PerkAccess.rank(player, SkillTrees.BEACON, BeaconPerks.LINGERING_LIGHT)];
@@ -144,7 +140,6 @@ public final class BeamReceiver {
 			&& !has(out, MobEffects.REGENERATION)) {
 			out.add(new MobEffectInstance(MobEffects.REGENERATION, duration, 0, true, true));
 		}
-		Holder<MobEffect> attuned = BeaconPerks.attunement(player);
 		if (attuned != null && !has(out, attuned)) {
 			out.add(new MobEffectInstance(attuned, attunedDuration(attuned, duration), 0, true, true));
 		}
@@ -164,9 +159,6 @@ public final class BeamReceiver {
 	}
 
 	private static int attunedDuration(Holder<MobEffect> effect, int duration) {
-		if (Objects.equals(effect, MobEffects.SATURATION)) {
-			return SATURATION_TICKS;
-		}
 		if (Objects.equals(effect, MobEffects.NIGHT_VISION)) {
 			return duration + NIGHT_VISION_PADDING;
 		}

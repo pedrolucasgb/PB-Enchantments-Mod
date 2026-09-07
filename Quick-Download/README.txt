@@ -63,8 +63,9 @@ WHAT IS NEW IN 0.9.0-beta
 - THE BEAM REACHES FURTHER AND STAYS LONGER. Reach of the Beam I-III
   (10/20/40 blocks beyond the range), Lingering Light I-III (30 s /
   90 s / 5 min after you leave), Early Regeneration, Brighter Beam,
-  Phantom Tier, and Prism - one extra power of your choice, picked
-  from a row above any beacon's window (or /pbenchants attune).
+  Phantom Tier, and Prism - one extra power per beacon (Night Vision,
+  Fire Resistance, then Absorption or Luck), picked from a row above
+  that beacon's window; switching drops the old power at once.
 
 - BEAM SENSE, THRIFTY OFFERING, SKULL COLLECTOR, WITHER WARD, STARFALL.
   A HUD column pointing at the nearest lit beacon with your beacon
