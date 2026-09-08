@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.9.0-beta
+Version 0.10.0-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,48 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.10.0-beta
+--------------------------
+- THIRD EYE (ARTISAN TIER 5). The Seeker's Eye, looking through walls:
+  close your inventory with a search still typed and every container
+  within two chunks that holds a match glows through everything for ten
+  seconds - chests, placed shulker boxes, furnaces, hoppers, barrels -
+  each outlined in its own true shape.
+
+- PORTABLE AND DOUBLE ENDER CHEST (EXPLORER TIERS 4 AND 5). The ender
+  chest opens from anywhere - a mini chest button on the inventory
+  screen, or /echest - and the tier 5 node grows it to a double chest,
+  six rows everywhere it opens, the placed block included. The three
+  new rows follow you through death like the rest of your progress.
+
+- THE ANVIL CAN DISENCHANT. Put a book carrying exactly one enchantment
+  at exactly the rank the base item has into the sacrifice slot and a
+  toggle appears: press it and the anvil strikes that enchantment OFF
+  the tool instead of merging it on. The book is consumed; the bill is
+  the rank removed.
+
+- INDESTRUCTIBLE, HARDER. It now fits shulker boxes, and a dropped
+  Indestructible item shrugs off lava, fire, explosions and cactus -
+  only the despawn clock still runs.
+
+- THE SEEKER'S EYE OWNS THE KEYBOARD. Typing into the magnifier no
+  longer leaks into the crafting screen's recipe search.
+
+- HARVEST SWING'S MAGNET CATCHES THE WHOLE CANE COLUMN. No more sugar
+  cane left lying behind the magnet's back.
+
+- THE ENCHANTING TABLE RESPECTS YOUR UNLOCKS. Protection V, Power VI,
+  Fortune IV, Looting IV and Mending II are not offered until the node
+  that earns them is bought. Villagers still advertise them.
+
+- SHULKER SIGHT OPENS FROM THE SLOT. Right-click a shulker box in your
+  inventory and it opens - no need to hold it first.
+
+- LONG DESCRIPTIONS SCROLL in the skill screen's side panel.
+
+- PRICES: Reaper's Wisdom 4 -> 2 echo shards, Nostalgy IV 8 -> 4,
+  Death Eyes 8 -> 10. The Waypoint Stone node was removed.
 
 WHAT IS NEW IN 0.9.0-beta
 -------------------------
