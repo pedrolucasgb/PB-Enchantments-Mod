@@ -103,6 +103,9 @@ public final class ArtisanScreenHooks {
 				!pinClicked(container, event) && !shulkerClicked(container, event));
 			ScreenEvents.remove(screen).register(self -> {
 				forget();
+				// Third Eye asks the world before the rank-I wipe below can
+				// empty the field it reads.
+				ThirdEyeHighlights.queryScreenClosed();
 				ArtisanSearch.screenClosed();
 			});
 		});

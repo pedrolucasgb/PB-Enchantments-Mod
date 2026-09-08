@@ -711,7 +711,11 @@ public final class SkillTrees {
 			SkillNode.of("hand_of_order", 4, 20, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CHEST, 64)),
 			SkillNode.of("void_mark", 4, 15, SkillType.PASSIVE).icon(Items.LAVA_BUCKET)
-				.costing(mat(Items.OBSIDIAN, 16), mat(Items.ENDER_PEARL, 8), mat(Items.LAVA_BUCKET, 1))
+				.costing(mat(Items.OBSIDIAN, 16), mat(Items.ENDER_PEARL, 8), mat(Items.LAVA_BUCKET, 1)),
+			// The Seeker's Eye, looking through walls: priced in the things
+			// that glow, because that is what it does to the room.
+			SkillNode.chained("third_eye", 4, 18, "chest_search_2", SkillType.PASSIVE).icon(Items.SPECTRAL_ARROW)
+				.costing(mat(Items.SPECTRAL_ARROW, 16), mat(Items.GLOW_INK_SAC, 8), mat(Items.GLOWSTONE_DUST, 32))
 		)
 	);
 

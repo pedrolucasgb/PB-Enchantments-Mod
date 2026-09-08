@@ -101,6 +101,11 @@ public class PBEnchantsClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(dev.pbenchants.network.AbilityStatePayload.TYPE,
 			(payload, context) -> DiggyHud.setActive(payload.diggyActive()));
 
+		// Third Eye: the server's answer to "where is it?" — block positions
+		// to set aglow for a few seconds.
+		ClientPlayNetworking.registerGlobalReceiver(dev.pbenchants.network.ThirdEyeResultPayload.TYPE,
+			(payload, context) -> ThirdEyeHighlights.set(payload.positions()));
+
 		// Set Sense draws next to the armour bar it explains.
 		SetSenseHud.register();
 		// Quiver Sense mirrors it on the hotbar's other side: the arrow the
@@ -128,6 +133,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 			ClientSkillState.clear();
 			EnchantPreviewState.clear();
 			ArtisanSearch.clear();
+			ThirdEyeHighlights.clear();
 			GoalTracker.clear();
 			ProgressChimes.clear();
 			DiggyHud.clear();
