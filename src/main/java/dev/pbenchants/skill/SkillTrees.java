@@ -516,7 +516,7 @@ public final class SkillTrees {
 			SkillNode.of("greater_mending", 4, 20, SkillType.PASSIVE).icon(Items.EXPERIENCE_BOTTLE)
 				.costing(mat(Items.EXPERIENCE_BOTTLE, 32), mat(Items.EMERALD_BLOCK, 2), mat(Items.NETHERITE_INGOT, 1)),
 			SkillNode.of("reapers_wisdom", 4, 20, SkillType.PASSIVE).icon(Items.SCULK_CATALYST)
-				.costing(mat(Items.SCULK_CATALYST, 1), mat(Items.ECHO_SHARD, 4), mat(Items.EMERALD_BLOCK, 2)),
+				.costing(mat(Items.SCULK_CATALYST, 1), mat(Items.ECHO_SHARD, 2), mat(Items.EMERALD_BLOCK, 2)),
 			SkillNode.of("prospectors_wisdom", 4, 20, SkillType.PASSIVE).icon(Items.DEEPSLATE_EMERALD_ORE)
 				.costing(mat(Items.DIAMOND_BLOCK, 1), mat(Items.LAPIS_BLOCK, 4), mat(Items.EMERALD_BLOCK, 2))
 		)
@@ -868,14 +868,14 @@ public final class SkillTrees {
 				.enchantFor(50),
 			// Tier 7 — the end of the class
 			SkillNode.chained("nostalgy_4", 6, 20, "nostalgy_3", SkillType.ENCHANTMENT).icon(Items.CLOCK)
-				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.ECHO_SHARD, 8))
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.ECHO_SHARD, 4))
 				.enchantFor(70),
 			SkillNode.capstone("spoils_of_war", 6, 20, SkillType.PASSIVE, "warlords_wake").icon(Items.EMERALD_BLOCK)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 16)),
 			SkillNode.capstone("warlords_wake", 6, 20, SkillType.PASSIVE, "spoils_of_war").icon(Items.WIND_CHARGE)
 				.costing(mat(Items.BREEZE_ROD, 8), mat(Items.NETHERITE_INGOT, 1)).pve(),
 			SkillNode.of("death_eyes", 6, 30, SkillType.PASSIVE).icon(Items.WITHER_SKELETON_SKULL)
-				.costing(mat(Items.NETHER_STAR, 1), mat(Items.WITHER_SKELETON_SKULL, 3), mat(Items.ECHO_SHARD, 8))
+				.costing(mat(Items.NETHER_STAR, 1), mat(Items.WITHER_SKELETON_SKULL, 3), mat(Items.ECHO_SHARD, 10))
 				.pve().endOfTree()
 		)
 	);
