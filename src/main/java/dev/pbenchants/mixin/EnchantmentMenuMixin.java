@@ -4,6 +4,7 @@ import dev.pbenchants.enchant.AncientKnowledge;
 import dev.pbenchants.enchant.EnchanterPerks;
 import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.network.EnchantPreviewPayload;
+import dev.pbenchants.perk.ItemAuthority;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import dev.pbenchants.skill.XpMath;
@@ -132,17 +133,21 @@ public abstract class EnchantmentMenuMixin {
 				: EnchantmentHelper.selectEnchantment(random, stack, cost, pool.stream());
 
 		// 3. Clamp our levels to what the skill tree has unlocked, and
-		//    everything to its own maximum. The raised vanilla ceilings —
-		//    Fortune IV, Looting IV, Protection V, Power VI — are deliberately
-		//    NOT clamped here any more: until 0.8.4 a roll of Protection V was
-		//    rewritten to IV for anyone without Aegis, which hid the rank and
-		//    handed out a working piece. The roll now lands as rolled, the clue
-		//    shows the true rank before a level is spent, and an unearned rank
-		//    makes the item inert until the node is bought (ItemAuthority) —
-		//    the same rule a Dig Range III pickaxe follows for a rank II player.
+		//    everything to its own maximum. Since 0.10.0 the raised vanilla
+		//    ceilings — Fortune IV, Looting IV, Protection V, Power VI,
+		//    Mending II — are clamped again for a player who has not bought
+		//    the node: the table never OFFERS a rank the roller cannot use.
+		//    (0.8.4 let the roll land and made the piece inert; Pedro asked
+		//    for the offer itself to respect the unlock. Villager trades are
+		//    the deliberate remaining source of unearned ranks, and those
+		//    still go through ItemAuthority's inert-item rule.)
 		List<EnchantmentInstance> result = new ArrayList<>(rolled.size());
 		for (EnchantmentInstance instance : rolled) {
 			int allowed = instance.enchantment().value().getMaxLevel();
+			ItemAuthority.Ceiling raised = ItemAuthority.ceiling(instance.enchantment());
+			if (raised != null) {
+				allowed = Math.min(allowed, raised.ceilingFor(serverPlayer, allowed));
+			}
 			ResourceKey<Enchantment> ours = pbenchants$matchOurs(instance.enchantment());
 			if (ours != null) {
 				int owned = SkillService.maxEnchantLevelOwned(serverPlayer, ours);
