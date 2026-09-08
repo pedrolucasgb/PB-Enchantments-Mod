@@ -70,13 +70,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * axe for someone who has bought the node.
  */
 @Mixin(AnvilMenu.class)
-public class AnvilMenuMixin {
+public class AnvilMenuMixin implements dev.pbenchants.enchant.AnvilDisenchant.Mode {
 	@Shadow
 	@Final
 	private DataSlot cost;
 
 	@Unique
 	private Player pbenchants$player;
+
+	/** The 0.10.0 toggle: false is vanilla's anvil, and every fresh screen starts there. */
+	@Unique
+	private boolean pbenchants$disenchanting;
+
+	@Override
+	public boolean pbenchants$disenchanting() {
+		return pbenchants$disenchanting;
+	}
+
+	@Override
+	public void pbenchants$setDisenchanting(boolean value) {
+		pbenchants$disenchanting = value;
+	}
 
 	/** The taker's experience wallet as onTake was entered — see below. */
 	@Unique
@@ -294,6 +308,29 @@ public class AnvilMenuMixin {
 		}
 		menu.getSlot(AnvilMenu.RESULT_SLOT).set(ItemStack.EMPTY);
 		this.cost.set(0);
+	}
+
+	/**
+	 * Disenchant mode (see {@link dev.pbenchants.enchant.AnvilDisenchant}).
+	 * Runs after vanilla's own result, and after the two vetoes above, and
+	 * only rewrites the slot when the toggle is armed AND the book actually
+	 * matches — otherwise whatever vanilla (as already vetoed) decided stands,
+	 * which is what makes flipping the toggle with mismatched items harmless.
+	 */
+	@Inject(method = "createResult", at = @At("RETURN"))
+	private void pbenchants$disenchantAtTheAnvil(CallbackInfo ci) {
+		if (!pbenchants$disenchanting) {
+			return;
+		}
+		AnvilMenu menu = (AnvilMenu) (Object) this;
+		ItemStack input = menu.getSlot(AnvilMenu.INPUT_SLOT).getItem();
+		ItemStack book = menu.getSlot(AnvilMenu.ADDITIONAL_SLOT).getItem();
+		Holder<Enchantment> match = dev.pbenchants.enchant.AnvilDisenchant.match(input, book);
+		if (match == null) {
+			return;
+		}
+		menu.getSlot(AnvilMenu.RESULT_SLOT).set(dev.pbenchants.enchant.AnvilDisenchant.strip(input, match));
+		this.cost.set(Math.max(1, EnchantmentHelper.getItemEnchantmentLevel(match, input)));
 	}
 
 	/**

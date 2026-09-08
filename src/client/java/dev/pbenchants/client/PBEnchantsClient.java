@@ -148,6 +148,9 @@ public class PBEnchantsClient implements ClientModInitializer {
 		ArtisanScreenHooks.register();
 		// Beacon: Prism's choice of extra power, as a row on the beacon screen.
 		PrismScreenHooks.register();
+		// The anvil's enchant/disenchant toggle, shown only when a book that
+		// exactly matches an enchantment on the base item is on the anvil.
+		AnvilModeHooks.register();
 
 		// Speed passives are computed on both sides; on this one the answer comes
 		// from the synced snapshot, and only ever for the local player.

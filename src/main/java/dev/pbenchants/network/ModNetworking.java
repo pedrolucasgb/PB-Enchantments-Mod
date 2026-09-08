@@ -38,6 +38,7 @@ public final class ModNetworking {
 		PayloadTypeRegistry.serverboundPlay().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ScreenStatePayload.TYPE, ScreenStatePayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(AttunePayload.TYPE, AttunePayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(AnvilModePayload.TYPE, AnvilModePayload.CODEC);
 
 		// Beacon: Prism's choice, pressed on the beacon screen. The server
 		// judges the rank, stores the index in the tree's counters and pushes
@@ -77,6 +78,17 @@ public final class ModNetworking {
 		// about — so the client says so itself.
 		ServerPlayNetworking.registerGlobalReceiver(ScreenStatePayload.TYPE, (payload, context) ->
 			DeftHands.setScreenOpen(context.player(), payload.open()));
+
+		// The anvil's enchant/disenchant toggle. The mode sits on the menu
+		// instance, so it dies with the screen; createResult re-runs at once
+		// so the result slot answers the press without waiting for a click.
+		ServerPlayNetworking.registerGlobalReceiver(AnvilModePayload.TYPE, (payload, context) -> {
+			if (context.player().containerMenu instanceof net.minecraft.world.inventory.AnvilMenu menu
+				&& menu instanceof dev.pbenchants.enchant.AnvilDisenchant.Mode mode) {
+				mode.pbenchants$setDisenchanting(payload.disenchanting());
+				menu.createResult();
+			}
+		});
 
 		// Artisan buttons live in the inventory screen, not the skill screen, and
 		// change the world rather than the tree — so they get their own channel
