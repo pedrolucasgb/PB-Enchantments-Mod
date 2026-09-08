@@ -40,7 +40,11 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 		/** Auto Block: enable or disable automatic material compression. */
 		TOGGLE_AUTO_BLOCK,
 		/** Void Mark: make the stack in one inventory slot a filter, or stop. */
-		TOGGLE_VOID_MARK
+		TOGGLE_VOID_MARK,
+		/** Shulker Sight: open the box sitting in one inventory slot. */
+		OPEN_SHULKER,
+		/** Portable Ender Chest: open the ender chest from anywhere. */
+		OPEN_ENDER_CHEST
 	}
 
 	public static final Type<ArtisanActionPayload> TYPE =
@@ -59,6 +63,10 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 
 	public static ArtisanActionPayload voidMark(int slot) {
 		return new ArtisanActionPayload(Action.TOGGLE_VOID_MARK, slot);
+	}
+
+	public static ArtisanActionPayload openShulker(int slot) {
+		return new ArtisanActionPayload(Action.OPEN_SHULKER, slot);
 	}
 
 	private static ArtisanActionPayload read(FriendlyByteBuf buf) {

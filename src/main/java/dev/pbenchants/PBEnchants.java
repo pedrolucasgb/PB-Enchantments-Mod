@@ -152,6 +152,20 @@ public class PBEnchants implements ModInitializer {
 			dev.pbenchants.perk.ShulkerSight.onUseBlock(player, hand)
 				? InteractionResult.SUCCESS
 				: InteractionResult.PASS);
+		// Explorer: a player who earned the Double Ender Chest gets six rows
+		// from the placed block too — vanilla's three-row menu has never heard
+		// of the annex, so the mod answers the click instead. Everyone else
+		// falls through to vanilla untouched. Client returns PASS (the server
+		// decides), same as every other use hook here.
+		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
+			if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
+				&& !player.isShiftKeyDown()
+				&& level.getBlockState(hitResult.getBlockPos()).is(net.minecraft.world.level.block.Blocks.ENDER_CHEST)
+				&& dev.pbenchants.perk.EnderChestAccess.openFromBlock(serverPlayer)) {
+				return InteractionResult.SUCCESS;
+			}
+			return InteractionResult.PASS;
+		});
 
 		// Indestructible: a spent item is inert, and that has to include the
 		// right click — a bow that still draws, a crossbow that still loads and

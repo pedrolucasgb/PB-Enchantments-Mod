@@ -64,6 +64,27 @@ public final class ShulkerSight {
 		return player.isShiftKeyDown() && open(player, hand);
 	}
 
+	/**
+	 * Shulker Sight from the inventory screen: a right-click on the box in its
+	 * slot opens it, no need to hold it first. Same rules as the hand path —
+	 * the node, the tag, the identified stack — plus a bound check on the slot
+	 * index, because a screen click is only ever a suggestion.
+	 */
+	public static boolean openFromSlot(ServerPlayer player, int slot) {
+		Inventory inventory = player.getInventory();
+		if (slot < 0 || slot >= inventory.getContainerSize()) {
+			return false;
+		}
+		ItemStack stack = inventory.getItem(slot);
+		if (!isShulkerBox(stack) || !SkillService.owns(player, SkillTrees.ARTISAN, NODE)) {
+			return false;
+		}
+		player.openMenu(new SimpleMenuProvider(
+			(id, inv, p) -> new Menu(id, inv, new Contents(inv, slot, stack)),
+			stack.getHoverName()));
+		return true;
+	}
+
 	private static boolean open(Player player, InteractionHand hand) {
 		ItemStack held = player.getItemInHand(hand);
 		if (!isShulkerBox(held) || !(player instanceof ServerPlayer serverPlayer)) {

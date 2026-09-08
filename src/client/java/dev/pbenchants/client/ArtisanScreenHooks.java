@@ -6,6 +6,8 @@ import dev.pbenchants.client.gui.SkillTreeStyle;
 import dev.pbenchants.client.mixin.ContainerScreenAccessor;
 import dev.pbenchants.network.ArtisanActionPayload;
 import dev.pbenchants.perk.AutoBlock;
+import dev.pbenchants.perk.EnderChestAccess;
+import dev.pbenchants.perk.ShulkerSight;
 import dev.pbenchants.storage.ItemLock;
 import dev.pbenchants.storage.SortMode;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -98,7 +100,7 @@ public final class ArtisanScreenHooks {
 				layout(container));
 			ScreenEvents.afterForeground(screen).register(ArtisanScreenHooks::drawOverlay);
 			ScreenMouseEvents.allowMouseClick(screen).register((clicked, event) ->
-				!pinClicked(container, event));
+				!pinClicked(container, event) && !shulkerClicked(container, event));
 			ScreenEvents.remove(screen).register(self -> {
 				forget();
 				ArtisanSearch.screenClosed();
@@ -168,6 +170,13 @@ public final class ArtisanScreenHooks {
 			add(widgets, "screen.pbenchants.button.restock",
 				(graphics, font, x, y, color) -> ArtisanIcons.inbound(graphics, x, y, color),
 				() -> send(ArtisanActionPayload.Action.RESTOCK));
+		}
+		// The one Explorer button in the Artisan's row: the corner strip is
+		// simply where screen buttons live, whichever tree earned them.
+		if (ClientSkillState.owns("explorer", EnderChestAccess.PORTABLE_NODE)) {
+			add(widgets, "screen.pbenchants.button.ender_chest",
+				(graphics, font, x, y, color) -> ArtisanIcons.enderChest(graphics, x, y, color),
+				() -> send(ArtisanActionPayload.Action.OPEN_ENDER_CHEST));
 		}
 		if (ArtisanSearch.available()) {
 			attachSearch(screen, widgets);
@@ -404,6 +413,33 @@ public final class ArtisanScreenHooks {
 		ClientPlayNetworking.send(right
 			? ArtisanActionPayload.voidMark(slot.getContainerSlot())
 			: ArtisanActionPayload.lock(slot.getContainerSlot()));
+		return true;
+	}
+
+	/**
+	 * Shulker Sight from the screen: a plain right-click on a shulker box in
+	 * one of the player's own slots opens it. Right-click, because on a
+	 * single-item stack vanilla's right-click does the same as the left one —
+	 * nothing is lost — and left is how the box is still picked up and moved.
+	 * Only with an empty cursor: a click that is carrying something is trying
+	 * to put it down, not to look inside.
+	 */
+	private static boolean shulkerClicked(AbstractContainerScreen<?> screen, MouseButtonEvent event) {
+		if (event.button() != 1 || event.hasAltDown()) {
+			return false;
+		}
+		if (!ClientArtisanState.owns(ShulkerSight.NODE)) {
+			return false;
+		}
+		if (!screen.getMenu().getCarried().isEmpty()) {
+			return false;
+		}
+		Slot slot = slotAt(screen, event.x(), event.y());
+		if (slot == null || !(slot.container instanceof Inventory)
+			|| !ShulkerSight.isShulkerBox(slot.getItem())) {
+			return false;
+		}
+		ClientPlayNetworking.send(ArtisanActionPayload.openShulker(slot.getContainerSlot()));
 		return true;
 	}
 

@@ -614,12 +614,16 @@ public final class SkillTrees {
 				.enchantFor(50),
 			SkillNode.of("soft_landing", 3, 10, SkillType.PASSIVE).icon(Items.SLIME_BALL)
 				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.SLIME_BALL, 16)),
+			SkillNode.of("portable_ender_chest", 3, 12, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
+				.costing(mat(Items.ENDER_CHEST, 1), mat(Items.ENDER_PEARL, 8), mat(Items.BLAZE_POWDER, 8)),
 			// Tier 5 — two capstones, buyable together (no exclusiveWith: the
 			// sky and the sea are not a choice a wanderer should have to make)
 			SkillNode.of("endless_horizon", 4, 20, SkillType.PASSIVE).icon(Items.FIREWORK_ROCKET)
 				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.FIREWORK_ROCKET, 64), mat(Items.PHANTOM_MEMBRANE, 16)),
 			SkillNode.of("pufferfish_lungs", 4, 20, SkillType.PASSIVE).icon(Items.PUFFERFISH)
-				.costing(mat(Items.PUFFERFISH, 16), mat(Items.HEART_OF_THE_SEA, 1), mat(Items.PRISMARINE_CRYSTALS, 32))
+				.costing(mat(Items.PUFFERFISH, 16), mat(Items.HEART_OF_THE_SEA, 1), mat(Items.PRISMARINE_CRYSTALS, 32)),
+			SkillNode.chained("double_ender_chest", 4, 20, "portable_ender_chest", SkillType.PASSIVE).icon(Items.ENDER_EYE)
+				.costing(mat(Items.ENDER_CHEST, 1), mat(Items.ENDER_EYE, 8), mat(Items.OBSIDIAN, 32))
 		)
 	);
 
