@@ -23,7 +23,6 @@ import dev.pbenchants.perk.MinersMagnet;
 import dev.pbenchants.perk.Remember;
 import dev.pbenchants.perk.TimberScheduler;
 import dev.pbenchants.perk.Trailblazer;
-import dev.pbenchants.perk.Waypoints;
 import dev.pbenchants.perk.PBEnchantsConfig;
 import dev.pbenchants.progress.ModAttachments;
 import dev.pbenchants.progress.TreeProgress;
@@ -173,16 +172,6 @@ public class PBEnchants implements ModInitializer {
 			dev.pbenchants.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
 				? InteractionResult.FAIL
 				: InteractionResult.PASS);
-
-		// Explorer: the compass is the class's tool. Sneaking binds a waypoint,
-		// standing up asks the world where the nearest known structure is.
-		UseItemCallback.EVENT.register((player, level, hand) -> {
-			if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
-				&& Waypoints.onCompassUse(serverPlayer, hand)) {
-				return InteractionResult.SUCCESS;
-			}
-			return InteractionResult.PASS;
-		});
 
 		// Remember: the coordinates are taken where the player fell and handed
 		// over once they are back on their feet.

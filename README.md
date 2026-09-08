@@ -254,7 +254,6 @@ The first class that is not tied to a tool: it levels from **movement**, so its 
 | **Remember** | 3 | You respawn holding a named slip of paper with the coordinates, dimension and in-game day of your last death — it replaces the previous one, so it never becomes clutter |
 | **Trailblazer** | 3 | Sprinting for 8 seconds without stopping ramps to +12% movement speed and lingers 2 seconds after you slow down |
 | **Soft Landing** | 4 | Elytra wall-crash damage halved, and the first 3 blocks of any fall are free |
-| **Waypoint Stone** | 4 | Sneak + right-click with a compass binds the spot you are standing on; the needle points there from then on |
 | **Endless Horizon** | capstone | A quarter of the fireworks you burn flying are not consumed, and Slipstream carryover doubles |
 | **Pufferfish Lungs** | capstone | Permanent Water Breathing — your breath meter never moves again, in any water, in any dimension |
 
