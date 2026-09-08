@@ -73,3 +73,22 @@ jobs:
             staging/patchnotes-*.md
           body_path: staging/body.md
           generate_release_notes: true
+
+      - name: Announce release on Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          case "$VERSION" in
+            *-beta) DISPLAY_VERSION="beta-${VERSION%-beta}" ;;
+            *) DISPLAY_VERSION="$VERSION" ;;
+          esac
+
+          jq -n \
+            --arg content "@everyone Nova versão disponível ${DISPLAY_VERSION}!" \
+            '{content: $content, allowed_mentions: {parse: ["everyone"]}}' \
+          | curl --silent --show-error --fail-with-body \
+              --retry 3 --retry-all-errors \
+              --header 'Content-Type: application/json' \
+              --data-binary @- \
+              "$DISCORD_WEBHOOK_URL"
