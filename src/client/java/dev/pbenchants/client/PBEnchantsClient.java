@@ -126,6 +126,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			ClientSkillState.clear();
+			EnchantPreviewState.clear();
 			ArtisanSearch.clear();
 			GoalTracker.clear();
 			ProgressChimes.clear();
