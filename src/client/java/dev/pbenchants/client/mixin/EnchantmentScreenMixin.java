@@ -36,8 +36,9 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
 		super(menu, inventory, title);
 	}
 
-	@Inject(method = "init", at = @At("TAIL"))
-	private void pbenchants$resetInsightPanel(CallbackInfo ci) {
+	@Override
+	public void removed() {
+		super.removed();
 		EnchantPreviewState.clear();
 	}
 
