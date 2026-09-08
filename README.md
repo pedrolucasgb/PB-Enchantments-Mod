@@ -153,7 +153,7 @@ For development, `./gradlew runClient` launches a ready-to-play instance with th
 | **Environment** | Axe | I | Replants the sapling on the stump after a Logic III fell |
 | **Flat Earth** | Ground, shovel | I–III | Area dig: the pair above and below, then 3x2, then a full 3x3 on the plane you face — and **never a block below the floor you are standing on** |
 | **Harvest Swing** | Ground, hoe | I–III | Area harvest: 3x3 / 5x5 / 7x7, **fully grown plants only** — seedlings are left to finish |
-| **Indestructible** | Enchanter, any damageable item | I | The item never breaks — damage stops one point short, like an Elytra. Spent, it works like an empty hand until repaired |
+| **Indestructible** | Enchanter, any damageable item or shulker box | I | The item never breaks — damage stops one point short, like an Elytra. Spent, it works like an empty hand until repaired. Dropped, it shrugs off lava, fire, explosions and cactus; only the despawn clock still runs |
 | **Slipstream** | Explorer, Elytra | I–III | 10% / 25% / 50% of a firework's push carries over past the point where the boost would normally have died — same rocket, more distance |
 | **Keen Edge** | Sword | I–III | Up to +1 / +2 / +3 damage, scaled by how full the attack cooldown was. Measured against the *vanilla* cooldown, so Nostalgy cannot turn a timing reward into a flat bonus |
 | **Sweeping Arc** | Sword, axe with Broad Swing | I–II | The sweep lands at 50% / 100% of a full hit and reaches a block further. Adds to the vanilla sweep ratio, so it stacks with Sweeping Edge |
@@ -254,8 +254,10 @@ The first class that is not tied to a tool: it levels from **movement**, so its 
 | **Remember** | 3 | You respawn holding a named slip of paper with the coordinates, dimension and in-game day of your last death — it replaces the previous one, so it never becomes clutter |
 | **Trailblazer** | 3 | Sprinting for 8 seconds without stopping ramps to +12% movement speed and lingers 2 seconds after you slow down |
 | **Soft Landing** | 4 | Elytra wall-crash damage halved, and the first 3 blocks of any fall are free |
+| **Portable Ender Chest** | 4 | The ender chest opens from anywhere — the mini chest button on the inventory screen, or `/echest` |
 | **Endless Horizon** | capstone | A quarter of the fireworks you burn flying are not consumed, and Slipstream carryover doubles |
 | **Pufferfish Lungs** | capstone | Permanent Water Breathing — your breath meter never moves again, in any water, in any dimension |
+| **Double Ender Chest** | capstone | The ender chest becomes a double chest — six rows everywhere it opens, the placed block included. The first three rows stay vanilla's own; the three new ones are the mod's annex and follow you through death |
 
 **Slipstream is the momentum reading, not the refund one.** It lengthens the rocket's own life rather than re-applying a decaying slice of its velocity, so the acceleration curve, the collision handling and the client prediction all stay vanilla's — the extra distance is real, the physics is not reimplemented. The refund idea ships too, priced apart, as the Endless Horizon capstone, which is now the tier on its own.
 
@@ -276,10 +278,11 @@ The controls are a row of slot-sized symbol buttons in the **top-right corner** 
 | **Tidy Storage** | 3 | A container is tidied again every time you close it, so one you sorted stays sorted |
 | **Artisan's Order** | 3 | Pick the sort rule: category, name or count |
 | **Quartermaster's Call** | 4 | Tops up the stacks you already carry from containers within 8 blocks — never hands you something new |
-| **Shulker Sight** | 4 | Right-click with a shulker box in hand, aimed at nothing — or sneak and right-click anywhere — and it opens right there: vanilla's shulker screen, written back into the item as you go. Aim at a block and it is placed as ever; the slot it sits in cannot be picked up while it is open, so a box never ends up inside itself |
+| **Shulker Sight** | 4 | Right-click with a shulker box in hand, aimed at nothing — or sneak and right-click anywhere — and it opens right there: vanilla's shulker screen, written back into the item as you go. A right-click on the box in its inventory slot opens it too. Aim at a block and it is placed as ever; the slot it sits in cannot be picked up while it is open, so a box never ends up inside itself |
 | **Auto Block** | 4 | Nine of an ore material pack into the block on the spot; a button in the inventory switches it off |
 | **Hand of Order** | 5 | Terraria's *Quick Stack to Nearby Chests* — see below |
 | **Void Mark** | 5 | Alt + right-click a stack and it becomes a filter: while it stays in your bag, every item of that kind you pick up — by hand or by any magnet — is destroyed on the spot. The marked stack is left as it is, Sort and Quick Stack step around it, and it does nothing in creative. Mark one cobblestone before a quarry and the bag stays clear |
+| **Third Eye** | 5 | The Seeker's Eye, looking through walls: close the inventory with a search still typed and every container within two chunks holding a match glows through everything for ten seconds — chests, placed shulkers, furnaces, hoppers — each outlined in its own block shape |
 
 **Hand of Order.** Press the button and every item in your backpack flies to the nearby container that already keeps that kind of thing. The rule that makes it safe is that half: an item is only ever deposited into a container that **already knows its kind**, so Quick Stack joins the organisation you built and never invents one. Anything with no home stays on you.
 
@@ -450,15 +453,19 @@ The ranged class ([#27](../../issues/27)): bow, crossbow and everything that lea
 - ✅ Unlocked enchantments join the enchanting table pool — **per player**: locked enchantments are filtered out of the roll before selection (no empty offers)
 - ✅ Rolls above your unlocked level are clamped down, never hidden
 - ✅ Vanilla **Fortune** and **Looting** are raised to a max of IV in the data pack — a data pack cannot be per-player, so the node is what makes the rank a reward: without Ancient Fortune / Spoils of War the anvil will not forge a IV out of two IIIs, and a Fortune IV or Looting IV item that reaches you anyway is inert in your hands (it keeps its rank; it is not rewritten to III). Mending II, Protection V and Power VI are the same trick, one tree over each
+- ✅ **Since 0.10.0 the table itself respects those ceilings too**: a roll of Protection V, Power VI, Fortune IV, Looting IV or Mending II for a player without the node lands at the vanilla maximum instead — the table never *offers* a rank the roller cannot use. Villager trades remain the one advertised source of unearned ranks, and those still go inert in the hand
 - ✅ **Sweeping Edge** is widened to axes in the data pack the same way, and refused at the table and the anvil to anyone without Broad Swing
 - ✅ Natural combinations with vanilla enchantments via the vanilla bonus mechanic
+
+### Anvil disenchanting
+The anvil always enchants — that stays the default. But put a book carrying **exactly one** enchantment at **exactly the rank** the base item has into the sacrifice slot, and a toggle appears beside the window: press it and the anvil strikes that enchantment **off** the tool instead of merging it on. The book is consumed as it would be in a merge, the bill is the rank removed in levels, and nothing is refunded anywhere — the book bought the removal, not a transfer. Mismatched items make the toggle vanish and the anvil is vanilla again; every fresh anvil screen opens in enchant mode.
 
 ### Librarian book trades
 Enchanted books are the third way onto a tool, next to the enchanting table and the skill screen's Enchant button — and the two halves are deliberately asymmetric.
 
 - ✅ **The villager offers them at any stage.** Trade generation never looks at your tree. A brand-new player can walk into a village on day one and see *Dig Range III* in a librarian's list. The offer is bait: it advertises what the tree holds.
 - ✅ **Only an unlocked player can buy.** Taking the book is refused server-side unless you own that node at that rank or higher — no emerald is spent and no book is produced.
-- ✅ **Refused at the counter, not clamped in the hand.** A *Dig Range III* book offered to someone who owns only rank I is blocked outright — no emerald spent, no weaker book quietly substituted for the full price. Buying it were it possible would gain them nothing anyway: an unearned rank is inert in the hand too (see *shared items* below). The same refusal covers the raised vanilla ranks — a Fortune IV or Protection V book is not for sale to someone without the node. The enchanting table clamps the mod's own enchantments to the rank you own, because there the roll is invisible until it lands; a vanilla roll above your ceiling (Protection V without Aegis) is applied as rolled and the item is inert until you earn it — the clue names the real rank before you spend a level.
+- ✅ **Refused at the counter, not clamped in the hand.** A *Dig Range III* book offered to someone who owns only rank I is blocked outright — no emerald spent, no weaker book quietly substituted for the full price. Buying it were it possible would gain them nothing anyway: an unearned rank is inert in the hand too (see *shared items* below). The same refusal covers the raised vanilla ranks — a Fortune IV or Protection V book is not for sale to someone without the node. The enchanting table clamps everything to the rank you own — the mod's enchantments and, since 0.10.0, the raised vanilla ceilings too — so the table never hands out a rank the roller has not earned; the librarian's counter is where an unearned rank is still advertised.
 - ✅ **No click-into-refusal.** The offer renders with vanilla's barred arrow and the book's tooltip names the rank you still owe.
 - ✅ **One book per librarian, one pool for the whole mod.** The offer joins the vanilla *apprentice* pool, from which a librarian draws two trades for life — so mod books never crowd the vanilla book trades out of a village. Every enchantment sits in the same pool at the same weight: a Rich Vein book is exactly as rare as a Keen Edge one, which is the point. Rare is the intended feel; the tree, not the village, is the reliable route.
 - ✅ **Data-driven.** The offer rolls a random enchantment at a random rank from `#toolmastery:trade_pool`; adding a new enchantment to the tree means one tag entry, not new trade code.
