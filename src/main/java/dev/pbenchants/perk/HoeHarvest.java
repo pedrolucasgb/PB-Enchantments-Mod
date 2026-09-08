@@ -59,7 +59,16 @@ public final class HoeHarvest {
 
 	private record Pending(ServerLevel level, UUID playerId, BlockPos pos, Block crop,
 	                       boolean replant, int wheatFortune, int goldenCarrotPercent,
-	                       int poisonCullPercent, boolean magnet) {
+	                       int poisonCullPercent, boolean magnet, int columnAbove) {
+		/**
+		 * Where this harvest's drops can be. A one-block crop is the unit box;
+		 * a cane cut mid-stalk also owns the segments that were standing above
+		 * the cut — they fall by losing support, their drops spawn at their own
+		 * height, and a box that stops at the cut would leave them lying there.
+		 */
+		AABB dropBox() {
+			return new AABB(pos).expandTowards(0, columnAbove, 0).inflate(DROP_RADIUS);
+		}
 	}
 
 	private static final List<Pending> PENDING = new ArrayList<>();
@@ -100,10 +109,30 @@ public final class HoeHarvest {
 		if (!replant && wheatFortune == 0 && golden == 0 && poison == 0 && !magnet) {
 			return;
 		}
+		// Sugar cane is cut mid-stalk: every segment above the cut falls by
+		// losing its support — on a SCHEDULED tick, one segment per tick, well
+		// after this pass has cleared its queue. Left to vanilla, those drops
+		// rain down a tick late and the magnet never sees them. So when a
+		// magnet is waiting, the column is felled here and now, top segment
+		// first (so no support-loss tick is ever scheduled): same blocks, same
+		// drops as vanilla, just in the tick the magnet actually collects.
+		int columnAbove = 0;
+		if (state.is(Blocks.SUGAR_CANE)) {
+			BlockPos above = pos.above();
+			while (serverLevel.getBlockState(above).is(Blocks.SUGAR_CANE)) {
+				columnAbove++;
+				above = above.above();
+			}
+			if (magnet) {
+				for (int i = columnAbove; i >= 1; i--) {
+					serverLevel.destroyBlock(pos.above(i), true, serverPlayer);
+				}
+			}
+		}
 		// A pitcher plant hit at the top drops at its foot, and a harvested
 		// torchflower goes back in the ground as the seedling, not the bloom.
 		PENDING.add(new Pending(serverLevel, serverPlayer.getUUID(), HoeCrops.rootOf(state, pos),
-			HoeCrops.replantBlock(state.getBlock()), replant, wheatFortune, golden, poison, magnet));
+			HoeCrops.replantBlock(state.getBlock()), replant, wheatFortune, golden, poison, magnet, columnAbove));
 	}
 
 	/** Called at the end of every server tick, once every drop of the tick has spawned. */
@@ -117,7 +146,7 @@ public final class HoeHarvest {
 			RandomSource random = pending.level().getRandom();
 			List<ItemEntity> drops = new ArrayList<>();
 			for (ItemEntity candidate : pending.level().getEntitiesOfClass(
-				ItemEntity.class, new AABB(pending.pos()).inflate(DROP_RADIUS), entity -> entity.tickCount <= 1)) {
+				ItemEntity.class, pending.dropBox(), entity -> entity.tickCount <= 1)) {
 				if (claimed.add(candidate.getId())) {
 					drops.add(candidate);
 				}

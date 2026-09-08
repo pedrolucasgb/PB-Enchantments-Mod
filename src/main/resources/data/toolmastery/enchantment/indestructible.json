@@ -16,6 +16,6 @@
   "slots": [
     "any"
   ],
-  "supported_items": "#minecraft:enchantable/durability",
+  "supported_items": "#toolmastery:enchantable/indestructible",
   "weight": 2
 }

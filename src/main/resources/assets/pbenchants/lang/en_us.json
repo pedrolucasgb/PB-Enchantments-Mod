@@ -504,7 +504,7 @@
 	"node.pbenchants.inner_focus": "Inner Focus",
 	"node.pbenchants.inner_focus.desc": "Passive: enchanting no longer requires or consumes lapis lazuli — your focus channels the table directly.",
 	"node.pbenchants.indestructible": "Indestructible",
-	"node.pbenchants.indestructible.desc": "Enchantment: the item never breaks. Damage stops one point short, like an Elytra — but a spent item is inert until repaired: a tool digs at bare-hand speed and harvests nothing, right-click actions do nothing, and a worn armour piece protects for nothing — your armour bar shows the loss. The same goes for armour on a wolf, a horse or a nautilus.",
+	"node.pbenchants.indestructible.desc": "Enchantment: the item never breaks. Damage stops one point short, like an Elytra — but a spent item is inert until repaired: a tool digs at bare-hand speed and harvests nothing, right-click actions do nothing, and a worn armour piece protects for nothing — your armour bar shows the loss. The same goes for armour on a wolf, a horse or a nautilus. Dropped, the item shrugs off lava, fire, explosions and cactus — only the despawn clock still runs. Shulker boxes take it too.",
 	"node.pbenchants.anvil_adept": "Anvil Adept",
 	"node.pbenchants.anvil_adept_1.desc": "Passive: anvil repairs, merges and renames cost 30% fewer levels, rounded up. The discount lands before the anvil decides a job is too expensive, so a 55-level merge comes down to 39 and becomes possible again.",
 	"node.pbenchants.anvil_adept_2.desc": "Passive: your anvil never says 'Too Expensive'. Every job is capped at 40 levels — after the rank I discount — so a tool you keep repairing never prices itself out of existence.",
