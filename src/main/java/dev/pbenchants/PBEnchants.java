@@ -101,9 +101,9 @@ public class PBEnchants implements ModInitializer {
 			// it carries, none of the perks below will fire and the block just
 			// gave up no drops. Say so, or it reads as a bug.
 			ItemAuthority.noticeInertUse(player, player.getMainHandItem());
-			// First, while the block entity in the event's hand is still warm:
-			// vanilla's shulker loot table forgets the enchantments component,
-			// and this puts it back on the drop that just hit the ground.
+			// Queue-only: the drop this wants to mend does not exist yet — this
+			// event fires at Block.destroy, before dropResources runs. The end
+			// of the tick puts the enchantments back on the fresh drop.
 			dev.pbenchants.perk.ShulkerEnchantKeeper.onBreak(level, player, pos, state, blockEntity);
 			BlockBreakTracker.onBreak(level, player, pos, state);
 			dev.pbenchants.perk.SmeltHandler.onBreak(level, player, pos, state);
@@ -265,6 +265,10 @@ public class PBEnchants implements ModInitializer {
 		});
 
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			// Before every other drop pass, and before the magnets above all:
+			// a magnet pockets the box THIS tick via playerTouch, and a box
+			// mended after it was pocketed is a box that was never mended.
+			dev.pbenchants.perk.ShulkerEnchantKeeper.tick(server);
 			dev.pbenchants.perk.SmeltHandler.tick(server);
 			// After Smelt, so the magnet pockets the smelted result rather than the raw ore.
 			MinersMagnet.tick(server);
