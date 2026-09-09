@@ -47,10 +47,12 @@ describes the cross, not the whole family.
 WHAT IS NEW IN 0.10.0-beta
 --------------------------
 - THIRD EYE (ARTISAN TIER 5). The Seeker's Eye, looking through walls:
-  close your inventory with a search still typed and every container
-  within two chunks that holds a match glows through everything for ten
+  close your inventory with a search still typed and every container in
+  the 3x3x3 chunks around you - your chunk and its ring, one layer up
+  and one down - that holds a match glows through everything for ten
   seconds - chests, placed shulker boxes, furnaces, hoppers, barrels -
-  each outlined in its own true shape.
+  each outlined in its own true shape. The height cut keeps buried
+  dungeons and other people's bases dark.
 
 - PORTABLE AND DOUBLE ENDER CHEST (EXPLORER TIERS 4 AND 5). The ender
   chest opens from anywhere - a mini chest button on the inventory

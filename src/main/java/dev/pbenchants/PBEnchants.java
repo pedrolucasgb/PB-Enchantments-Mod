@@ -101,6 +101,10 @@ public class PBEnchants implements ModInitializer {
 			// it carries, none of the perks below will fire and the block just
 			// gave up no drops. Say so, or it reads as a bug.
 			ItemAuthority.noticeInertUse(player, player.getMainHandItem());
+			// First, while the block entity in the event's hand is still warm:
+			// vanilla's shulker loot table forgets the enchantments component,
+			// and this puts it back on the drop that just hit the ground.
+			dev.pbenchants.perk.ShulkerEnchantKeeper.onBreak(level, player, pos, state, blockEntity);
 			BlockBreakTracker.onBreak(level, player, pos, state);
 			dev.pbenchants.perk.SmeltHandler.onBreak(level, player, pos, state);
 			// Rich Vein claims the swing when it fires: an ore vein is the whole
