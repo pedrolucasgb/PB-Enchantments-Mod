@@ -101,6 +101,11 @@ public class PBEnchantsClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(dev.pbenchants.network.AbilityStatePayload.TYPE,
 			(payload, context) -> DiggyHud.setActive(payload.diggyActive()));
 
+		// Third Eye: the server's answer to "where is it?" — block positions
+		// to set aglow for a few seconds.
+		ClientPlayNetworking.registerGlobalReceiver(dev.pbenchants.network.ThirdEyeResultPayload.TYPE,
+			(payload, context) -> ThirdEyeHighlights.set(payload.positions()));
+
 		// Set Sense draws next to the armour bar it explains.
 		SetSenseHud.register();
 		// Quiver Sense mirrors it on the hotbar's other side: the arrow the
@@ -128,6 +133,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 			ClientSkillState.clear();
 			EnchantPreviewState.clear();
 			ArtisanSearch.clear();
+			ThirdEyeHighlights.clear();
 			GoalTracker.clear();
 			ProgressChimes.clear();
 			DiggyHud.clear();
@@ -148,6 +154,9 @@ public class PBEnchantsClient implements ClientModInitializer {
 		ArtisanScreenHooks.register();
 		// Beacon: Prism's choice of extra power, as a row on the beacon screen.
 		PrismScreenHooks.register();
+		// The anvil's enchant/disenchant toggle, shown only when a book that
+		// exactly matches an enchantment on the base item is on the anvil.
+		AnvilModeHooks.register();
 
 		// Speed passives are computed on both sides; on this one the answer comes
 		// from the synced snapshot, and only ever for the local player.
@@ -157,6 +166,9 @@ public class PBEnchantsClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			tickJoinHint(client);
 			tickScreenState(client);
+			// Third Eye live mode: keep asking while the lens holds a query,
+			// wipe the glow the tick it stops holding one.
+			ThirdEyeHighlights.clientTick();
 
 			boolean handled = false;
 			while (OPEN_TREE_KEY.consumeClick()) {

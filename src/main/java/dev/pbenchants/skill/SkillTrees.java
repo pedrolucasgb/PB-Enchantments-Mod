@@ -516,7 +516,7 @@ public final class SkillTrees {
 			SkillNode.of("greater_mending", 4, 20, SkillType.PASSIVE).icon(Items.EXPERIENCE_BOTTLE)
 				.costing(mat(Items.EXPERIENCE_BOTTLE, 32), mat(Items.EMERALD_BLOCK, 2), mat(Items.NETHERITE_INGOT, 1)),
 			SkillNode.of("reapers_wisdom", 4, 20, SkillType.PASSIVE).icon(Items.SCULK_CATALYST)
-				.costing(mat(Items.SCULK_CATALYST, 1), mat(Items.ECHO_SHARD, 4), mat(Items.EMERALD_BLOCK, 2)),
+				.costing(mat(Items.SCULK_CATALYST, 1), mat(Items.ECHO_SHARD, 2), mat(Items.EMERALD_BLOCK, 2)),
 			SkillNode.of("prospectors_wisdom", 4, 20, SkillType.PASSIVE).icon(Items.DEEPSLATE_EMERALD_ORE)
 				.costing(mat(Items.DIAMOND_BLOCK, 1), mat(Items.LAPIS_BLOCK, 4), mat(Items.EMERALD_BLOCK, 2))
 		)
@@ -614,14 +614,16 @@ public final class SkillTrees {
 				.enchantFor(50),
 			SkillNode.of("soft_landing", 3, 10, SkillType.PASSIVE).icon(Items.SLIME_BALL)
 				.costing(mat(Items.PHANTOM_MEMBRANE, 16), mat(Items.SLIME_BALL, 16)),
-			SkillNode.of("waypoint", 3, 10, SkillType.ACTIVE).icon(Items.AMETHYST_SHARD)
-				.costing(mat(Items.AMETHYST_SHARD, 8), mat(Items.ECHO_SHARD, 1), mat(Items.GOLD_INGOT, 4)),
+			SkillNode.of("portable_ender_chest", 3, 12, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
+				.costing(mat(Items.ENDER_CHEST, 1), mat(Items.ENDER_PEARL, 8), mat(Items.BLAZE_POWDER, 8)),
 			// Tier 5 — two capstones, buyable together (no exclusiveWith: the
 			// sky and the sea are not a choice a wanderer should have to make)
 			SkillNode.of("endless_horizon", 4, 20, SkillType.PASSIVE).icon(Items.FIREWORK_ROCKET)
 				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.FIREWORK_ROCKET, 64), mat(Items.PHANTOM_MEMBRANE, 16)),
 			SkillNode.of("pufferfish_lungs", 4, 20, SkillType.PASSIVE).icon(Items.PUFFERFISH)
-				.costing(mat(Items.PUFFERFISH, 16), mat(Items.HEART_OF_THE_SEA, 1), mat(Items.PRISMARINE_CRYSTALS, 32))
+				.costing(mat(Items.PUFFERFISH, 16), mat(Items.HEART_OF_THE_SEA, 1), mat(Items.PRISMARINE_CRYSTALS, 32)),
+			SkillNode.chained("double_ender_chest", 4, 20, "portable_ender_chest", SkillType.PASSIVE).icon(Items.ENDER_EYE)
+				.costing(mat(Items.ENDER_CHEST, 1), mat(Items.ENDER_EYE, 8), mat(Items.OBSIDIAN, 32))
 		)
 	);
 
@@ -709,7 +711,11 @@ public final class SkillTrees {
 			SkillNode.of("hand_of_order", 4, 20, SkillType.PASSIVE).icon(Items.ENDER_CHEST)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 8), mat(Items.CHEST, 64)),
 			SkillNode.of("void_mark", 4, 15, SkillType.PASSIVE).icon(Items.LAVA_BUCKET)
-				.costing(mat(Items.OBSIDIAN, 16), mat(Items.ENDER_PEARL, 8), mat(Items.LAVA_BUCKET, 1))
+				.costing(mat(Items.OBSIDIAN, 16), mat(Items.ENDER_PEARL, 8), mat(Items.LAVA_BUCKET, 1)),
+			// The Seeker's Eye, looking through walls: priced in the things
+			// that glow, because that is what it does to the room.
+			SkillNode.chained("third_eye", 4, 18, "chest_search_2", SkillType.PASSIVE).icon(Items.SPECTRAL_ARROW)
+				.costing(mat(Items.SPECTRAL_ARROW, 16), mat(Items.GLOW_INK_SAC, 8), mat(Items.GLOWSTONE_DUST, 32))
 		)
 	);
 
@@ -868,14 +874,14 @@ public final class SkillTrees {
 				.enchantFor(50),
 			// Tier 7 — the end of the class
 			SkillNode.chained("nostalgy_4", 6, 20, "nostalgy_3", SkillType.ENCHANTMENT).icon(Items.CLOCK)
-				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.ECHO_SHARD, 8))
+				.costing(mat(Items.NETHERITE_INGOT, 2), mat(Items.ECHO_SHARD, 4))
 				.enchantFor(70),
 			SkillNode.capstone("spoils_of_war", 6, 20, SkillType.PASSIVE, "warlords_wake").icon(Items.EMERALD_BLOCK)
 				.costing(mat(Items.EMERALD_BLOCK, 4), mat(Items.DIAMOND, 16)),
 			SkillNode.capstone("warlords_wake", 6, 20, SkillType.PASSIVE, "spoils_of_war").icon(Items.WIND_CHARGE)
 				.costing(mat(Items.BREEZE_ROD, 8), mat(Items.NETHERITE_INGOT, 1)).pve(),
 			SkillNode.of("death_eyes", 6, 30, SkillType.PASSIVE).icon(Items.WITHER_SKELETON_SKULL)
-				.costing(mat(Items.NETHER_STAR, 1), mat(Items.WITHER_SKELETON_SKULL, 3), mat(Items.ECHO_SHARD, 8))
+				.costing(mat(Items.NETHER_STAR, 1), mat(Items.WITHER_SKELETON_SKULL, 3), mat(Items.ECHO_SHARD, 10))
 				.pve().endOfTree()
 		)
 	);

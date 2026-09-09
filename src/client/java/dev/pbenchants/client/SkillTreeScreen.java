@@ -128,6 +128,18 @@ public class SkillTreeScreen extends Screen {
 	private boolean draggingScrollbar;
 
 	/**
+	 * The details panel's own scroll, in pixels. A seven-cost node with a
+	 * choice group and three paragraphs of description outgrows the panel on a
+	 * small window; until 0.10.0 the scissor simply cut it off. The content
+	 * height is measured by the same pass that draws it, so the bar appears
+	 * one frame after the text needs it and disappears the frame it does not.
+	 */
+	private int panelScrollY;
+	private int panelContentHeight;
+	private boolean draggingPanelScrollbar;
+	private String panelContentKey = "";
+
+	/**
 	 * The tier headers and node tiles, with the x each would sit at unscrolled.
 	 * They are {@code addWidget} rather than {@code addRenderableWidget} so this
 	 * screen can draw them itself inside a scissor — otherwise a column scrolled
@@ -463,6 +475,12 @@ public class SkillTreeScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+		// The wheel over the details panel scrolls the text, plainly vertical.
+		if (mouseX >= panelX && panelMaxScroll() > 0) {
+			panelScrollY = Math.clamp(panelScrollY - (int) Math.round(deltaY * SCROLL_STEP),
+				0, panelMaxScroll());
+			return true;
+		}
 		// Either axis scrolls it: a plain wheel is all most people have, and a
 		// tree that only moves sideways for a trackpad would be a trap.
 		if (maxScrollX > 0 && overTree(mouseX, mouseY)) {
@@ -475,6 +493,11 @@ public class SkillTreeScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (overPanelScrollbar(event.x(), event.y())) {
+			draggingPanelScrollbar = true;
+			dragPanelScrollbarTo(event.y());
+			return true;
+		}
 		if (maxScrollX > 0 && event.y() >= scrollbarTop() - 2
 			&& event.y() <= scrollbarTop() + SCROLLBAR_HEIGHT + 2
 			&& event.x() >= MARGIN && event.x() <= treeRight) {
@@ -487,6 +510,10 @@ public class SkillTreeScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+		if (draggingPanelScrollbar) {
+			dragPanelScrollbarTo(event.y());
+			return true;
+		}
 		if (draggingScrollbar) {
 			dragScrollbarTo(event.x());
 			return true;
@@ -497,6 +524,7 @@ public class SkillTreeScreen extends Screen {
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
 		draggingScrollbar = false;
+		draggingPanelScrollbar = false;
 		return super.mouseReleased(event);
 	}
 
@@ -1105,30 +1133,93 @@ public class SkillTreeScreen extends Screen {
 		SkillTree tree = SkillTrees.byId(treeId);
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
 		int x = panelX + 6;
-		int y = TITLE_BAR + 9;
+
+		// A fresh subject starts at the top: a scroll position carried from
+		// the last node would open the next one mid-paragraph.
+		String key = pending != Pending.NONE ? "pending"
+			: selectedNode != null ? "node:" + selectedNode : "tier:" + selectedTier;
+		if (!key.equals(panelContentKey)) {
+			panelContentKey = key;
+			panelScrollY = 0;
+		}
+		panelScrollY = Math.clamp(panelScrollY, 0, panelMaxScroll());
+		int y = panelViewTop() - panelScrollY;
 
 		// Everything below belongs to the buttons: clip, so a long description
 		// stops at the edge instead of running under them.
-		graphics.enableScissor(panelX + 1, TITLE_BAR + 4, panelX + panelWidth - 1, height - 72);
+		graphics.enableScissor(panelX + 1, TITLE_BAR + 4, panelX + panelWidth - 1, panelViewBottom());
+		int bottom = y;
 		if (tree == null || state == null) {
 			graphics.text(font, Component.translatable("screen.pbenchants.syncing"), x, y, SkillTreeStyle.MUTED);
+			bottom = y + 10;
 		} else if (pending != Pending.NONE) {
-			drawConfirmation(graphics, tree, x, y);
+			drawConfirmation(graphics, tree, x, panelViewTop());
+			bottom = panelViewTop(); // confirmations fit; never scroll one
 		} else if (selectedNode != null) {
 			SkillNode node = tree.node(selectedNode);
 			if (node != null) {
-				drawNode(graphics, node, state, x, y);
+				bottom = drawNode(graphics, node, state, x, y);
 			}
 		} else if (selectedTier >= 0) {
-			drawTier(graphics, tree, state, x, y, mouseX, mouseY);
+			bottom = drawTier(graphics, tree, state, x, y, mouseX, mouseY);
 		} else {
-			graphics.textWithWordWrap(font, Component.translatable("screen.pbenchants.help"),
-				x, y, panelWidth - 12, SkillTreeStyle.MUTED);
+			bottom = wrappedText(graphics, Component.translatable("screen.pbenchants.help"),
+				x, y, SkillTreeStyle.MUTED, 9);
 		}
+		panelContentHeight = bottom + panelScrollY - panelViewTop();
 		graphics.disableScissor();
+		drawPanelScrollbar(graphics);
 	}
 
-	private void drawNode(GuiGraphicsExtractor graphics, SkillNode node, SkillStatePayload.TreeState state, int x, int y) {
+	// ---------- the details panel's vertical scrollbar ----------
+
+	private int panelViewTop() {
+		return TITLE_BAR + 9;
+	}
+
+	/** Where the scissor ends: the strip below belongs to the action buttons. */
+	private int panelViewBottom() {
+		return height - 72;
+	}
+
+	private int panelMaxScroll() {
+		return Math.max(0, panelContentHeight - (panelViewBottom() - panelViewTop()));
+	}
+
+	/** Same bargain as the tree's bar: the thumb's share of the track is the viewport's share of the text. */
+	private void drawPanelScrollbar(GuiGraphicsExtractor graphics) {
+		if (panelMaxScroll() <= 0) {
+			return;
+		}
+		int left = panelX + panelWidth - 6;
+		int right = panelX + panelWidth - 2;
+		int top = panelViewTop();
+		int track = panelViewBottom() - top;
+		graphics.fill(left, top, right, top + track, SkillTreeStyle.panelDeepFill());
+		int thumb = Math.max(12, track * track / panelContentHeight);
+		int thumbY = top + (int) ((long) (track - thumb) * panelScrollY / panelMaxScroll());
+		graphics.fill(left, thumbY, right, thumbY + thumb,
+			draggingPanelScrollbar ? SkillTreeStyle.GOLD : SkillTreeStyle.BORDER_LIT);
+	}
+
+	private boolean overPanelScrollbar(double mouseX, double mouseY) {
+		return panelMaxScroll() > 0
+			&& mouseX >= panelX + panelWidth - 9 && mouseX <= panelX + panelWidth
+			&& mouseY >= panelViewTop() && mouseY <= panelViewBottom();
+	}
+
+	private void dragPanelScrollbarTo(double mouseY) {
+		int track = panelViewBottom() - panelViewTop();
+		int thumb = Math.max(12, track * track / Math.max(1, panelContentHeight));
+		int travel = track - thumb;
+		if (travel <= 0) {
+			return;
+		}
+		double offset = mouseY - panelViewTop() - thumb / 2.0;
+		panelScrollY = Math.clamp((int) Math.round(offset * panelMaxScroll() / travel), 0, panelMaxScroll());
+	}
+
+	private int drawNode(GuiGraphicsExtractor graphics, SkillNode node, SkillStatePayload.TreeState state, int x, int y) {
 		int wrap = panelWidth - 12;
 		graphics.item(node.iconStack(), x, y);
 		int afterTitle = y;
@@ -1202,9 +1293,11 @@ public class SkillTreeScreen extends Screen {
 		y += 4;
 		// Keyed on the full node id, not the family: every rank describes only
 		// what that rank does, so Dig Range II does not recite I and III too.
-		graphics.textWithWordWrap(font,
+		// Drawn line by line rather than through textWithWordWrap so the panel
+		// scrollbar learns where the text actually ends.
+		return wrappedText(graphics,
 			Component.translatable("node.pbenchants." + node.id() + ".desc"),
-			x, y, wrap, SkillTreeStyle.MUTED);
+			x, y, SkillTreeStyle.MUTED, 9);
 	}
 
 	/** The have/need checklist for a node's unlock materials. */
@@ -1221,7 +1314,7 @@ public class SkillTreeScreen extends Screen {
 		return y;
 	}
 
-	private void drawTier(GuiGraphicsExtractor graphics, SkillTree tree, SkillStatePayload.TreeState state,
+	private int drawTier(GuiGraphicsExtractor graphics, SkillTree tree, SkillStatePayload.TreeState state,
 			int x, int y, int mouseX, int mouseY) {
 		SkillTier tier = tree.tiers().get(selectedTier);
 		boolean open = selectedTier < state.unlockedTiers();
@@ -1274,6 +1367,7 @@ public class SkillTreeScreen extends Screen {
 				graphics.setTooltipForNextFrame(font, gateTooltip(gate, state), mouseX, mouseY);
 			}
 		}
+		return y;
 	}
 
 	/**

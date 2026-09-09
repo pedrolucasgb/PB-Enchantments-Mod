@@ -82,6 +82,17 @@ public final class ArtisanIcons {
 		graphics.fill(x + 8, y, x + 10, y + 12, color);
 	}
 
+	/**
+	 * Portable Ender Chest: a chest with an eye for a latch. The lid line and
+	 * the body outline are any chest; the 2×2 pupil where the latch sits is
+	 * what makes it the ender one.
+	 */
+	public static void enderChest(GuiGraphicsExtractor graphics, int x, int y, int color) {
+		graphics.outline(x, y + 1, 12, 10, color);
+		graphics.fill(x, y + 4, x + 12, y + 5, color);
+		graphics.fill(x + 5, y + 5, x + 7, y + 7, color);
+	}
+
 	/** A solid right-pointing triangle, 4 wide and 8 tall. */
 	private static void arrowRight(GuiGraphicsExtractor graphics, int x, int y, int color) {
 		for (int step = 0; step < 4; step++) {

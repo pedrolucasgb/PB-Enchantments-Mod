@@ -196,6 +196,19 @@ public final class PBEnchantsCommand {
 			.executes(context -> legacyNotice(context.getSource()))
 			.then(Commands.argument("rest", StringArgumentType.greedyString())
 				.executes(context -> legacyNotice(context.getSource()))));
+
+		// Explorer, Portable Ender Chest: the chest from anywhere. Its own
+		// root because it is typed mid-game, often mid-fall — /pbenchants
+		// echest would defeat the point of a convenience.
+		dispatcher.register(Commands.literal("echest")
+			.executes(context -> {
+				ServerPlayer player = context.getSource().getPlayerOrException();
+				if (dev.pbenchants.perk.EnderChestAccess.open(player)) {
+					return 1;
+				}
+				context.getSource().sendFailure(Component.translatable("msg.pbenchants.echest.locked"));
+				return 0;
+			}));
 	}
 
 	private static int legacyNotice(CommandSourceStack source) {

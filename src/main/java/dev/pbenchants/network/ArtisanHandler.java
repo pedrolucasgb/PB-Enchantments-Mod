@@ -42,6 +42,8 @@ public final class ArtisanHandler {
 			case TOGGLE_ITEM_LOCK -> toggleLock(player, payload.slot());
 			case TOGGLE_AUTO_BLOCK -> toggleAutoBlock(player);
 			case TOGGLE_VOID_MARK -> toggleVoidMark(player, payload.slot());
+			case OPEN_SHULKER -> dev.pbenchants.perk.ShulkerSight.openFromSlot(player, payload.slot());
+			case OPEN_ENDER_CHEST -> dev.pbenchants.perk.EnderChestAccess.open(player);
 		}
 	}
 

@@ -9,7 +9,10 @@
 		"EnchantmentScreenMixin",
 		"LightmapExtractorMixin",
 		"LocalPlayerMixin",
-		"MerchantOfferMixin"
+		"LevelRendererMixin",
+		"MerchantOfferMixin",
+		"RecipeBookScreenSearchMixin",
+		"RenderPipelinesAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
