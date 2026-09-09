@@ -220,6 +220,9 @@ public final class ThirdEyeHighlights {
 		}
 	}
 
+	/** Line width in the 26.2 format is a per-VERTEX element — skip it and the buffer builder refuses the next vertex. */
+	private static final float LINE_WIDTH = 2.0F;
+
 	private static void line(PoseStack.Pose pose, VertexConsumer consumer,
 			double x1, double y1, double z1, double x2, double y2, double z2) {
 		float dx = (float) (x2 - x1);
@@ -232,7 +235,9 @@ public final class ThirdEyeHighlights {
 		float nx = dx / length;
 		float ny = dy / length;
 		float nz = dz / length;
-		consumer.addVertex(pose, (float) x1, (float) y1, (float) z1).setColor(COLOR).setNormal(pose, nx, ny, nz);
-		consumer.addVertex(pose, (float) x2, (float) y2, (float) z2).setColor(COLOR).setNormal(pose, nx, ny, nz);
+		consumer.addVertex(pose, (float) x1, (float) y1, (float) z1)
+			.setColor(COLOR).setNormal(pose, nx, ny, nz).setLineWidth(LINE_WIDTH);
+		consumer.addVertex(pose, (float) x2, (float) y2, (float) z2)
+			.setColor(COLOR).setNormal(pose, nx, ny, nz).setLineWidth(LINE_WIDTH);
 	}
 }
