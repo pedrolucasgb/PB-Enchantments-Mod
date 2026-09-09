@@ -1,6 +1,7 @@
 package dev.pbenchants.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.pbenchants.network.ThirdEyeQueryPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -20,15 +21,22 @@ import java.util.List;
  * The Third Eye's marks: which container blocks are currently aglow, and the
  * drawing of the glow itself.
  *
- * <p>The outline is the block's own {@code VoxelShape} — a hopper glows like a
- * hopper, a chest like a chest — submitted through a lines render type whose
- * depth test always passes, so the shape reads through any amount of stone,
- * exactly the promise a spectral arrow makes about a mob. Ten seconds per
- * answer, refreshed by asking again.
+ * <p><b>The Eye stays open while the lens does.</b> As long as the Seeker's
+ * Eye holds a query, the client re-asks the server every couple of seconds —
+ * so walking reveals containers as they come into the 3×3×3 reach and, since
+ * every answer <em>replaces</em> the marks, the ones you walk away from go
+ * dark on the next answer. Clearing the query (or losing the node) sends one
+ * empty question, whose empty answer wipes the glow at once; a short expiry
+ * remains only as a safety net for a server that stops answering.
  *
- * <p>Everything here is advisory display state; the server decided what
- * matched. The shape is re-read from the client's own world every frame, so a
- * chest broken mid-glow simply stops having a shape to draw.
+ * <p><b>The glow is a silhouette, not a wireframe.</b> Drawing every edge of
+ * the {@code VoxelShape} put the chest's back rim across its face and turned
+ * a storage hall into scribble. For each axis-aligned box of the shape, an
+ * edge is drawn only when exactly one of its two touching faces looks at the
+ * camera — the classic silhouette rule — so from any angle you see the
+ * block's outline the way your eye would trace it. Still through walls,
+ * still the block's own true shape; the drawing is submitted as custom
+ * geometry because the stock shape-outline path draws all twelve edges.
  */
 public final class ThirdEyeHighlights {
 	public static final String NODE = "third_eye";
@@ -36,12 +44,21 @@ public final class ThirdEyeHighlights {
 	/** Gold, like the Seeker's Eye fill the query came from. */
 	private static final int COLOR = 0xFFFFD84D;
 
-	private static final int GLOW_TICKS = 200;
+	/** Safety net only — live answers refresh long before this runs out. */
+	private static final int GLOW_TICKS = 80;
+
+	/** How often the open Eye re-asks, in client ticks. */
+	private static final int ASK_EVERY = 40;
 
 	private record Mark(BlockPos pos, long expiry) {
 	}
 
 	private static final List<Mark> MARKS = new ArrayList<>();
+
+	private static int cadence;
+
+	/** Whether the server currently holds marks for us — what makes one clearing question owed. */
+	private static boolean live;
 
 	private ThirdEyeHighlights() {
 	}
@@ -61,11 +78,38 @@ public final class ThirdEyeHighlights {
 
 	public static void clear() {
 		MARKS.clear();
+		cadence = 0;
+		live = false;
 	}
 
 	/**
-	 * Called when a container screen closes: with the node owned and a query
-	 * still in the Seeker's Eye, the world gets asked. Reads the query before
+	 * Every client tick: while the lens holds a query, keep asking; the frame
+	 * it stops holding one, ask once more with nothing, which is the wipe.
+	 */
+	public static void clientTick() {
+		if (Minecraft.getInstance().player == null) {
+			return;
+		}
+		String query = ClientArtisanState.owns(NODE) ? ArtisanSearch.query().strip() : "";
+		if (query.isEmpty()) {
+			if (live) {
+				live = false;
+				ClientPlayNetworking.send(new ThirdEyeQueryPayload(""));
+			}
+			cadence = 0;
+			return;
+		}
+		if (++cadence >= ASK_EVERY) {
+			cadence = 0;
+			live = true;
+			ClientPlayNetworking.send(new ThirdEyeQueryPayload(query));
+		}
+	}
+
+	/**
+	 * Called when a container screen closes: the first question goes out
+	 * immediately rather than waiting for the cadence, so the glow greets you
+	 * the moment the screen is gone. Reads the query before
 	 * {@link ArtisanSearch#screenClosed()} has a chance to wipe it.
 	 */
 	public static void queryScreenClosed() {
@@ -73,6 +117,8 @@ public final class ThirdEyeHighlights {
 		if (query.isEmpty() || !ClientArtisanState.owns(NODE)) {
 			return;
 		}
+		cadence = 0;
+		live = true;
 		ClientPlayNetworking.send(new ThirdEyeQueryPayload(query));
 	}
 
@@ -98,14 +144,95 @@ public final class ThirdEyeHighlights {
 			if (shape.isEmpty()) {
 				shape = Shapes.block();
 			}
+			// The camera in the block's own [0..1] coordinates — face
+			// visibility is decided here, in world space, not on the pose.
+			double camX = camera.x - mark.pos().getX();
+			double camY = camera.y - mark.pos().getY();
+			double camZ = camera.z - mark.pos().getZ();
+			VoxelShape finalShape = shape;
 			poseStack.pushPose();
 			poseStack.translate(
 				mark.pos().getX() - camera.x,
 				mark.pos().getY() - camera.y,
 				mark.pos().getZ() - camera.z);
-			collector.submitShapeOutline(poseStack, shape,
-				ThirdEyeRenderTypes.throughWallLines(), COLOR, 2.0F, false);
+			collector.submitCustomGeometry(poseStack, ThirdEyeRenderTypes.throughWallLines(),
+				(pose, consumer) -> finalShape.forAllBoxes((x1, y1, z1, x2, y2, z2) ->
+					silhouette(pose, consumer, camX, camY, camZ, x1, y1, z1, x2, y2, z2)));
 			poseStack.popPose();
 		}
+	}
+
+	/**
+	 * The twelve edges of one box, kept only where they matter: an edge is
+	 * part of the silhouette exactly when one of its two faces is toward the
+	 * camera and the other away. A camera level with the box on some axis
+	 * sees neither of that axis's faces, and the edges between two hidden
+	 * faces vanish with them.
+	 */
+	private static void silhouette(PoseStack.Pose pose, VertexConsumer consumer,
+			double camX, double camY, double camZ,
+			double x1, double y1, double z1, double x2, double y2, double z2) {
+		boolean xn = camX < x1;
+		boolean xp = camX > x2;
+		boolean yn = camY < y1;
+		boolean yp = camY > y2;
+		boolean zn = camZ < z1;
+		boolean zp = camZ > z2;
+
+		// Along X: faces Y and Z meet.
+		if (yn != zn) {
+			line(pose, consumer, x1, y1, z1, x2, y1, z1);
+		}
+		if (yn != zp) {
+			line(pose, consumer, x1, y1, z2, x2, y1, z2);
+		}
+		if (yp != zn) {
+			line(pose, consumer, x1, y2, z1, x2, y2, z1);
+		}
+		if (yp != zp) {
+			line(pose, consumer, x1, y2, z2, x2, y2, z2);
+		}
+		// Along Y: faces X and Z meet.
+		if (xn != zn) {
+			line(pose, consumer, x1, y1, z1, x1, y2, z1);
+		}
+		if (xn != zp) {
+			line(pose, consumer, x1, y1, z2, x1, y2, z2);
+		}
+		if (xp != zn) {
+			line(pose, consumer, x2, y1, z1, x2, y2, z1);
+		}
+		if (xp != zp) {
+			line(pose, consumer, x2, y1, z2, x2, y2, z2);
+		}
+		// Along Z: faces X and Y meet.
+		if (xn != yn) {
+			line(pose, consumer, x1, y1, z1, x1, y1, z2);
+		}
+		if (xn != yp) {
+			line(pose, consumer, x1, y2, z1, x1, y2, z2);
+		}
+		if (xp != yn) {
+			line(pose, consumer, x2, y1, z1, x2, y1, z2);
+		}
+		if (xp != yp) {
+			line(pose, consumer, x2, y2, z1, x2, y2, z2);
+		}
+	}
+
+	private static void line(PoseStack.Pose pose, VertexConsumer consumer,
+			double x1, double y1, double z1, double x2, double y2, double z2) {
+		float dx = (float) (x2 - x1);
+		float dy = (float) (y2 - y1);
+		float dz = (float) (z2 - z1);
+		float length = org.joml.Math.sqrt(dx * dx + dy * dy + dz * dz);
+		if (length < 1.0E-4F) {
+			return;
+		}
+		float nx = dx / length;
+		float ny = dy / length;
+		float nz = dz / length;
+		consumer.addVertex(pose, (float) x1, (float) y1, (float) z1).setColor(COLOR).setNormal(pose, nx, ny, nz);
+		consumer.addVertex(pose, (float) x2, (float) y2, (float) z2).setColor(COLOR).setNormal(pose, nx, ny, nz);
 	}
 }

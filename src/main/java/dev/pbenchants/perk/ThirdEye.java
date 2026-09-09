@@ -55,11 +55,14 @@ public final class ThirdEye {
 	}
 
 	public static void handleQuery(ServerPlayer player, String rawQuery) {
-		if (!SkillService.owns(player, SkillTrees.ARTISAN, NODE)) {
-			return;
-		}
-		String query = rawQuery.strip().toLowerCase(Locale.ROOT);
+		String query = SkillService.owns(player, SkillTrees.ARTISAN, NODE)
+			? rawQuery.strip().toLowerCase(Locale.ROOT)
+			: "";
 		if (query.isEmpty()) {
+			// An empty query is the client saying "the lens closed" — answer
+			// with an empty set so stale marks vanish at once instead of
+			// waiting out their safety timer.
+			ServerPlayNetworking.send(player, new ThirdEyeResultPayload(List.of()));
 			return;
 		}
 		List<BlockPos> found = new ArrayList<>();

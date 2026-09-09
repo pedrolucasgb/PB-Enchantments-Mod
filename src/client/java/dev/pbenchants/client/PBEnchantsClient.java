@@ -166,6 +166,9 @@ public class PBEnchantsClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			tickJoinHint(client);
 			tickScreenState(client);
+			// Third Eye live mode: keep asking while the lens holds a query,
+			// wipe the glow the tick it stops holding one.
+			ThirdEyeHighlights.clientTick();
 
 			boolean handled = false;
 			while (OPEN_TREE_KEY.consumeClick()) {
