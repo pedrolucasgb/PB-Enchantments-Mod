@@ -35,7 +35,6 @@ public final class BeaconPerks {
 	public static final String SKULL_COLLECTOR = "skull_collector";
 	public static final String WITHER_WARD = "wither_ward";
 	public static final String BEAM_SENSE = "beam_sense";
-	public static final String THRIFTY_OFFERING = "thrifty_offering";
 	public static final String EARLY_REGENERATION = "early_regeneration";
 	public static final String BRIGHTER_BEAM = "brighter_beam";
 	public static final String STARFALL = "starfall";
@@ -60,9 +59,6 @@ public final class BeaconPerks {
 
 	/** Starfall: one Wither in five leaves a second star. */
 	public static final float STARFALL_CHANCE = 0.20F;
-
-	/** Thrifty Offering: one payment in four comes back. */
-	public static final float THRIFTY_CHANCE = 0.25F;
 
 	/** Wither Ward: what is left of the Wither effect's damage. */
 	public static final float WITHER_WARD_REMAINDER = 0.5F;

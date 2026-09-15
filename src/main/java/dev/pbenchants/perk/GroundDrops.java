@@ -32,23 +32,19 @@ import java.util.UUID;
  * The shovel passives that act on what a dug block drops, in one end-of-tick pass
  * for the same reason {@link AxeHarvest} and {@link HoeHarvest} have theirs:
  *
- *   Sifter           — gravel always gives its flint, and clay gives a fifth ball
  *   Concrete Setter  — concrete powder comes up as the hardened block
  *   Soul Digger      — 10% for soul sand or soul soil to drop twice
  *   Digger's Magnet  — whatever is left goes straight into the inventory
  *
- * <p>Sifter and Concrete Setter both <em>replace</em> a drop rather than adding
- * one, which is why they live here and not in a loot table: the swap has to
- * happen after vanilla has rolled, and it has to compose with a Flat Earth swing
- * that broke nine blocks at once. Each block fires its own break event, so each
+ * <p>Concrete Setter <em>replaces</em> a drop rather than adding one, which is
+ * why it lives here and not in a loot table: the swap has to happen after
+ * vanilla has rolled, and it has to compose with a Flat Earth swing that broke
+ * nine blocks at once. Each block fires its own break event, so each
  * one is queued and settled on its own.
  */
 public final class GroundDrops {
 	private static final double DROP_RADIUS = 1.5;
 	private static final int SOUL_DIGGER_PERCENT = 10;
-
-	/** Vanilla drops four clay balls; Sifter makes it five. */
-	private static final int SIFTER_CLAY_BONUS = 1;
 
 	/**
 	 * Concrete powder to the hardened block of the same colour. Built by zipping
@@ -58,7 +54,7 @@ public final class GroundDrops {
 	private static final Map<Block, Item> POWDER_TO_CONCRETE = buildPowderMap();
 
 	private record Pending(ServerLevel level, UUID playerId, BlockPos pos, Block dug,
-	                       boolean sifter, boolean concreteSetter, boolean soulDigger, boolean magnet) {
+	                       boolean concreteSetter, boolean soulDigger, boolean magnet) {
 	}
 
 	private static final List<Pending> PENDING = new ArrayList<>();
@@ -74,19 +70,17 @@ public final class GroundDrops {
 			return;
 		}
 		Block dug = state.getBlock();
-		boolean sifter = (dug == Blocks.GRAVEL || dug == Blocks.CLAY)
-			&& PerkAccess.owns(serverPlayer, SkillTrees.GROUND, "sifter");
 		boolean concreteSetter = POWDER_TO_CONCRETE.containsKey(dug)
 			&& PerkAccess.owns(serverPlayer, SkillTrees.GROUND, "concrete_setter");
 		boolean soulDigger = (dug == Blocks.SOUL_SAND || dug == Blocks.SOUL_SOIL)
 			&& PerkAccess.owns(serverPlayer, SkillTrees.GROUND, "soul_digger");
 		boolean magnet = PerkAccess.owns(serverPlayer, SkillTrees.GROUND, "diggers_magnet");
 
-		if (!sifter && !concreteSetter && !soulDigger && !magnet) {
+		if (!concreteSetter && !soulDigger && !magnet) {
 			return;
 		}
 		PENDING.add(new Pending(serverLevel, serverPlayer.getUUID(), pos, dug,
-			sifter, concreteSetter, soulDigger, magnet));
+			concreteSetter, soulDigger, magnet));
 	}
 
 	/** Called at the end of every server tick, once every drop of the tick has spawned. */
@@ -109,19 +103,6 @@ public final class GroundDrops {
 			List<ItemEntity> bonus = new ArrayList<>();
 			for (ItemEntity drop : drops) {
 				ItemStack stack = drop.getItem();
-				if (pending.sifter()) {
-					// Gravel that rolled gravel becomes the flint it was hiding;
-					// gravel that already rolled flint is left alone, so the perk
-					// is "always flint", not "flint twice".
-					if (stack.is(Items.GRAVEL) && pending.dug() == Blocks.GRAVEL) {
-						drop.setItem(new ItemStack(Items.FLINT, stack.getCount()));
-						continue;
-					}
-					if (stack.is(Items.CLAY_BALL) && pending.dug() == Blocks.CLAY) {
-						drop.setItem(stack.copyWithCount(stack.getCount() + SIFTER_CLAY_BONUS));
-						continue;
-					}
-				}
 				if (pending.concreteSetter()) {
 					Item hardened = POWDER_TO_CONCRETE.get(pending.dug());
 					if (hardened != null && stack.is(pending.dug().asItem())) {

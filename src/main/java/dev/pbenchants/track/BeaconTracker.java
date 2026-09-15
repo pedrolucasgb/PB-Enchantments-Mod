@@ -6,10 +6,8 @@ import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.GateChecklists;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -111,15 +109,6 @@ public final class BeaconTracker {
 		if (pos != null) {
 			String key = player.level().dimension().identifier() + "/" + pos.getX() + "/" + pos.getY() + "/" + pos.getZ();
 			progress.see("beacon", key, "beacons_activated");
-		}
-
-		// Thrifty Offering: one payment in four is handed back.
-		if (BeaconPerks.owns(player, BeaconPerks.THRIFTY_OFFERING)
-			&& player.getRandom().nextFloat() < BeaconPerks.THRIFTY_CHANCE) {
-			ItemStack refund = paid.copyWithCount(1);
-			player.getInventory().placeItemBackInInventory(refund);
-			player.sendSystemMessage(Component.translatable("perk.pbenchants.thrifty_offering.refund",
-				paid.getHoverName()).withStyle(ChatFormatting.GOLD), true);
 		}
 	}
 

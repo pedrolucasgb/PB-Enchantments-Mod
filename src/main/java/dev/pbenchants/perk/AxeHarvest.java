@@ -28,13 +28,12 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * The four axe passives that act on what a chopped block drops. They share one
- * end-of-tick pass because they compose in a fixed order and must never touch
- * the same drop twice:
+ * The three axe passives that act on what a chopped block drops. They share
+ * one end-of-tick pass because they compose in a fixed order and must never
+ * touch the same drop twice:
  *
  *   Double Axe I/II  — grown logs drop double, 10% / 20% per log (axe only;
  *                      hand-placed logs are excluded, or it would be a duper)
- *   Pruner           — leaves broken with an axe drop double loot
  *   Fair Harvest     — +25% sapling chance from any leaf you break
  *   Logger's Magnet  — whatever is left goes straight into the inventory
  *
@@ -66,7 +65,7 @@ public final class AxeHarvest {
 	);
 
 	private record Pending(ServerLevel level, UUID playerId, BlockPos pos,
-	                       int doubleAxePercent, boolean pruner, boolean magnet,
+	                       int doubleAxePercent, boolean magnet,
 	                       @Nullable Block fairHarvestSapling) {
 	}
 
@@ -97,17 +96,16 @@ public final class AxeHarvest {
 				default -> 0;
 			};
 		}
-		boolean pruner = axe && leaf && SkillService.owns(serverPlayer, SkillTrees.AXE, "pruner");
 		boolean magnet = axe && SkillService.owns(serverPlayer, SkillTrees.AXE, "loggers_magnet");
 		// Fair Harvest reads as a property of the leaves, not of the tool.
 		Block sapling = leaf && SkillService.owns(serverPlayer, SkillTrees.AXE, "fair_harvest")
 			? LEAF_TO_SAPLING.get(state.getBlock())
 			: null;
 
-		if (doubleAxePercent == 0 && !pruner && !magnet && sapling == null) {
+		if (doubleAxePercent == 0 && !magnet && sapling == null) {
 			return;
 		}
-		PENDING.add(new Pending(serverLevel, serverPlayer.getUUID(), pos, doubleAxePercent, pruner, magnet, sapling));
+		PENDING.add(new Pending(serverLevel, serverPlayer.getUUID(), pos, doubleAxePercent, magnet, sapling));
 	}
 
 	/** Called at the end of every server tick, once every drop of the tick has spawned. */
@@ -136,9 +134,6 @@ public final class AxeHarvest {
 				int extra = 0;
 				if (pending.doubleAxePercent() > 0 && stack.is(ItemTags.LOGS)) {
 					extra += roll(random, stack.getCount(), pending.doubleAxePercent());
-				}
-				if (pending.pruner()) {
-					extra += stack.getCount();
 				}
 				if (extra > 0) {
 					bonus.add(spawn(pending.level(), drop.blockPosition(), stack.copyWithCount(extra)));

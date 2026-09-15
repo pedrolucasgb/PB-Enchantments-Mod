@@ -2,8 +2,10 @@ package dev.pbenchants.mixin;
 
 import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.perk.CombatPerks;
+import dev.pbenchants.perk.ItemAuthority;
 import dev.pbenchants.track.CombatTracker;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -15,6 +17,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.AABB;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -153,12 +156,47 @@ public abstract class SwordPlayerMixin {
 	 * paths ({@code attack} and the spear's {@code stabAttack}) land here, only
 	 * on hits that connected, with the cooldown, the crit and the target's
 	 * remaining health already spoken for.
+	 *
+	 * <p>Hunter's Mark reads its number here too, for the same reason: the
+	 * damage hook runs <em>before</em> the hurt, so a fresh zombie used to be
+	 * marked at 20/20 by the very swing that took it to 16 (0.10.1).
 	 */
 	@Inject(method = "damageStatsAndHearts", at = @At("HEAD"))
 	private void pbenchants$countMeleeDamage(Entity target, float healthBefore, CallbackInfo ci) {
 		if ((Player) (Object) this instanceof ServerPlayer player && target instanceof LivingEntity living) {
 			CombatTracker.onMeleeDamage(player, healthBefore - living.getHealth());
+			CombatPerks.mark(player, living);
 		}
+	}
+
+	// ---------- the inert-weapon rule, for what happens after the hit ----------
+
+	/**
+	 * A sword carrying a rank its holder has not earned already hits like a
+	 * bare hand ({@link CombatPerks#onEnchantedDamage} skips the damage pass);
+	 * until 0.10.1 it still set things on fire, because Fire Aspect, Knockback
+	 * and their kin are <em>post-attack</em> effects vanilla runs from a second
+	 * call. This is that call, and a locked weapon does not get it — the hand
+	 * has no Fire Aspect, and neither does a blade you have not earned.
+	 */
+	@Redirect(method = "itemAttackInteraction", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;doPostAttackEffectsWithItemSource(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/item/ItemStack;)V"))
+	private void pbenchants$inertPostAttack(ServerLevel level, Entity target, DamageSource source, ItemStack weapon) {
+		if (ItemAuthority.locked((Player) (Object) this, weapon)) {
+			return;
+		}
+		EnchantmentHelper.doPostAttackEffectsWithItemSource(level, target, source, weapon);
+	}
+
+	/** The sweep's copy of the same call, judged by the same main-hand item. */
+	@Redirect(method = "doSweepAttack", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;doPostAttackEffects(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)V"))
+	private void pbenchants$inertSweepPostAttack(ServerLevel level, Entity target, DamageSource source) {
+		Player self = (Player) (Object) this;
+		if (ItemAuthority.locked(self, self.getMainHandItem())) {
+			return;
+		}
+		EnchantmentHelper.doPostAttackEffects(level, target, source);
 	}
 
 	// ---------- the sweep ----------

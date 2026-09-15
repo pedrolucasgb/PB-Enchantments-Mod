@@ -3,6 +3,8 @@ package dev.pbenchants.client;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.Locale;
 
@@ -104,11 +106,24 @@ public final class ArtisanSearch {
 	/**
 	 * Matched against the name on the tooltip rather than the registry id: the
 	 * player is searching for what they read in-game, in their own language, and
-	 * a renamed stack should answer to its new name.
+	 * a renamed stack should answer to its new name. The enchantments on the
+	 * stack count as well — a book's, or a tool's — so "unbreaking" lights up
+	 * every book and every pickaxe that carries it (0.10.1).
 	 */
 	private static boolean matches(ItemStack stack) {
-		return !stack.isEmpty()
-			&& stack.getHoverName().getString().toLowerCase(Locale.ROOT)
-				.contains(query.toLowerCase(Locale.ROOT));
+		if (stack.isEmpty()) {
+			return false;
+		}
+		String needle = query.toLowerCase(Locale.ROOT);
+		if (stack.getHoverName().getString().toLowerCase(Locale.ROOT).contains(needle)) {
+			return true;
+		}
+		for (var entry : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) {
+			if (Enchantment.getFullname(entry.getKey(), entry.getIntValue()).getString()
+					.toLowerCase(Locale.ROOT).contains(needle)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

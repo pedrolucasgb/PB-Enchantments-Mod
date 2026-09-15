@@ -279,7 +279,6 @@ public final class CombatPerks {
 		}
 		onMeleeHit(player, total);
 		if (target instanceof LivingEntity living) {
-			mark(player, living);
 			cleave(player, living, total);
 		}
 		return total;
@@ -534,6 +533,9 @@ public final class CombatPerks {
 	 * goes on the action bar. The outline is vanilla's glowing tag, cleared
 	 * again by {@link #tick} — an entity left glowing forever would be a bug
 	 * every player could see.
+	 *
+	 * <p>Called from {@code Player.damageStatsAndHearts}, i.e. after the hit
+	 * has landed, so the number is what is left — not what there was.
 	 */
 	public static void mark(ServerPlayer player, LivingEntity target) {
 		if (!owns(player, HUNTERS_MARK)) {
@@ -545,7 +547,7 @@ public final class CombatPerks {
 		state.markedEntityId = target.getId();
 		state.markExpires = player.tickCount + MARK_TICKS;
 		player.sendSystemMessage(Component.translatable("perk.pbenchants.hunters_mark.readout",
-			target.getDisplayName(), String.format("%.1f", target.getHealth()),
+			target.getDisplayName(), String.format("%.1f", Math.max(0.0F, target.getHealth())),
 			String.format("%.1f", target.getMaxHealth())), true);
 	}
 

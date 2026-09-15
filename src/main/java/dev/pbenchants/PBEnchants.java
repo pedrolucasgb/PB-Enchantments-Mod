@@ -286,8 +286,8 @@ public class PBEnchants implements ModInitializer {
 				// Every tick too: a braced spear reaches as far as the spear in
 				// hand, and a Hunter's Mark has to go out on time.
 				CombatPerks.tick(player);
-				// Same clock: a Piercing Sight outline burns out on time, and
-				// an over-drawn Storm of Arrows reports what it has banked.
+				// Same clock: an over-drawn Storm of Arrows reports what it
+				// has banked.
 				BowPerks.tick(player);
 				// Every tick as well: a ten-second window has to close on the
 				// tick it runs out, not up to a second late.

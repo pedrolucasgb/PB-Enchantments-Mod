@@ -82,7 +82,6 @@ public final class BowPerks {
 	public static final String ARROW_RECOVERY = "arrow_recovery";
 	public static final String STEADY_AIM = "steady_aim";
 	public static final String FLETCHERS_BENCH = "fletchers_bench";
-	public static final String PIERCING_SIGHT = "piercing_sight";
 	public static final String RAPID_RELOAD = "rapid_reload";
 	public static final String MULTISHOT_FOCUS = "multishot_focus";
 	public static final String ALCHEMISTS_QUIVER = "alchemists_quiver";
@@ -127,9 +126,6 @@ public final class BowPerks {
 	/** Multishot Focus: what a tagged side arrow is worth against a player. */
 	private static final float FOCUS_PVP_SHARE = 0.34F;
 
-	/** How long a Piercing Sight outline lasts. */
-	public static final int SIGHT_TICKS = 60;
-
 	/** Alchemist's Quiver: tipped-arrow effects last half again as long. */
 	private static final float QUIVER_DURATION_SCALE = 1.5F;
 
@@ -143,9 +139,6 @@ public final class BowPerks {
 
 	/** Per-player scratch state. Nothing here is saved. */
 	public static final class State {
-		/** The entity Piercing Sight is lighting up, and when the light goes out. */
-		public int markedEntityId = -1;
-		public int markExpires;
 		/** The arrow damage this player last put into something, for Ricochet. */
 		public float lastArrowDamage;
 		/** Tick a crossbow was last loaded in the background, so it is a rhythm. */
@@ -307,7 +300,6 @@ public final class BowPerks {
 				living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS,
 					PINNING_TICKS, PINNING_AMPLIFIER, false, true), shooter);
 			}
-			sight(shooter, living);
 		}
 
 		state(shooter).lastArrowDamage = damage;
@@ -377,36 +369,6 @@ public final class BowPerks {
 		return best;
 	}
 
-	/**
-	 * Piercing Sight: the mob you hit is outlined for three seconds, with its
-	 * health on the action bar — the archer's Hunter's Mark, at the range where
-	 * losing a target in the dark actually happens.
-	 */
-	private static void sight(ServerPlayer shooter, LivingEntity target) {
-		if (!owns(shooter, PIERCING_SIGHT) || !CombatPerks.appliesTo(target)) {
-			return;
-		}
-		State state = state(shooter);
-		clearSight(shooter, state);
-		target.setGlowingTag(true);
-		state.markedEntityId = target.getId();
-		state.markExpires = shooter.tickCount + SIGHT_TICKS;
-		shooter.sendSystemMessage(Component.translatable("perk.pbenchants.piercing_sight.readout",
-			target.getDisplayName(), String.format("%.1f", target.getHealth()),
-			String.format("%.1f", target.getMaxHealth())), true);
-	}
-
-	private static void clearSight(ServerPlayer player, State state) {
-		if (state.markedEntityId == -1) {
-			return;
-		}
-		Entity previous = player.level().getEntity(state.markedEntityId);
-		if (previous != null) {
-			previous.setGlowingTag(false);
-		}
-		state.markedEntityId = -1;
-	}
-
 	/** Alchemist's Quiver: tipped-arrow effects last half again as long, on mobs. */
 	public static float potionDurationScale(Arrow arrow, LivingEntity target, float vanilla) {
 		if (arrow.getOwner() instanceof Player shooter && owns(shooter, ALCHEMISTS_QUIVER)
@@ -433,7 +395,12 @@ public final class BowPerks {
 		return 0.0F;
 	}
 
-	/** An arrow landed or despawned: Arrow Recovery's roll, and the focus tag drops. */
+	/**
+	 * An arrow landed or despawned: Arrow Recovery's roll, and the focus tag
+	 * drops. A returned arrow makes the pickup sound at the archer — the roll
+	 * is one in four and used to be silent, which read as the node doing
+	 * nothing at all (0.10.1).
+	 */
 	public static void onArrowGone(AbstractArrow arrow) {
 		FOCUSED_ARROWS.remove(arrow.getId());
 		if (arrow.pickup != AbstractArrow.Pickup.ALLOWED
@@ -448,6 +415,10 @@ public final class BowPerks {
 		if (!shooter.getInventory().add(returned)) {
 			shooter.drop(returned, false);
 		}
+		var random = shooter.getRandom();
+		shooter.level().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(),
+			SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F,
+			((random.nextFloat() - random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
 	}
 
 	/**
@@ -543,14 +514,10 @@ public final class BowPerks {
 	// ---------- housekeeping ----------
 
 	/**
-	 * Every tick: the Piercing Sight outline goes out on time, and an over-drawn
-	 * Storm of Arrows tells its archer what the volley is currently worth.
+	 * Every tick: an over-drawn Storm of Arrows tells its archer what the
+	 * volley is currently worth.
 	 */
 	public static void tick(ServerPlayer player) {
-		State state = STATES.get(player.getUUID());
-		if (state != null && state.markedEntityId != -1 && player.tickCount >= state.markExpires) {
-			clearSight(player, state);
-		}
 		if (owns(player, STORM_OF_ARROWS) && player.isUsingItem()
 			&& player.getUseItem().getItem() instanceof BowItem) {
 			int scaled = scaledDrawTicks(player, player.getTicksUsingItem());

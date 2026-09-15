@@ -71,7 +71,12 @@ public final class ModNetworking {
 		// tree screen is opened: the speed passives are computed client-side while
 		// you mine, and the enchanting perks (lapis-free offers, the reroll
 		// button) consult it outside the skill screen too.
-		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendState(handler.getPlayer()));
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			// A node cut from the tree leaves its id in old progress; drop it
+			// (and pay it back) before the snapshot is taken.
+			SkillService.retireRemovedNodes(handler.getPlayer());
+			sendState(handler.getPlayer());
+		});
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
 			LAST_SYNC.remove(handler.getPlayer().getUUID()));
 

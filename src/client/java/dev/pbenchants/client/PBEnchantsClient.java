@@ -2,10 +2,12 @@ package dev.pbenchants.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.pbenchants.enchant.EnchanterPerks;
+import dev.pbenchants.network.ArtisanActionPayload;
 import dev.pbenchants.network.EnchantPreviewPayload;
 import dev.pbenchants.network.SkillActionPayload;
 import dev.pbenchants.network.ScreenStatePayload;
 import dev.pbenchants.network.SkillStatePayload;
+import dev.pbenchants.perk.EnderChestAccess;
 import dev.pbenchants.perk.ExplorerPerks;
 import dev.pbenchants.perk.PerkAccess;
 import net.fabricmc.api.ClientModInitializer;
@@ -38,6 +40,18 @@ public class PBEnchantsClient implements ClientModInitializer {
 		"key.pbenchants.toggle_night_eyes",
 		InputConstants.Type.KEYSYM,
 		GLFW.GLFW_KEY_G,
+		KeyMapping.Category.MISC
+	));
+
+	/**
+	 * Portable Ender Chest, without the inventory screen in between. B is free
+	 * in vanilla and sits under the same hand as the inventory key; the node is
+	 * "your ender chest from anywhere", and anywhere includes mid-walk.
+	 */
+	public static final KeyMapping OPEN_ENDER_CHEST_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+		"key.pbenchants.open_ender_chest",
+		InputConstants.Type.KEYSYM,
+		GLFW.GLFW_KEY_B,
 		KeyMapping.Category.MISC
 	));
 
@@ -193,7 +207,31 @@ public class PBEnchantsClient implements ClientModInitializer {
 			while (TOGGLE_NIGHT_EYES_KEY.consumeClick()) {
 				toggleNightEyes(client);
 			}
+
+			while (OPEN_ENDER_CHEST_KEY.consumeClick()) {
+				openEnderChest(client);
+			}
 		});
+	}
+
+	/**
+	 * The B key. The server decides whether the chest opens — it owns the
+	 * progress — but the client can already tell a player without the node
+	 * where it lives, on the action bar, instead of the key doing nothing.
+	 * Ignored while a screen is up: the container screen has its own button.
+	 */
+	private static void openEnderChest(Minecraft client) {
+		if (client.player == null || client.gui.screen() != null) {
+			return;
+		}
+		if (!ClientSkillState.owns("explorer", EnderChestAccess.PORTABLE_NODE)) {
+			client.gui.hud.setOverlayMessage(
+				Component.translatable("msg.pbenchants.ender_chest.locked").withStyle(ChatFormatting.RED), false);
+			return;
+		}
+		if (ClientPlayNetworking.canSend(ArtisanActionPayload.TYPE)) {
+			ClientPlayNetworking.send(ArtisanActionPayload.of(ArtisanActionPayload.Action.OPEN_ENDER_CHEST));
+		}
 	}
 
 	/**

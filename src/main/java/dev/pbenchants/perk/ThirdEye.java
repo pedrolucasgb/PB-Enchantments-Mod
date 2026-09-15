@@ -9,12 +9,19 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Third Eye — the Seeker's Eye, looking through walls (Artisan tier 5).
@@ -26,11 +33,16 @@ import java.util.Locale;
  * placed shulker boxes, furnaces, hoppers, barrels: anything whose block
  * entity is a {@link Container}.
  *
- * <p>Matching mirrors the Seeker's Eye rule — the name on the tooltip — with
- * one addition: the registry path, so "diamante" finds a renamed stack and
- * "diamond" always finds diamonds even when the server's language is not the
- * player's. Only loaded chunks are asked; the Third Eye sees far, not into
- * places nobody is keeping warm.
+ * <p>Matching mirrors the Seeker's Eye rule — the name on the tooltip, or the
+ * name of an enchantment the stack carries, book or gear — with one addition:
+ * the registry path, so "diamante" finds a renamed stack and "diamond" always
+ * finds diamonds even when the server's language is not the player's. Only
+ * loaded chunks are asked; the Third Eye sees far, not into places nobody is
+ * keeping warm.
+ *
+ * <p>A double chest is two block entities with one lid. The half that holds
+ * the match is found by the scan; its partner is added by hand, so the whole
+ * chest glows and not one door of it (0.10.1).
  *
  * <p><b>The reach is a 3×3×3 box of chunk sections around the player</b> —
  * your chunk and its ring, one 16-block layer above and one below — and that
@@ -65,7 +77,7 @@ public final class ThirdEye {
 			ServerPlayNetworking.send(player, new ThirdEyeResultPayload(List.of()));
 			return;
 		}
-		List<BlockPos> found = new ArrayList<>();
+		Set<BlockPos> found = new LinkedHashSet<>();
 		ChunkPos centre = player.chunkPosition();
 		int playerSection = SectionPos.blockToSectionCoord(player.getBlockY());
 		outer:
@@ -84,7 +96,12 @@ public final class ThirdEye {
 						continue;
 					}
 					if (entry.getValue() instanceof Container container && holds(container, query)) {
-						found.add(entry.getKey().immutable());
+						BlockPos pos = entry.getKey().immutable();
+						found.add(pos);
+						BlockPos partner = otherHalf(chunk.getBlockState(pos), pos);
+						if (partner != null) {
+							found.add(partner);
+						}
 						if (found.size() >= MAX_RESULTS) {
 							break outer;
 						}
@@ -92,7 +109,16 @@ public final class ThirdEye {
 				}
 			}
 		}
-		ServerPlayNetworking.send(player, new ThirdEyeResultPayload(found));
+		ServerPlayNetworking.send(player, new ThirdEyeResultPayload(new ArrayList<>(found)));
+	}
+
+	/** The other half of a double chest, or null for anything that stands alone. */
+	private static BlockPos otherHalf(BlockState state, BlockPos pos) {
+		if (!(state.getBlock() instanceof ChestBlock) || !state.hasProperty(ChestBlock.TYPE)
+			|| state.getValue(ChestBlock.TYPE) == ChestType.SINGLE) {
+			return null;
+		}
+		return pos.relative(ChestBlock.getConnectedDirection(state));
 	}
 
 	private static boolean holds(Container container, String query) {
@@ -111,7 +137,19 @@ public final class ThirdEye {
 		if (stack.getHoverName().getString().toLowerCase(Locale.ROOT).contains(query)) {
 			return true;
 		}
-		return stack.getItem().builtInRegistryHolder().key().identifier().getPath()
-			.contains(query.replace(' ', '_'));
+		String path = query.replace(' ', '_');
+		if (stack.getItem().builtInRegistryHolder().key().identifier().getPath().contains(path)) {
+			return true;
+		}
+		// Enchantments too, on a book or on gear: "sharpness" finds the book
+		// in the chest as readily as the sword it went onto.
+		for (var entry : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) {
+			if (Enchantment.getFullname(entry.getKey(), entry.getIntValue()).getString()
+					.toLowerCase(Locale.ROOT).contains(query)
+				|| entry.getKey().unwrapKey().map(key -> key.identifier().getPath().contains(path)).orElse(false)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
