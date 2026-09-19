@@ -182,8 +182,6 @@ public final class SkillTrees {
 			// Tier 3
 			SkillNode.chained("lumberjacks_arms_3", 2, 8, "lumberjacks_arms_2", SkillType.PASSIVE).icon(Items.DIAMOND_AXE)
 				.costing(mat(ItemTags.LOGS, 64), mat(Items.GOLD_INGOT, 8)),
-			SkillNode.of("pruner", 2, 6, SkillType.PASSIVE).icon(Items.SHEARS)
-				.costing(mat(ItemTags.LEAVES, 64), mat(Items.SHEARS, 2)),
 			SkillNode.chained("logic_2", 2, 9, "logic_1", SkillType.ENCHANTMENT).icon(Items.OAK_WOOD)
 				.costing(mat(ItemTags.LOGS, 64), mat(Items.DIAMOND, 4))
 				.enchantFor(35),
@@ -290,8 +288,6 @@ public final class SkillTrees {
 			SkillNode.of("harvest_swing_1", 1, 6, SkillType.ENCHANTMENT).icon(Items.STONE_HOE)
 				.costing(mat(Items.IRON_INGOT, 12), mat(Items.WHEAT, 32))
 				.enchantFor(20),
-			SkillNode.of("sifter", 1, 5, SkillType.PASSIVE).icon(Items.FLINT)
-				.costing(mat(Items.GRAVEL, 64), mat(Items.FLINT, 16)),
 			SkillNode.of("bone_thrift", 1, 4, SkillType.PASSIVE).icon(Items.BONE_MEAL)
 				.costing(mat(Items.BONE_MEAL, 64), mat(Items.BONE_BLOCK, 4)),
 			// Tier 3 — rank II of both, and the first two crop-quality nodes.
@@ -410,8 +406,6 @@ public final class SkillTrees {
 				.costing(mat(Items.IRON_BLOCK, 8), mat(Items.GLASS, 16)),
 			SkillNode.of("lingering_light_1", 1, 5, SkillType.PASSIVE).icon(Items.TORCH)
 				.costing(mat(Items.GLOWSTONE_DUST, 16), mat(Items.GOLD_INGOT, 8)),
-			SkillNode.of("thrifty_offering", 1, 6, SkillType.PASSIVE).icon(Items.GOLD_INGOT)
-				.costing(mat(Items.EMERALD, 4), mat(Items.GOLD_INGOT, 8)),
 			// Tier 3 — the selling point first: rank I is Haste III, rank II
 			// (tier 4) is the Haste IV that breaks deepslate in a tick.
 			SkillNode.of("resonant_haste_1", 2, 8, SkillType.PASSIVE).icon(Items.DIAMOND_PICKAXE)
@@ -1129,8 +1123,6 @@ public final class SkillTrees {
 			SkillNode.of("ricochet_1", 2, 8, SkillType.ENCHANTMENT).icon(Items.SLIME_BALL)
 				.costing(mat(Items.SLIME_BALL, 16), mat(Items.STRING, 32))
 				.enchantFor(20).pve(),
-			SkillNode.of("piercing_sight", 2, 7, SkillType.PASSIVE).icon(Items.GLOW_INK_SAC)
-				.costing(mat(Items.SPIDER_EYE, 8), mat(Items.GLOWSTONE_DUST, 16)).pve(),
 			// Tier 4 — the crossbow's column
 			SkillNode.of("rapid_reload_1", 3, 9, SkillType.PASSIVE).icon(Items.REDSTONE)
 				.costing(mat(Items.CROSSBOW, 1), mat(Items.REDSTONE, 32)),

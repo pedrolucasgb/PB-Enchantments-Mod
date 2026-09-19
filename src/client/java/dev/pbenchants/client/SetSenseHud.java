@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
@@ -55,8 +56,26 @@ public final class SetSenseHud {
 		// Just left of centre and one line above the armour bar, which is where
 		// the bar itself starts — the readout sits with the thing it explains.
 		int x = graphics.guiWidth() / 2 - 91;
-		int y = graphics.guiHeight() - 49 - 10;
+		int y = armorBarY(graphics, player) - 10;
 		graphics.text(client.font, text, x, y, SkillTreeStyle.MUTED);
+	}
+
+	/**
+	 * Where vanilla draws the armour bar this frame. The health bar grows a row
+	 * per twenty points of hearts <em>plus absorption</em>, and the armour bar
+	 * rides on top of it — so under Absorption the bar climbs and, until 0.10.1,
+	 * this readout stayed put and was drawn straight over it. Same arithmetic
+	 * as {@code Hud.extractPlayerHealth}: the health it uses is vanilla's
+	 * smoothed display value, which the current health stands in for here
+	 * (off by a row only for a heartbeat after a big hit).
+	 */
+	private static int armorBarY(net.minecraft.client.gui.GuiGraphicsExtractor graphics, LocalPlayer player) {
+		float maxHealth = Math.max((float) player.getAttributeValue(Attributes.MAX_HEALTH),
+			Mth.ceil(player.getHealth()));
+		int absorption = Mth.ceil(player.getAbsorptionAmount());
+		int rows = Mth.ceil((maxHealth + absorption) / 2.0F / 10.0F);
+		int rowHeight = Math.max(10 - (rows - 2), 3);
+		return graphics.guiHeight() - 39 - (rows - 1) * rowHeight - 10;
 	}
 
 	/**

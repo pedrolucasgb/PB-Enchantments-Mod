@@ -6,6 +6,7 @@ import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.progress.ModAttachments;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.track.EnchantTracker;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -416,6 +417,43 @@ public final class SkillService {
 	/** Does this player own a node? Cheap enough for event-handler use. */
 	public static boolean owns(ServerPlayer player, SkillTree tree, String nodeId) {
 		return progress(player, tree).owns(nodeId);
+	}
+
+	/**
+	 * Nodes that no longer exist, and the XP levels their unlock cost when they
+	 * did. A player who bought one before it was cut is paid the whole unlock
+	 * back on their next join — not the sale price, since selling was never
+	 * their idea. The materials are gone; there is no fair way to know what a
+	 * stack of gravel was worth to someone three versions ago.
+	 */
+	private static final java.util.Map<String, Integer> RETIRED = java.util.Map.of(
+		"pruner", 6,            // Axe, cut in 0.10.1
+		"sifter", 5,            // Ground, cut in 0.10.1
+		"thrifty_offering", 6,  // Beacon, cut in 0.10.1
+		"piercing_sight", 7     // Bow, cut in 0.10.1
+	);
+
+	/**
+	 * Drops every purchased id the current trees do not know, refunding the
+	 * ones in {@link #RETIRED}. Runs on join, before the snapshot goes out,
+	 * so the client never sees a node that is not there.
+	 */
+	public static void retireRemovedNodes(ServerPlayer player) {
+		for (SkillTree tree : SkillTrees.ORDER) {
+			TreeProgress progress = progress(player, tree);
+			for (String nodeId : java.util.List.copyOf(progress.purchased)) {
+				if (tree.node(nodeId) != null) {
+					continue;
+				}
+				progress.purchased.remove(nodeId);
+				int refund = XpMath.pointsForLevel(RETIRED.getOrDefault(nodeId, 0));
+				if (refund > 0) {
+					player.giveExperiencePoints(refund);
+				}
+				player.sendSystemMessage(Component.translatable("msg.pbenchants.node.retired",
+					Component.translatable("node.pbenchants." + nodeId), refund).withStyle(ChatFormatting.GOLD));
+			}
+		}
 	}
 
 	/**

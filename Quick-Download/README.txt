@@ -1,5 +1,5 @@
 PB ENCHANTMENTS (formerly Tool Mastery) - a mod for Minecraft 26.2 (Fabric)
-Version 0.10.0-beta
+Version 0.10.1-beta
 ================================================
 
 HOW TO INSTALL
@@ -43,6 +43,26 @@ out, with the reason in the tooltip.
 
 Each rank of a skill describes only what that rank does - Dig Range II
 describes the cross, not the whole family.
+
+WHAT IS NEW IN 0.10.1-beta
+--------------------------
+- B OPENS THE ENDER CHEST. With Portable Ender Chest earned, the key
+  opens your ender chest from anywhere. Rebind it under Controls.
+- FIXES FROM THE PLAYTEST. Third Eye lights both halves of a double
+  chest; Hunter's Mark shows the health left after your hit; Set Sense
+  climbs with the armour bar under Absorption; Ablative Plating no
+  longer cancels wind charges (creepers and TNT still push you nowhere);
+  an unearned sword no longer sets things on fire; Arrow Recovery makes
+  the pickup sound when an arrow comes back.
+- PRICES STAY ON. A bought node or tier keeps its XP and materials
+  listed on the panel.
+- SEARCH BY ENCHANTMENT. Seeker's Eye and Third Eye match enchantment
+  names on books and gear.
+- PICK-ONE TIERS ASK TWICE. A capstone that locks its siblings out shows
+  a last-call card, and only the second Confirm buys.
+- FOUR NODES REMOVED: Thrifty Offering (Beacon), Pruner (Axe), Sifter
+  (Ground), Piercing Sight (Bow). Owners get the full unlock XP back on
+  their next join; materials cannot be returned.
 
 WHAT IS NEW IN 0.10.0-beta
 --------------------------

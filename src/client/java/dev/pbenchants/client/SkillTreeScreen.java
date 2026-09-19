@@ -111,6 +111,14 @@ public class SkillTreeScreen extends Screen {
 	private int selectedTier = -1;
 	private Pending pending = Pending.NONE;
 
+	/**
+	 * A one-way choice asks twice. The first Confirm on a node with an
+	 * {@code exclusiveWith} group flips this and redraws the card as a last
+	 * call that names what gets locked out; only the second Confirm sends.
+	 * Cleared whenever the pending action is.
+	 */
+	private boolean choiceAcknowledged;
+
 	private int panelX;
 	private int panelWidth;
 	private int treeRight;
@@ -202,6 +210,7 @@ public class SkillTreeScreen extends Screen {
 		selectedNode = nodeId;
 		selectedTier = tier;
 		pending = Pending.NONE;
+		choiceAcknowledged = false;
 		// A verdict about the old selection over a new selection reads as an
 		// answer to a question nobody asked — clear it.
 		feedback = null;
@@ -593,6 +602,10 @@ public class SkillTreeScreen extends Screen {
 			}
 			tip.append(Component.literal("\n"))
 				.append(Component.translatable("screen.pbenchants.unlocked").withColor(0x5FBF4F));
+			tip.append(Component.literal("\n"))
+				.append(Component.translatable("screen.pbenchants.paid_cost",
+						XpMath.pointsForLevel(node.unlockCost()))
+					.withColor(SkillTreeStyle.DIM & 0xFFFFFF));
 			return tip;
 		}
 		if (node.pveOnly()) {
@@ -615,6 +628,10 @@ public class SkillTreeScreen extends Screen {
 		int unlocked = state == null ? 0 : state.unlockedTiers();
 		if (tier < unlocked) {
 			tip.append(Component.translatable("screen.pbenchants.unlocked").withColor(0x5FBF4F));
+			tip.append(Component.literal("\n"))
+				.append(Component.translatable("screen.pbenchants.paid_cost_tier",
+						XpMath.pointsForLevel(tree.tiers().get(tier).accessCost()))
+					.withColor(SkillTreeStyle.DIM & 0xFFFFFF));
 		} else {
 			tip.append(Component.translatable("screen.pbenchants.unlock_cost_tier",
 				XpMath.pointsForLevel(tree.tiers().get(tier).accessCost())).withColor(0x9AA1AD));
@@ -686,11 +703,15 @@ public class SkillTreeScreen extends Screen {
 		int buttonWidth = panelWidth - 12;
 
 		if (pending != Pending.NONE) {
-			addRenderableWidget(Button.builder(Component.translatable("screen.pbenchants.confirm"), button -> confirm())
+			Component label = Component.translatable(choiceAcknowledged
+				? "screen.pbenchants.confirm.choice_button"
+				: "screen.pbenchants.confirm");
+			addRenderableWidget(Button.builder(label, button -> confirm())
 				.bounds(panelX + 6, primaryY, buttonWidth, 18)
 				.build());
 			addRenderableWidget(Button.builder(Component.translatable("screen.pbenchants.cancel"), button -> {
 					pending = Pending.NONE;
+					choiceAcknowledged = false;
 					scheduleRebuild();
 				})
 				.bounds(panelX + 6, secondaryY, buttonWidth, 18)
@@ -821,6 +842,17 @@ public class SkillTreeScreen extends Screen {
 	}
 
 	private void confirm() {
+		if (pending == Pending.UNLOCK_NODE && !choiceAcknowledged && selectedNode != null) {
+			SkillTree tree = SkillTrees.byId(treeId);
+			SkillNode node = tree == null ? null : tree.node(selectedNode);
+			if (node != null && !node.exclusiveWith().isEmpty()) {
+				// First Confirm on a pick-one node: not yet. The card becomes
+				// the last call and the button changes its words.
+				choiceAcknowledged = true;
+				scheduleRebuild();
+				return;
+			}
+		}
 		switch (pending) {
 			case UNLOCK_TIER ->
 				ClientPlayNetworking.send(new SkillActionPayload(SkillActionPayload.Action.UNLOCK_TIER, treeId, ""));
@@ -853,6 +885,7 @@ public class SkillTreeScreen extends Screen {
 			}
 		}
 		pending = Pending.NONE;
+		choiceAcknowledged = false;
 		scheduleRebuild();
 	}
 
@@ -1245,13 +1278,20 @@ public class SkillTreeScreen extends Screen {
 		}
 
 		boolean owned = state.purchased().contains(node.id());
-		y = wrappedText(graphics,
-			owned
-				? Component.translatable("screen.pbenchants.unlocked")
-				: Component.translatable("screen.pbenchants.unlock_cost",
+		if (owned) {
+			// Bought, and still priced: the cost used to vanish with the
+			// purchase, which left no way to compare what the ranks cost or
+			// to remember what a sale gives back (0.10.1).
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.unlocked"),
+				x, y, SkillTreeStyle.GREEN, 11);
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.paid_cost",
 					XpMath.pointsForLevel(node.unlockCost())),
-			x, y, owned ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 11);
-		if (!owned) {
+				x, y, SkillTreeStyle.DIM, 11);
+			y = drawPaidMaterials(graphics, node, x, y);
+		} else {
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.unlock_cost",
+					XpMath.pointsForLevel(node.unlockCost())),
+				x, y, SkillTreeStyle.MUTED, 11);
 			y = drawMaterials(graphics, node, x, y);
 		}
 		if (node.enchantable()) {
@@ -1300,6 +1340,15 @@ public class SkillTreeScreen extends Screen {
 			x, y, SkillTreeStyle.MUTED, 9);
 	}
 
+	/** The materials an owned node was bought with — a plain list, nothing left to gather. */
+	private int drawPaidMaterials(GuiGraphicsExtractor graphics, SkillNode node, int x, int y) {
+		for (MaterialCost material : node.materials()) {
+			y = wrappedText(graphics, Component.literal("• ").append(material.label()),
+				x, y, SkillTreeStyle.DIM, 11);
+		}
+		return y;
+	}
+
 	/** The have/need checklist for a node's unlock materials. */
 	private int drawMaterials(GuiGraphicsExtractor graphics, SkillNode node, int x, int y) {
 		LocalPlayer player = minecraft == null ? null : minecraft.player;
@@ -1319,12 +1368,17 @@ public class SkillTreeScreen extends Screen {
 		SkillTier tier = tree.tiers().get(selectedTier);
 		boolean open = selectedTier < state.unlockedTiers();
 		y = wrappedText(graphics, tree.tierName(selectedTier), x, y, SkillTreeStyle.TEXT, 11);
-		y = wrappedText(graphics,
-			open
-				? Component.translatable("screen.pbenchants.unlocked")
-				: Component.translatable("screen.pbenchants.unlock_cost_tier",
+		if (open) {
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.unlocked"),
+				x, y, SkillTreeStyle.GREEN, 11);
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.paid_cost_tier",
 					XpMath.pointsForLevel(tier.accessCost())),
-			x, y, open ? SkillTreeStyle.GREEN : SkillTreeStyle.MUTED, 13);
+				x, y, SkillTreeStyle.DIM, 13);
+		} else {
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.unlock_cost_tier",
+					XpMath.pointsForLevel(tier.accessCost())),
+				x, y, SkillTreeStyle.MUTED, 13);
+		}
 
 		for (List<SkillNode> group : choiceGroups(tree, selectedTier)) {
 			y = wrappedText(graphics, Component.translatable("screen.pbenchants.choice_title"),
@@ -1492,15 +1546,8 @@ public class SkillTreeScreen extends Screen {
 		}
 
 		if (pending == Pending.UNLOCK_NODE) {
-			y = wrappedText(graphics, Component.translatable("screen.pbenchants.confirm.unlock_title",
-				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
-			y = wrappedText(graphics, Component.translatable("screen.pbenchants.unlock_cost",
-					XpMath.pointsForLevel(node.unlockCost())),
-				x, y, SkillTreeStyle.MUTED, 11);
-			y = drawMaterials(graphics, node, x, y);
-			y += 2;
+			List<SkillNode> others = new ArrayList<>();
 			if (!node.exclusiveWith().isEmpty()) {
-				List<SkillNode> others = new ArrayList<>();
 				SkillTree owner = SkillTrees.byId(treeId);
 				if (owner != null) {
 					for (SkillNode member : choiceGroup(owner, node)) {
@@ -1509,6 +1556,26 @@ public class SkillTreeScreen extends Screen {
 						}
 					}
 				}
+			}
+			if (choiceAcknowledged) {
+				// Second card of a one-way choice: nothing about cost, only
+				// the decision, in the colour the scales wear on the tree.
+				y = wrappedText(graphics, Component.translatable("screen.pbenchants.confirm.choice_title",
+					node.displayName()), x, y, SkillTreeStyle.CHOICE, 11);
+				y += 2;
+				graphics.textWithWordWrap(font,
+					Component.translatable("screen.pbenchants.confirm.choice_body",
+						node.displayName(), names(others)), x, y, wrap, SkillTreeStyle.TEXT);
+				return;
+			}
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.confirm.unlock_title",
+				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
+			y = wrappedText(graphics, Component.translatable("screen.pbenchants.unlock_cost",
+					XpMath.pointsForLevel(node.unlockCost())),
+				x, y, SkillTreeStyle.MUTED, 11);
+			y = drawMaterials(graphics, node, x, y);
+			y += 2;
+			if (!node.exclusiveWith().isEmpty()) {
 				y = wrappedText(graphics,
 					Component.translatable("screen.pbenchants.confirm.choice_warning", names(others)),
 					x, y, SkillTreeStyle.CHOICE, 10);
