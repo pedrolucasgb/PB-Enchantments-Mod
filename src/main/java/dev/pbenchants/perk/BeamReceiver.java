@@ -152,7 +152,7 @@ public final class BeamReceiver {
 	 * attack speed; only IV reaches the deepslate line.
 	 */
 	private static int resonate(ServerPlayer player, Holder<MobEffect> effect, int amplifier) {
-		if (amplifier == 1 && Objects.equals(effect, MobEffects.HASTE)) {
+		if (amplifier == 1 && Objects.equals(effect, MobEffects.DIG_SPEED)) {
 			return amplifier + BeaconPerks.resonantHasteRank(player);
 		}
 		return amplifier;

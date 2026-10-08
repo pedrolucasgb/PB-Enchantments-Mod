@@ -23,10 +23,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(CraftingMenu.class)
 public abstract class CraftingMenuMixin {
+	@org.spongepowered.asm.mixin.Shadow
+	@org.spongepowered.asm.mixin.Final
+	private net.minecraft.world.inventory.CraftingContainer craftSlots;
+
 	@Inject(method = "removed", at = @At("HEAD"))
 	private void pbenchants$steadyGridKeepsTheLayout(Player player, CallbackInfo ci) {
 		if (SteadyGrid.owns(player)) {
-			SteadyGrid.stash(player, ((CraftingMenu) (Object) this).getInputGridSlots().getFirst().container);
+			SteadyGrid.stash(player, craftSlots);
 		}
 	}
 
@@ -36,7 +40,7 @@ public abstract class CraftingMenuMixin {
 			ContainerLevelAccess access, CallbackInfo ci) {
 		if (SteadyGrid.owns(inventory.player)) {
 			SteadyGrid.restore(inventory.player,
-				((CraftingMenu) (Object) this).getInputGridSlots().getFirst().container);
+				craftSlots);
 		}
 	}
 }

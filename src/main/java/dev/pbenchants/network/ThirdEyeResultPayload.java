@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public record ThirdEyeResultPayload(List<BlockPos> positions) implements CustomPacketPayload {
 	public static final Type<ThirdEyeResultPayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "third_eye_result"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "third_eye_result"));
 
 	public static final StreamCodec<FriendlyByteBuf, ThirdEyeResultPayload> CODEC =
 		CustomPacketPayload.codec(ThirdEyeResultPayload::write, ThirdEyeResultPayload::read);

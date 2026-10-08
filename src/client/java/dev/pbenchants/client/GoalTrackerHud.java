@@ -17,7 +17,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.List;
  * says what the thing cost after the fact.
  */
 public final class GoalTrackerHud {
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "goal_tracker");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "goal_tracker");
 
 	/** Right-edge padding, and the vertical start — below where potion effect icons live. */
 	private static final int PADDING = 6;

@@ -72,7 +72,7 @@ public final class ContainerScan {
 	 * first and capped at {@link #MAX_CONTAINERS}.
 	 */
 	public static List<Found> nearby(ServerPlayer player, int radius) {
-		ServerLevel level = player.level();
+		ServerLevel level = player.serverLevel();
 		BlockPos origin = player.blockPosition();
 		double radiusSq = (double) radius * radius;
 

@@ -84,12 +84,12 @@ public final class BiomeCharts {
 			return SkillService.failFor("msg.pbenchants.fail.xp", cost, XpMath.totalPoints(player));
 		}
 
-		ServerLevel level = player.level();
+		ServerLevel level = player.serverLevel();
 		boolean undiscoveredOnly = RANK_2.equals(node.id());
 		List<Holder<Biome>> candidates = new ArrayList<>();
 		for (Holder<Biome> holder : level.getChunkSource().getGenerator().getBiomeSource().possibleBiomes()) {
 			if (undiscoveredOnly && holder.unwrapKey()
-					.map(key -> progress.seen.contains("biome/" + key.identifier()))
+					.map(key -> progress.seen.contains("biome/" + key.location()))
 					.orElse(true)) {
 				continue;
 			}
@@ -113,7 +113,7 @@ public final class BiomeCharts {
 			}
 			BlockPos pos = found.getFirst();
 			Component biomeName = Component.translatable(
-				"biome." + key.identifier().getNamespace() + "." + key.identifier().getPath());
+				"biome." + key.location().getNamespace() + "." + key.location().getPath());
 
 			ItemStack map = MapItem.create(level, pos.getX(), pos.getZ(), (byte) 2, true, true);
 			MapItem.renderBiomePreviewMap(level, map);

@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * C2S: Prism's choice of extra beacon power, pressed on the beacon screen.
@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier;
  */
 public record AttunePayload(int index) implements CustomPacketPayload {
 	public static final Type<AttunePayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "attune"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "attune"));
 
 	public static final StreamCodec<FriendlyByteBuf, AttunePayload> CODEC =
 		CustomPacketPayload.codec(AttunePayload::write, AttunePayload::read);

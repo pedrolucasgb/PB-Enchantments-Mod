@@ -143,20 +143,20 @@ public abstract class EnchantmentMenuMixin {
 		//    still go through ItemAuthority's inert-item rule.)
 		List<EnchantmentInstance> result = new ArrayList<>(rolled.size());
 		for (EnchantmentInstance instance : rolled) {
-			int allowed = instance.enchantment().value().getMaxLevel();
-			ItemAuthority.Ceiling raised = ItemAuthority.ceiling(instance.enchantment());
+			int allowed = instance.enchantment.value().getMaxLevel();
+			ItemAuthority.Ceiling raised = ItemAuthority.ceiling(instance.enchantment);
 			if (raised != null) {
 				allowed = Math.min(allowed, raised.ceilingFor(serverPlayer, allowed));
 			}
-			ResourceKey<Enchantment> ours = pbenchants$matchOurs(instance.enchantment());
+			ResourceKey<Enchantment> ours = pbenchants$matchOurs(instance.enchantment);
 			if (ours != null) {
 				int owned = SkillService.maxEnchantLevelOwned(serverPlayer, ours);
 				if (owned > 0) {
 					allowed = Math.min(allowed, owned);
 				}
 			}
-			result.add(instance.level() > allowed
-				? new EnchantmentInstance(instance.enchantment(), allowed)
+			result.add(instance.level > allowed
+				? new EnchantmentInstance(instance.enchantment, allowed)
 				: instance);
 		}
 		return result;
@@ -225,7 +225,7 @@ public abstract class EnchantmentMenuMixin {
 			if (!stack.isEmpty() && slot < insight && costs[slot] > 0) {
 				for (EnchantmentInstance instance : getEnchantmentList(
 						serverPlayer.level().registryAccess(), stack, slot, costs[slot])) {
-					lines.add(Enchantment.getFullname(instance.enchantment(), instance.level()));
+					lines.add(Enchantment.getFullname(instance.enchantment, instance.level));
 				}
 			}
 			slots.add(lines);

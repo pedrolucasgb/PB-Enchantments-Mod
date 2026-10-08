@@ -1,7 +1,7 @@
 package dev.pbenchants.network;
 
 import dev.pbenchants.PBEnchants;
-import net.fabricmc.fabric.api.networking.v1.FabricServerConfigurationPacketListenerImpl;
+import net.fabricmc.fabric.api.networking.v1.FabricServerConfigurationNetworkHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.loader.api.FabricLoader;
@@ -47,10 +47,10 @@ public final class VersionGate {
 					"PB Enchantments " + modVersion() + " is required to join this server."));
 				return;
 			}
-			((FabricServerConfigurationPacketListenerImpl) handler).addTask(new ConfigurationTask() {
+			((FabricServerConfigurationNetworkHandler) handler).addTask(new ConfigurationTask() {
 				@Override
 				public void start(Consumer<Packet<?>> sender) {
-					sender.accept(ServerConfigurationNetworking.createClientboundPacket(
+					sender.accept(ServerConfigurationNetworking.createS2CPacket(
 						new VersionCheckPayload(modVersion())));
 				}
 
@@ -64,9 +64,9 @@ public final class VersionGate {
 		ServerConfigurationNetworking.registerGlobalReceiver(VersionReplyPayload.TYPE, (payload, context) -> {
 			String server = modVersion();
 			if (server.equals(payload.version())) {
-				((FabricServerConfigurationPacketListenerImpl) context.packetListener()).completeTask(TASK);
+				((FabricServerConfigurationNetworkHandler) context.networkHandler()).completeTask(TASK);
 			} else {
-				context.packetListener().disconnect(Component.literal(
+				context.networkHandler().disconnect(Component.literal(
 					"PB Enchantments version mismatch.\n"
 						+ "Server: " + server + " — you: " + payload.version() + "\n"
 						+ "Update your mod to " + server + " and try again."));

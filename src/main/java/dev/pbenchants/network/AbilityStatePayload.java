@@ -5,7 +5,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * S2C: which held ability is currently running, so the client can say so.
@@ -18,7 +18,7 @@ import net.minecraft.resources.Identifier;
  */
 public record AbilityStatePayload(boolean diggyActive) implements CustomPacketPayload {
 	public static final Type<AbilityStatePayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "ability_state"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "ability_state"));
 
 	public static final StreamCodec<FriendlyByteBuf, AbilityStatePayload> CODEC = StreamCodec.composite(
 		ByteBufCodecs.BOOL, AbilityStatePayload::diggyActive,

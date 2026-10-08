@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -60,12 +59,12 @@ public final class CombatDrops {
 			&& headOf(victim.getType()) != null;
 		// Beacon: Skull Collector and Starfall drop their extra right here,
 		// beside the body, so the magnet's sweep below pockets them too.
-		if (victim.getType() == EntityTypes.WITHER_SKELETON
+		if (victim.getType() == EntityType.WITHER_SKELETON
 			&& BeaconPerks.owns(player, BeaconPerks.SKULL_COLLECTOR)
 			&& level.getRandom().nextFloat() < BeaconPerks.SKULL_COLLECTOR_EXTRA) {
 			dropBeside(level, victim, Items.WITHER_SKELETON_SKULL);
 		}
-		if (victim.getType() == EntityTypes.WITHER
+		if (victim.getType() == EntityType.WITHER
 			&& BeaconPerks.owns(player, BeaconPerks.STARFALL)
 			&& level.getRandom().nextFloat() < BeaconPerks.STARFALL_CHANCE) {
 			dropBeside(level, victim, Items.NETHER_STAR);
@@ -128,19 +127,19 @@ public final class CombatDrops {
 	 * is that the wall of trophies finally fills up.
 	 */
 	private static net.minecraft.world.item.Item headOf(EntityType<?> type) {
-		if (type == EntityTypes.ZOMBIE) {
+		if (type == EntityType.ZOMBIE) {
 			return Items.ZOMBIE_HEAD;
 		}
-		if (type == EntityTypes.SKELETON) {
+		if (type == EntityType.SKELETON) {
 			return Items.SKELETON_SKULL;
 		}
-		if (type == EntityTypes.WITHER_SKELETON) {
+		if (type == EntityType.WITHER_SKELETON) {
 			return Items.WITHER_SKELETON_SKULL;
 		}
-		if (type == EntityTypes.CREEPER) {
+		if (type == EntityType.CREEPER) {
 			return Items.CREEPER_HEAD;
 		}
-		if (type == EntityTypes.PIGLIN) {
+		if (type == EntityType.PIGLIN) {
 			return Items.PIGLIN_HEAD;
 		}
 		return null;

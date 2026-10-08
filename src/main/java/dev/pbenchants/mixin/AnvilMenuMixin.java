@@ -140,7 +140,7 @@ public class AnvilMenuMixin implements dev.pbenchants.enchant.AnvilDisenchant.Mo
 		if (base.isEmpty() || sacrifice.isEmpty()) {
 			return false;
 		}
-		if (base.isDamageableItem() && base.isValidRepairItem(sacrifice)) {
+		if (base.isDamageableItem() && base.getItem().isValidRepairItem(base, sacrifice)) {
 			return false;
 		}
 		return sacrifice.has(DataComponents.STORED_ENCHANTMENTS)

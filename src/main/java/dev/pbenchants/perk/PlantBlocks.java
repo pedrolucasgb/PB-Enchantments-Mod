@@ -2,7 +2,6 @@ package dev.pbenchants.perk;
 
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -74,8 +73,9 @@ public final class PlantBlocks {
 	 * invisible to everything except the bonus roll it exists to cancel. Silk
 	 * Touch is untouched, so a Silk Touch pickaxe still pops a whole melon.
 	 */
-	public static ItemInstance stripNonHoeFortune(BlockState state, ItemInstance tool) {
-		if (!(tool instanceof ItemStack stack) || stack.isEmpty() || !stack.isEnchanted()) {
+	public static ItemStack stripNonHoeFortune(BlockState state, ItemStack tool) {
+		ItemStack stack = tool;
+		if (stack.isEmpty() || !stack.isEnchanted()) {
 			return tool;
 		}
 		if (stack.is(ItemTags.HOES) || !isPlant(state)) {

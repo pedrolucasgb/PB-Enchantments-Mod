@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -23,7 +23,7 @@ import net.minecraft.world.item.Items;
  * turns itself off.
  */
 public final class DiggyHud {
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "diggy_diggy_hole");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "diggy_diggy_hole");
 
 	/**
 	 * Built on demand, never in a static field: client init runs before item

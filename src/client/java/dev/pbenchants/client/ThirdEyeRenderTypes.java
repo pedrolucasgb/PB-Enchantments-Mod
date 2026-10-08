@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.rendertype.LayeringTransform;
 import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * The one render type the Third Eye needs: vanilla's lines, with the depth
@@ -32,7 +32,7 @@ public final class ThirdEyeRenderTypes {
 		RenderType type = throughWallLines;
 		if (type == null) {
 			RenderPipeline pipeline = RenderPipeline.builder(RenderPipelinesAccessor.pbenchants$linesSnippet())
-				.withLocation(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "pipeline/third_eye_lines"))
+				.withLocation(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "pipeline/third_eye_lines"))
 				.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
 				.build();
 			type = RenderType.create("pbenchants:third_eye_lines",

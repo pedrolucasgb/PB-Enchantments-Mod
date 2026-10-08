@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
  * on the armour side. Pure QoL: nothing here changes a shot.
  */
 public final class QuiverSenseHud {
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "quiver_sense");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "quiver_sense");
 
 	private QuiverSenseHud() {
 	}

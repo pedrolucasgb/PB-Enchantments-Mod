@@ -6,7 +6,7 @@ import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -27,15 +27,15 @@ public final class ModAdvancements {
 	private static final String CRITERION = "unlocked";
 
 	/** The tab's root: earned by opening the skill screen for the first time. */
-	private static final Identifier ROOT =
-		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "root");
+	private static final ResourceLocation ROOT =
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.DATA_NS, "root");
 
 	private ModAdvancements() {
 	}
 
 	/** Advancement id for a 0-based tier index: tier 0 of "pickaxe" → {@code toolmastery:pickaxe/tier_1}. */
-	public static Identifier tierId(String treeId, int tierIndex) {
-		return Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, treeId + "/tier_" + (tierIndex + 1));
+	public static ResourceLocation tierId(String treeId, int tierIndex) {
+		return ResourceLocation.fromNamespaceAndPath(PBEnchants.DATA_NS, treeId + "/tier_" + (tierIndex + 1));
 	}
 
 	/**
@@ -53,7 +53,7 @@ public final class ModAdvancements {
 		award(player, tierId(treeId, tierIndex));
 	}
 
-	private static void award(ServerPlayer player, Identifier id) {
+	private static void award(ServerPlayer player, ResourceLocation id) {
 		MinecraftServer server = player.level().getServer();
 		if (server == null) {
 			return;

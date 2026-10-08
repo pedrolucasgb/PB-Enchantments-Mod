@@ -1,5 +1,6 @@
 package dev.pbenchants.track;
 
+import dev.pbenchants.perk.ShulkerSight;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
@@ -85,7 +86,7 @@ public final class ItemGainTracker {
 		if (stack.is(Items.CHEST) || stack.is(Items.TRAPPED_CHEST) || stack.is(Items.BARREL)) {
 			progress.addCount("craft_chests", amount);
 		}
-		if (stack.is(ItemTags.SHULKER_BOXES)) {
+		if (ShulkerSight.isShulkerBoxItem(stack)) {
 			progress.addCount("craft_shulker_boxes", amount);
 		}
 		if (stack.is(ItemTags.PICKAXES) || stack.is(ItemTags.AXES) || stack.is(ItemTags.SHOVELS)

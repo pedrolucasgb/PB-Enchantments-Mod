@@ -64,7 +64,9 @@ public final class XpOrbs {
 		}
 		while (remaining > 0) {
 			int value = Math.min(remaining, MAX_ORB_VALUE);
-			level.addFreshEntity(new ExperienceOrb(level, pos, direction, value));
+			ExperienceOrb fresh = new ExperienceOrb(level, pos.x, pos.y, pos.z, value);
+			fresh.setDeltaMovement(direction);
+			level.addFreshEntity(fresh);
 			remaining -= value;
 		}
 	}

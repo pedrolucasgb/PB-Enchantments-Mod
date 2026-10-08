@@ -8,7 +8,7 @@ import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -33,7 +33,7 @@ public final class BlockBreakTracker {
 	 * most players meet their first emerald, so the gate sat at 0/1 for them.
 	 */
 	private static final TagKey<Biome> EMERALD_MOUNTAIN = TagKey.create(Registries.BIOME,
-		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "emerald_mountain"));
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.DATA_NS, "emerald_mountain"));
 
 	private BlockBreakTracker() {
 	}
@@ -167,7 +167,6 @@ public final class BlockBreakTracker {
 		if (state.is(Blocks.DARK_OAK_LOG)) return 5;
 		if (state.is(Blocks.MANGROVE_LOG)) return 6;
 		if (state.is(Blocks.CHERRY_LOG)) return 7;
-		if (state.is(Blocks.PALE_OAK_LOG)) return 8;
 		return -1;
 	}
 

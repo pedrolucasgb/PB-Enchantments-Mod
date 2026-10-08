@@ -81,9 +81,10 @@ public abstract class PlayerMixin {
 	 * because this rule is about the holder rather than the item.
 	 */
 	@Redirect(method = "getDestroySpeed", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/world/item/ItemStack;getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"))
-	private float pbenchants$lockedDigsLikeAHand(ItemStack stack, BlockState state) {
+		target = "Lnet/minecraft/world/entity/player/Inventory;getDestroySpeed(Lnet/minecraft/world/level/block/state/BlockState;)F"))
+	private float pbenchants$lockedDigsLikeAHand(net.minecraft.world.entity.player.Inventory inventory, BlockState state) {
 		Player self = (Player) (Object) this;
+		ItemStack stack = inventory.getSelected();
 		// Two very different rules, one redirect, because both answer the same
 		// question: what is this item worth on this block? A locked tool is
 		// worth nothing to a holder who has not earned it, and a Logic I axe is
@@ -171,24 +172,8 @@ public abstract class PlayerMixin {
 	 * Scholar passive adds +20% per rank (rounded up, so even 1-point orbs
 	 * benefit). Level deductions (negative amounts) are untouched.
 	 */
-	/**
-	 * Bulwark III, the defender's half: the axe swing that would disable this
-	 * player's shield simply does not. Redirected at the call site rather than
-	 * on the method itself because the method belongs to the attacker and the
-	 * enchantment belongs to the shield — here, {@code this} is the one holding
-	 * it.
-	 */
-	@Redirect(method = "blockUsingItem", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/world/entity/LivingEntity;getSecondsToDisableBlocking()F"))
-	private float pbenchants$bulwarkRefusesTheDisable(net.minecraft.world.entity.LivingEntity attacker) {
-		float seconds = attacker.getSecondsToDisableBlocking();
-		Player self = (Player) (Object) this;
-		if (seconds > 0.0F && ArmorPerks.enchantLevel(self.getItemBlockingWith(), ModEnchantments.BULWARK)
-			>= ArmorPerks.BULWARK_UNDISABLED) {
-			return 0.0F;
-		}
-		return seconds;
-	}
+	// 1.21.1 port: Bulwark III (Armor tree) has no blockUsingItem/getSecondsToDisableBlocking
+	// hook on this version; Armor is disabled on this build, so it is left out.
 
 	@ModifyVariable(method = "giveExperiencePoints", at = @At("HEAD"), argsOnly = true)
 	private int pbenchants$scholarXpBonus(int amount) {

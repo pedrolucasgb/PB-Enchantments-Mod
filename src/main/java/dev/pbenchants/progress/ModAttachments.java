@@ -3,13 +3,13 @@ package dev.pbenchants.progress;
 import dev.pbenchants.PBEnchants;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.component.ItemContainerContents;
 
 public final class ModAttachments {
 	public static final AttachmentType<PlayerProgress> PROGRESS = AttachmentRegistry.create(
-		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "progress"),
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.DATA_NS, "progress"),
 		builder -> builder
 			.initializer(PlayerProgress::new)
 			.persistent(PlayerProgress.CODEC)
@@ -22,7 +22,7 @@ public final class ModAttachments {
 	 * loses nothing a vanilla player could see; only the annex is ours.
 	 */
 	public static final AttachmentType<ItemContainerContents> ENDER_ANNEX = AttachmentRegistry.create(
-		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "ender_annex"),
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.DATA_NS, "ender_annex"),
 		builder -> builder
 			.initializer(() -> ItemContainerContents.EMPTY)
 			.persistent(ItemContainerContents.CODEC)

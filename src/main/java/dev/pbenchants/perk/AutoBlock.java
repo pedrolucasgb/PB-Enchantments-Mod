@@ -6,7 +6,7 @@ import dev.pbenchants.skill.SkillTrees;
 import dev.pbenchants.storage.ItemLock;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -60,7 +60,7 @@ public final class AutoBlock {
 		new Packing(Items.IRON_INGOT, Items.IRON_BLOCK),
 		new Packing(Items.GOLD_INGOT, Items.GOLD_BLOCK),
 		new Packing(Items.COPPER_INGOT,
-			BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath("minecraft", "copper_block"))),
+			Items.COPPER_BLOCK),
 		new Packing(Items.RAW_IRON, Items.RAW_IRON_BLOCK),
 		new Packing(Items.RAW_GOLD, Items.RAW_GOLD_BLOCK),
 		new Packing(Items.RAW_COPPER, Items.RAW_COPPER_BLOCK),
@@ -95,7 +95,7 @@ public final class AutoBlock {
 			return;
 		}
 		// A locked stack is left loose: that is what locking it asked for.
-		NonNullList<ItemStack> items = player.getInventory().getNonEquipmentItems();
+		NonNullList<ItemStack> items = player.getInventory().items;
 
 		for (Packing packing : active) {
 			int count = 0;

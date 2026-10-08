@@ -49,8 +49,9 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,15 +144,17 @@ public class PBEnchants implements ModInitializer {
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
 			DiggyDiggyHole.onUseBlock(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
 		UseItemCallback.EVENT.register((player, level, hand) ->
-			DiggyDiggyHole.onUseItem(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
+			DiggyDiggyHole.onUseItem(player, hand)
+				? InteractionResultHolder.success(player.getItemInHand(hand))
+				: InteractionResultHolder.pass(player.getItemInHand(hand)));
 		// Artisan: a shulker box right-clicked at nothing, or sneak-clicked
 		// at anything, opens in the hand. Same shape as the shovel above —
 		// the client passes, the server opens; SUCCESS on the block callback
 		// is what stops the box from being placed.
 		UseItemCallback.EVENT.register((player, level, hand) ->
 			dev.pbenchants.perk.ShulkerSight.onUseItem(player, hand)
-				? InteractionResult.SUCCESS
-				: InteractionResult.PASS);
+				? InteractionResultHolder.success(player.getItemInHand(hand))
+				: InteractionResultHolder.pass(player.getItemInHand(hand)));
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
 			dev.pbenchants.perk.ShulkerSight.onUseBlock(player, hand)
 				? InteractionResult.SUCCESS
@@ -180,8 +183,8 @@ public class PBEnchants implements ModInitializer {
 		// its damage path is judged by the attack hooks like any weapon.
 		UseItemCallback.EVENT.register((player, level, hand) ->
 			dev.pbenchants.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
-				? InteractionResult.FAIL
-				: InteractionResult.PASS);
+				? InteractionResultHolder.fail(player.getItemInHand(hand))
+				: InteractionResultHolder.pass(player.getItemInHand(hand)));
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
 			dev.pbenchants.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
 				? InteractionResult.FAIL

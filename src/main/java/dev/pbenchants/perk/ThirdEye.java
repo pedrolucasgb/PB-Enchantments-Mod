@@ -84,7 +84,7 @@ public final class ThirdEye {
 		for (int dx = -CHUNK_RADIUS; dx <= CHUNK_RADIUS; dx++) {
 			for (int dz = -CHUNK_RADIUS; dz <= CHUNK_RADIUS; dz++) {
 				LevelChunk chunk = player.level().getChunkSource()
-					.getChunkNow(centre.x() + dx, centre.z() + dz);
+					.getChunkNow(centre.x + dx, centre.z + dz);
 				if (chunk == null) {
 					continue;
 				}
@@ -138,7 +138,7 @@ public final class ThirdEye {
 			return true;
 		}
 		String path = query.replace(' ', '_');
-		if (stack.getItem().builtInRegistryHolder().key().identifier().getPath().contains(path)) {
+		if (stack.getItem().builtInRegistryHolder().key().location().getPath().contains(path)) {
 			return true;
 		}
 		// Enchantments too, on a book or on gear: "sharpness" finds the book
@@ -146,7 +146,7 @@ public final class ThirdEye {
 		for (var entry : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) {
 			if (Enchantment.getFullname(entry.getKey(), entry.getIntValue()).getString()
 					.toLowerCase(Locale.ROOT).contains(query)
-				|| entry.getKey().unwrapKey().map(key -> key.identifier().getPath().contains(path)).orElse(false)) {
+				|| entry.getKey().unwrapKey().map(key -> key.location().getPath().contains(path)).orElse(false)) {
 				return true;
 			}
 		}

@@ -9,7 +9,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.tags.ItemTags;
@@ -94,7 +94,7 @@ public final class ShulkerSight {
 			return false;
 		}
 		int slot = hand == InteractionHand.MAIN_HAND
-			? serverPlayer.getInventory().getSelectedSlot()
+			? serverPlayer.getInventory().selected
 			: Inventory.SLOT_OFFHAND;
 		serverPlayer.openMenu(new SimpleMenuProvider(
 			(id, inventory, p) -> new Menu(id, inventory, new Contents(inventory, slot, held)),
@@ -104,7 +104,7 @@ public final class ShulkerSight {
 
 	/** The item tag rather than the block class: every colour, and whatever a data pack adds to it. */
 	public static boolean isShulkerBox(ItemStack stack) {
-		return !stack.isEmpty() && stack.is(ItemTags.SHULKER_BOXES);
+		return isShulkerBoxItem(stack);
 	}
 
 	/**
@@ -163,14 +163,24 @@ public final class ShulkerSight {
 		}
 
 		@Override
-		public void clicked(int slotId, int button, ContainerInput input, Player player) {
+		public void clicked(int slotId, int button, ClickType input, Player player) {
 			if (slotId >= 0 && slotId < slots.size() && contents.isSource(slots.get(slotId))) {
 				return;
 			}
-			if (input == ContainerInput.SWAP && contents.isSourceHotkey(button)) {
+			if (input == ClickType.SWAP && contents.isSourceHotkey(button)) {
 				return;
 			}
 			super.clicked(slotId, button, input, player);
 		}
 	}
+
+	/**
+	 * 1.21.1 has no {@code #minecraft:shulker_boxes} item tag (it arrived later),
+	 * so a shulker box is recognised by the block it places.
+	 */
+	public static boolean isShulkerBoxItem(net.minecraft.world.item.ItemStack stack) {
+		return !stack.isEmpty() && stack.getItem() instanceof net.minecraft.world.item.BlockItem blockItem
+			&& blockItem.getBlock() instanceof net.minecraft.world.level.block.ShulkerBoxBlock;
+	}
+
 }

@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * C2S: the Third Eye asks the world. Sent when an inventory screen closes with
@@ -15,7 +15,7 @@ import net.minecraft.resources.Identifier;
  */
 public record ThirdEyeQueryPayload(String query) implements CustomPacketPayload {
 	public static final Type<ThirdEyeQueryPayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "third_eye_query"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "third_eye_query"));
 
 	public static final StreamCodec<FriendlyByteBuf, ThirdEyeQueryPayload> CODEC =
 		CustomPacketPayload.codec(ThirdEyeQueryPayload::write, ThirdEyeQueryPayload::read);

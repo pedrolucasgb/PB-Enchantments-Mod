@@ -12,7 +12,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
@@ -42,7 +42,7 @@ import java.util.List;
  * anyway, so no packet is needed.
  */
 public final class BeamSenseHud {
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "beam_sense");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "beam_sense");
 
 	/** 128 blocks each way, in chunks. */
 	private static final int SCAN_CHUNKS = 8;

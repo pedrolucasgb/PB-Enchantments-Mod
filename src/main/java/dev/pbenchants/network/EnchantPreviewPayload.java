@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public record EnchantPreviewPayload(List<List<Component>> slots) implements Cust
 	public static final int SLOT_COUNT = 3;
 
 	public static final Type<EnchantPreviewPayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "enchant_preview"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "enchant_preview"));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, EnchantPreviewPayload> CODEC =
 		CustomPacketPayload.codec(EnchantPreviewPayload::write, EnchantPreviewPayload::read);

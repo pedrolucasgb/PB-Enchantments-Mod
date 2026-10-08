@@ -99,7 +99,7 @@ public final class PBEnchantsCommand {
 						SharedSuggestionProvider.suggest(dev.pbenchants.perk.BeaconPerks.ATTUNEMENT_NAMES, builder))
 					.executes(context -> attune(context.getSource(), StringArgumentType.getString(context, "power")))))
 			.then(Commands.literal("debug")
-				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+				.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(Commands.literal("master")
 					.then(Commands.argument("enabled", com.mojang.brigadier.arguments.BoolArgumentType.bool())
 						.executes(context -> master(
@@ -480,7 +480,7 @@ public final class PBEnchantsCommand {
 
 	/** The Haste the player carries this instant, as the speed report needs it: "-", "II", "III". */
 	private static String hasteNow(ServerPlayer player) {
-		var haste = player.getEffect(net.minecraft.world.effect.MobEffects.HASTE);
+		var haste = player.getEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED);
 		return haste == null ? "-" : roman(haste.getAmplifier() + 1);
 	}
 
@@ -547,7 +547,7 @@ public final class PBEnchantsCommand {
 		for (int level = 1; level <= maxLevel; level++) {
 			net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
 			for (dev.pbenchants.enchant.ModEnchantments.Grant grant : dev.pbenchants.enchant.ModEnchantments.NODE_GRANTS.values()) {
-				if (grant.enchantment().identifier().getPath().equals(enchantName) && grant.level() == level) {
+				if (grant.enchantment().location().getPath().equals(enchantName) && grant.level() == level) {
 					reference = grant;
 				}
 			}
@@ -578,7 +578,7 @@ public final class PBEnchantsCommand {
 				case "gravity_well":
 					return net.minecraft.world.item.Items.MACE;
 				case "phalanx":
-					return net.minecraft.world.item.Items.DIAMOND_SPEAR;
+					return net.minecraft.world.item.Items.DIAMOND_SWORD; // no spears on 1.21.1
 				case "pinning_shot":
 					return net.minecraft.world.item.Items.CROSSBOW;
 				case "harvest_swing":
@@ -604,7 +604,7 @@ public final class PBEnchantsCommand {
 		for (SkillNode node : tree.nodes().values()) {
 			dev.pbenchants.enchant.ModEnchantments.Grant grant = dev.pbenchants.enchant.ModEnchantments.NODE_GRANTS.get(node.id());
 			if (grant != null) {
-				result.merge(grant.enchantment().identifier().getPath(), grant.level(), Math::max);
+				result.merge(grant.enchantment().location().getPath(), grant.level(), Math::max);
 			}
 		}
 		return result;

@@ -90,7 +90,6 @@ public final class FarmingTracker {
 		if (stack.is(Items.DARK_OAK_SAPLING)) return 5;
 		if (stack.is(Items.MANGROVE_PROPAGULE)) return 6;
 		if (stack.is(Items.CHERRY_SAPLING)) return 7;
-		if (stack.is(Items.PALE_OAK_SAPLING)) return 8;
 		if (stack.is(Items.AZALEA)) return 9;
 		if (stack.is(Items.FLOWERING_AZALEA)) return 10;
 		if (stack.is(Items.CRIMSON_FUNGUS)) return 11;

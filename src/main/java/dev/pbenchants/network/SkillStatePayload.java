@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 	}
 
 	public static final Type<SkillStatePayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "skill_state"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "skill_state"));
 
 	public static final StreamCodec<FriendlyByteBuf, SkillStatePayload> CODEC =
 		CustomPacketPayload.codec(SkillStatePayload::write, SkillStatePayload::read);

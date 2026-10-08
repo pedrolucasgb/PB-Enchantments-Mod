@@ -160,7 +160,7 @@ public final class DiggyDiggyHole {
 		}
 		float carry = Math.min(armed.carry() + TICK_BUDGET, MAX_CARRY);
 
-		ServerLevel level = player.level();
+		ServerLevel level = player.serverLevel();
 		BlockPos support = GroundLevel.support(player);
 		double reach = Math.min(player.blockInteractionRange(), MAX_RADIUS);
 		double reachSq = reach * reach;

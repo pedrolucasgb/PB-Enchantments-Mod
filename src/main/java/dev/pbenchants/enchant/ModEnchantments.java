@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -161,7 +161,7 @@ public final class ModEnchantments {
 	}
 
 	private static ResourceKey<Enchantment> key(String path) {
-		return ResourceKey.create(Registries.ENCHANTMENT, Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, path));
+		return ResourceKey.create(Registries.ENCHANTMENT, ResourceLocation.fromNamespaceAndPath(PBEnchants.DATA_NS, path));
 	}
 
 	@Nullable

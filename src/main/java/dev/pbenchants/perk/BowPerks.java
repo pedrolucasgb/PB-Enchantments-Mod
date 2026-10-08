@@ -17,14 +17,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
-import net.minecraft.world.entity.projectile.arrow.Arrow;
-import net.minecraft.world.entity.projectile.arrow.SpectralArrow;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -297,7 +297,7 @@ public final class BowPerks {
 		if (target instanceof LivingEntity living && pve) {
 			int pinning = weapon.is(Items.CROSSBOW) ? level(shooter, weapon, ModEnchantments.PINNING_SHOT) : 0;
 			if (pinning > 0) {
-				living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS,
+				living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
 					PINNING_TICKS, PINNING_AMPLIFIER, false, true), shooter);
 			}
 		}
@@ -342,7 +342,7 @@ public final class BowPerks {
 		}
 		LivingEntity next = nearestTarget(level, shooter, victim, RICOCHET_RADIUS[Math.min(rank, 2)]);
 		if (next != null) {
-			next.hurtServer(level, shooter.damageSources().arrow(arrow, shooter), damage);
+			next.hurt(shooter.damageSources().arrow(arrow, shooter), damage);
 			level.playSound(null, next.getX(), next.getY(), next.getZ(),
 				SoundEvents.ARROW_HIT, SoundSource.PLAYERS, 0.8F, 1.4F);
 		}
@@ -462,7 +462,7 @@ public final class BowPerks {
 			if (loaded.isEmpty()) {
 				return;
 			}
-			crossbow.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.ofNonEmpty(loaded));
+			crossbow.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(loaded));
 			state(player).lastBackgroundLoad = player.tickCount;
 			player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
 				SoundEvents.CROSSBOW_LOADING_END.value(), SoundSource.PLAYERS, 0.4F, 1.0F);
@@ -553,7 +553,7 @@ public final class BowPerks {
 	/** Fletcher's Bench, half two: chickens and parrots part with one more feather. */
 	public static void featherBounty(ServerPlayer killer, LivingEntity victim) {
 		if (!owns(killer, FLETCHERS_BENCH)
-			|| (victim.getType() != EntityTypes.CHICKEN && victim.getType() != EntityTypes.PARROT)
+			|| (victim.getType() != EntityType.CHICKEN && victim.getType() != EntityType.PARROT)
 			|| !(victim.level() instanceof ServerLevel level)) {
 			return;
 		}

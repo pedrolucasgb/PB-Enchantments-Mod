@@ -3,7 +3,7 @@ package dev.pbenchants.track;
 import dev.pbenchants.progress.TreeProgress;
 import dev.pbenchants.skill.SkillService;
 import dev.pbenchants.skill.SkillTrees;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 
@@ -43,7 +43,7 @@ public final class MovementTracker {
 		line(progress, player, "boat_blocks", Stats.BOAT_ONE_CM);
 		line(progress, player, "elytra_blocks", Stats.AVIATE_ONE_CM);
 		line(progress, player, "mount_blocks", Stats.HORSE_ONE_CM, Stats.MINECART_ONE_CM,
-			Stats.STRIDER_ONE_CM, Stats.PIG_ONE_CM, Stats.HAPPY_GHAST_ONE_CM);
+			Stats.STRIDER_ONE_CM, Stats.PIG_ONE_CM);
 
 		int total = 0;
 		for (String counterId : DISTANCE_LINES) {
@@ -60,9 +60,9 @@ public final class MovementTracker {
 	 * under us (a {@code /stats} wipe, a restored backup). Rebaselining there
 	 * freezes the counter rather than letting it go negative.
 	 */
-	private static void line(TreeProgress progress, ServerPlayer player, String counterId, Identifier... stats) {
+	private static void line(TreeProgress progress, ServerPlayer player, String counterId, ResourceLocation... stats) {
 		int centimetres = 0;
-		for (Identifier stat : stats) {
+		for (ResourceLocation stat : stats) {
 			centimetres += player.getStats().getValue(Stats.CUSTOM, stat);
 		}
 		String baselineId = counterId + "_base_cm";

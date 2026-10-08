@@ -150,7 +150,7 @@ public final class SkillTrees {
 			)),
 			// Tier 4 — Grove Warden
 			new SkillTier(20, List.of(
-				new GateRequirement("overworld_wood_checklist", 9),
+				new GateRequirement("overworld_wood_checklist", 8),
 				new GateRequirement("plant_saplings", 128),
 				new GateRequirement("harvest_apples", 32),
 				new GateRequirement("fell_trees_total", 500)
@@ -161,7 +161,7 @@ public final class SkillTrees {
 			// stewardship of anyone.
 			new SkillTier(30, List.of(
 				new GateRequirement("fell_trees_grand_total", 1000),
-				new GateRequirement("sapling_checklist", 13),
+				new GateRequirement("sapling_checklist", 12),
 				new GateRequirement("plant_saplings", 300)
 			))
 		),
@@ -312,7 +312,7 @@ public final class SkillTrees {
 				.enchantFor(50),
 			SkillNode.of("soul_digger", 3, 8, SkillType.PASSIVE).icon(Items.SOUL_SAND)
 				.costing(mat(Items.SOUL_SAND, 64), mat(Items.BLAZE_POWDER, 8)),
-			SkillNode.of("concrete_setter", 3, 7, SkillType.PASSIVE).icon(Items.CONCRETE.lightBlue())
+			SkillNode.of("concrete_setter", 3, 7, SkillType.PASSIVE).icon(Items.LIGHT_BLUE_CONCRETE)
 				.costing(mat(Items.GRAVEL, 64), mat(Items.WATER_BUCKET, 1)),
 			SkillNode.chained("gilded_roots_2", 3, 9, "gilded_roots_1", SkillType.PASSIVE).icon(Items.GOLDEN_CARROT)
 				.costing(mat(Items.GOLDEN_CARROT, 16), mat(Items.GOLD_BLOCK, 1)),
@@ -820,8 +820,8 @@ public final class SkillTrees {
 			SkillNode.of("gravity_well_1", 3, 10, SkillType.ENCHANTMENT).icon(Items.MACE)
 				.costing(mat(Items.BREEZE_ROD, 2), mat(Items.IRON_INGOT, 32))
 				.enchantFor(20).pve(),
-			SkillNode.of("phalanx_1", 3, 10, SkillType.ENCHANTMENT).icon(Items.IRON_SPEAR)
-				.costing(mat(Items.IRON_SPEAR, 1), mat(Items.COPPER_INGOT, 32))
+			SkillNode.of("phalanx_1", 3, 10, SkillType.ENCHANTMENT).icon(Items.TRIDENT)
+				.costing(mat(Items.TRIDENT, 1), mat(Items.COPPER_INGOT, 32))
 				.enchantFor(20).pve(),
 			SkillNode.of("cleave", 3, 9, SkillType.PASSIVE).icon(Items.DIAMOND_AXE)
 				.costing(mat(Items.DIAMOND_AXE, 1), mat(Items.DIAMOND, 4)).pve(),
@@ -835,7 +835,7 @@ public final class SkillTrees {
 			SkillNode.chained("gravity_well_2", 4, 12, "gravity_well_1", SkillType.ENCHANTMENT).icon(Items.HEAVY_CORE)
 				.costing(mat(Items.BREEZE_ROD, 4), mat(Items.OBSIDIAN, 16))
 				.enchantFor(35).pve(),
-			SkillNode.chained("phalanx_2", 4, 12, "phalanx_1", SkillType.ENCHANTMENT).icon(Items.DIAMOND_SPEAR)
+			SkillNode.chained("phalanx_2", 4, 12, "phalanx_1", SkillType.ENCHANTMENT).icon(Items.TRIDENT)
 				.costing(mat(Items.DIAMOND, 4), mat(Items.COPPER_INGOT, 64))
 				.enchantFor(35).pve(),
 			SkillNode.chained("tidecaller_2", 4, 12, "tidecaller_1", SkillType.ENCHANTMENT).icon(Items.PRISMARINE_CRYSTALS)

@@ -4,6 +4,7 @@ import dev.pbenchants.perk.ArmorPerks;
 import dev.pbenchants.perk.Indestructible;
 import dev.pbenchants.perk.ItemAuthority;
 import dev.pbenchants.storage.ItemLock;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -38,42 +39,32 @@ import java.util.function.Consumer;
  */
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
+	// 1.21.1: there is no applyDamage(newDamage, ...). The item-authority half
+	// zeroes the incoming delta at HEAD; the Indestructible clamp works on the
+	// new damage value, which here is the local stored right before
+	// setDamageValue and the break check — so it is clamped at that STORE.
 	@ModifyVariable(
-		method = "applyDamage(ILnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V",
+		method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V",
 		at = @At("HEAD"), argsOnly = true)
-	private int pbenchants$indestructibleClamp(int damage, int ignored, ServerPlayer player, Consumer<?> onBreak) {
-		ItemStack self = (ItemStack) (Object) this;
+	private int pbenchants$lockedWearsNothing(int damage, int ignored, ServerLevel level, ServerPlayer player, Consumer<?> onBreak) {
 		// An item its holder has not earned wears not at all: they are not
 		// really using it, and it closes the griefing angle where handing
 		// someone a tool burns it out for them.
-		if (player != null && ItemAuthority.locked(player, self)) {
+		if (player != null && ItemAuthority.locked(player, (ItemStack) (Object) this)) {
 			return 0;
 		}
-		return Indestructible.clampDamage(self, damage);
+		return damage;
 	}
 
-	/**
-	 * Padded Lining and Second Skin, on the path armour wears out by. The slot
-	 * overload is the armour one specifically, so nothing here has to guess
-	 * whether a stack was being worn or swung.
-	 */
 	@ModifyVariable(
-		method = "hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;)V",
-		at = @At("HEAD"), argsOnly = true)
-	private int pbenchants$armourWearsSlower(int amount, int ignored, LivingEntity wearer, EquipmentSlot slot) {
-		return ArmorPerks.armourDurability(wearer, (ItemStack) (Object) this, amount);
+		method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V",
+		at = @At("STORE"), ordinal = 1)
+	private int pbenchants$indestructibleClamp(int newDamage) {
+		return Indestructible.clampDamage((ItemStack) (Object) this, newDamage);
 	}
 
-	/**
-	 * Bulwark, on the path a raised shield wears out by — the hand overload,
-	 * which is what a blocked hit uses.
-	 */
-	@ModifyVariable(
-		method = "hurtAndBreak(ILnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/InteractionHand;)V",
-		at = @At("HEAD"), argsOnly = true)
-	private int pbenchants$shieldWearsSlower(int amount, int ignored, LivingEntity holder, InteractionHand hand) {
-		return ArmorPerks.shieldDurability(holder, (ItemStack) (Object) this, amount);
-	}
+	// 1.21.1 port: Padded Lining / Second Skin / Bulwark durability hooks (Armor tree)
+	// are left out — the tree is disabled on this build.
 
 	/**
 	 * Locked Items: the mark does not make a stack a different kind of stack.

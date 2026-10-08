@@ -9,7 +9,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Inventory;
@@ -82,10 +81,10 @@ public final class CombatTracker {
 				progress.addCount("crit_kills", 1);
 			}
 		}
-		if (victim.getType() == EntityTypes.WITHER || victim.getType() == EntityTypes.ELDER_GUARDIAN) {
+		if (victim.getType() == EntityType.WITHER || victim.getType() == EntityType.ELDER_GUARDIAN) {
 			progress.counters.put("slay_boss", 1);
 		}
-		if (victim.getType() == EntityTypes.ENDER_DRAGON) {
+		if (victim.getType() == EntityType.ENDER_DRAGON) {
 			progress.counters.put("slay_dragon", 1);
 		}
 		int bossBit = bossBit(victim);
@@ -119,16 +118,16 @@ public final class CombatTracker {
 	 */
 	private static int bossBit(LivingEntity victim) {
 		EntityType<?> type = victim.getType();
-		if (type == EntityTypes.ELDER_GUARDIAN) {
+		if (type == EntityType.ELDER_GUARDIAN) {
 			return 0;
 		}
-		if (type == EntityTypes.WITHER) {
+		if (type == EntityType.WITHER) {
 			return 1;
 		}
-		if (type == EntityTypes.WARDEN) {
+		if (type == EntityType.WARDEN) {
 			return 2;
 		}
-		if (type == EntityTypes.ENDER_DRAGON) {
+		if (type == EntityType.ENDER_DRAGON) {
 			return 3;
 		}
 		return -1;

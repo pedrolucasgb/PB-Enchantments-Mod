@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.BeaconMenu;
 import net.minecraft.world.item.Item;
@@ -53,9 +53,9 @@ public final class BeaconTracker {
 
 	/** From {@code CombatTracker.onKill}: the skeletons for tier 1, the boss for every tier after. */
 	public static void onKill(ServerPlayer player, LivingEntity victim) {
-		if (victim.getType() == EntityTypes.WITHER_SKELETON) {
+		if (victim.getType() == EntityType.WITHER_SKELETON) {
 			progress(player).addCount("kill_wither_skeletons", 1);
-		} else if (victim.getType() == EntityTypes.WITHER) {
+		} else if (victim.getType() == EntityType.WITHER) {
 			progress(player).addCount("slay_wither", 1);
 		}
 	}
@@ -107,7 +107,7 @@ public final class BeaconTracker {
 		BlockPos pos = ((BeaconMenuAccessor) menu).pbenchants$access()
 			.evaluate((level, at) -> at).orElse(null);
 		if (pos != null) {
-			String key = player.level().dimension().identifier() + "/" + pos.getX() + "/" + pos.getY() + "/" + pos.getZ();
+			String key = player.level().dimension().location() + "/" + pos.getX() + "/" + pos.getY() + "/" + pos.getZ();
 			progress.see("beacon", key, "beacons_activated");
 		}
 	}
@@ -141,19 +141,19 @@ public final class BeaconTracker {
 
 	/** The five powers a beacon grants, in {@code GateChecklists}' order; -1 for anything else. */
 	private static int checklistBit(Holder<MobEffect> effect) {
-		if (Objects.equals(effect, MobEffects.SPEED)) {
+		if (Objects.equals(effect, MobEffects.MOVEMENT_SPEED)) {
 			return 0;
 		}
-		if (Objects.equals(effect, MobEffects.HASTE)) {
+		if (Objects.equals(effect, MobEffects.DIG_SPEED)) {
 			return 1;
 		}
-		if (Objects.equals(effect, MobEffects.RESISTANCE)) {
+		if (Objects.equals(effect, MobEffects.DAMAGE_RESISTANCE)) {
 			return 2;
 		}
-		if (Objects.equals(effect, MobEffects.JUMP_BOOST)) {
+		if (Objects.equals(effect, MobEffects.JUMP)) {
 			return 3;
 		}
-		if (Objects.equals(effect, MobEffects.STRENGTH)) {
+		if (Objects.equals(effect, MobEffects.DAMAGE_BOOST)) {
 			return 4;
 		}
 		return -1;

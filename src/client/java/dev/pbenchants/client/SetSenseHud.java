@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
@@ -25,7 +25,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * harder you are hit, which is the fact the node exists to surface.
  */
 public final class SetSenseHud {
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "set_sense");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "set_sense");
 
 	/** The hit the readout is quoted against. A ten-point blow: a strong mob, not a fall. */
 	private static final float REFERENCE_HIT = 10.0F;
