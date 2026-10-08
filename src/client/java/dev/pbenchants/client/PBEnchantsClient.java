@@ -26,7 +26,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 	public static final KeyMapping OPEN_TREE_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 		"key.pbenchants.open_tree",
 		InputConstants.Type.KEYSYM,
-		GLFW.GLFW_KEY_K,
+		GLFW.GLFW_KEY_H, // 26.x: K. Cobblemon pack: K is Crafting Tweaks compress (shares the key map)
 		"key.categories.misc"
 	));
 
@@ -51,7 +51,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 	public static final KeyMapping OPEN_ENDER_CHEST_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 		"key.pbenchants.open_ender_chest",
 		InputConstants.Type.KEYSYM,
-		GLFW.GLFW_KEY_B,
+		GLFW.GLFW_KEY_V, // 26.x: B. Cobblemon pack: B is Xaero Minimap new waypoint
 		"key.categories.misc"
 	));
 

@@ -25,6 +25,7 @@
 		"ItemEntityMixin",
 		"ItemStackMixin",
 		"LivingEntityMixin",
+		"LootEnchantFilterMixin",
 		"MerchantResultSlotMixin",
 		"PiglinAiMixin",
 		"PlayerMixin",

@@ -235,6 +235,14 @@ public class SkillTreeScreen extends Screen {
 
 		buildBackdropToggle();
 
+		// A tree the server switched off has no tab; never land on one.
+		if (dev.pbenchants.skill.TreeSwitch.disabled(treeId)) {
+			java.util.List<SkillTree> enabled = dev.pbenchants.skill.TreeSwitch.enabledTrees();
+			if (!enabled.isEmpty()) {
+				treeId = enabled.getFirst().id();
+				lastTreeId = treeId;
+			}
+		}
 		treeTop = buildTabs() + 6;
 		treeBottom = height - 20;
 
@@ -310,7 +318,7 @@ public class SkillTreeScreen extends Screen {
 		int x = MARGIN;
 		int y = TITLE_BAR + 3;
 		boolean compact = !tabsFitLabelled();
-		for (SkillTree tree : SkillTrees.ORDER) {
+		for (SkillTree tree : dev.pbenchants.skill.TreeSwitch.enabledTrees()) {
 			Component label = tree.shortName();
 			int tabWidth = compact ? ClassTabWidget.ICON_ONLY_WIDTH : ClassTabWidget.widthFor(font, label);
 			if (x + tabWidth > treeRight && x > MARGIN) {
@@ -356,7 +364,7 @@ public class SkillTreeScreen extends Screen {
 	/** Whether one row holds every tab with its name on it. */
 	private boolean tabsFitLabelled() {
 		int total = MARGIN;
-		for (SkillTree tree : SkillTrees.ORDER) {
+		for (SkillTree tree : dev.pbenchants.skill.TreeSwitch.enabledTrees()) {
 			total += ClassTabWidget.widthFor(font, tree.shortName()) + 2;
 		}
 		for (SkillTrees.PlannedTree planned : SkillTrees.PLANNED) {

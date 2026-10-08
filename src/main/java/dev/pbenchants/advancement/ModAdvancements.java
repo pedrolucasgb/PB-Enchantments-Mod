@@ -87,6 +87,9 @@ public final class ModAdvancements {
 	 */
 	public static void syncAll(ServerPlayer player) {
 		for (SkillTree tree : SkillTrees.ALL.values()) {
+			if (dev.pbenchants.skill.TreeSwitch.disabled(tree)) {
+				continue; // its advancements are not shipped on a build that disables it
+			}
 			TreeProgress progress = SkillService.progress(player, tree);
 			for (int tierIndex = 0; tierIndex < tree.tiers().size(); tierIndex++) {
 				if (tierIndex < progress.unlockedTiers) {

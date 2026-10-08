@@ -202,7 +202,11 @@ public final class ModNetworking {
 	private static int fingerprint(ServerPlayer player) {
 		PlayerProgress progress = ModAttachments.of(player);
 		int hash = Boolean.hashCode(progress.debugMaster);
+		hash = 31 * hash + dev.pbenchants.skill.TreeSwitch.disabledIds().hashCode();
 		for (SkillTree tree : SkillTrees.ALL.values()) {
+			if (dev.pbenchants.skill.TreeSwitch.disabled(tree)) {
+				continue;
+			}
 			TreeProgress treeProgress = progress.tree(tree.id());
 			hash = 31 * hash + treeProgress.unlockedTiers;
 			hash = 31 * hash + treeProgress.purchased.hashCode();
@@ -216,6 +220,9 @@ public final class ModNetworking {
 		PlayerProgress progress = ModAttachments.of(player);
 		Map<String, SkillStatePayload.TreeState> trees = new HashMap<>();
 		for (SkillTree tree : SkillTrees.ALL.values()) {
+			if (dev.pbenchants.skill.TreeSwitch.disabled(tree)) {
+				continue; // the client is told the tree is off, never what is in it
+			}
 			TreeProgress treeProgress = progress.tree(tree.id());
 			trees.put(tree.id(), new SkillStatePayload.TreeState(
 				treeProgress.unlockedTiers,
@@ -225,6 +232,7 @@ public final class ModNetworking {
 			));
 		}
 		LAST_SYNC.put(player.getUUID(), fingerprint(player));
-		ServerPlayNetworking.send(player, new SkillStatePayload(progress.debugMaster, trees));
+		ServerPlayNetworking.send(player, new SkillStatePayload(progress.debugMaster, trees,
+			new HashSet<>(dev.pbenchants.skill.TreeSwitch.disabledIds())));
 	}
 }

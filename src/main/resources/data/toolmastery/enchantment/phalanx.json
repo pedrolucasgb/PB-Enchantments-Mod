@@ -16,6 +16,6 @@
   "slots": [
     "mainhand"
   ],
-  "supported_items": "#minecraft:spears",
+  "supported_items": "#minecraft:enchantable/sword",
   "weight": 3
 }

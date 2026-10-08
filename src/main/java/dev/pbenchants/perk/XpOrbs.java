@@ -45,7 +45,14 @@ public final class XpOrbs {
 	}
 
 	/** Replaces {@code ExperienceOrb.awardWithDirection}; the mixin has already refused amounts of zero. */
-	public static void award(ServerLevel level, Vec3 pos, Vec3 direction, int amount) {
+	private static final boolean CLUMPS = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("clumps");
+
+	/** True when Clumps is installed: it owns orb merging, and this class stands aside. */
+	public static boolean deferToClumps() {
+		return CLUMPS;
+	}
+
+	public static void award(ServerLevel level, Vec3 pos, @org.jetbrains.annotations.Nullable Vec3 direction, int amount) {
 		int remaining = amount;
 		AABB box = AABB.ofSize(pos, MERGE_RADIUS * 2, MERGE_RADIUS * 2, MERGE_RADIUS * 2);
 		List<ExperienceOrb> nearby = level.getEntitiesOfClass(ExperienceOrb.class, box,
@@ -65,7 +72,9 @@ public final class XpOrbs {
 		while (remaining > 0) {
 			int value = Math.min(remaining, MAX_ORB_VALUE);
 			ExperienceOrb fresh = new ExperienceOrb(level, pos.x, pos.y, pos.z, value);
-			fresh.setDeltaMovement(direction);
+			if (direction != null) {
+				fresh.setDeltaMovement(direction);
+			}
 			level.addFreshEntity(fresh);
 			remaining -= value;
 		}

@@ -20,13 +20,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(ExperienceOrb.class)
 public abstract class ExperienceOrbMixin {
-	@Inject(method = "awardWithDirection", at = @At("HEAD"), cancellable = true)
-	private static void pbenchants$fewerLargerOrbs(ServerLevel level, Vec3 pos, Vec3 direction, int amount,
-			CallbackInfo ci) {
-		if (amount <= 0) {
+	@Inject(method = "award", at = @At("HEAD"), cancellable = true)
+	private static void pbenchants$fewerLargerOrbs(ServerLevel level, Vec3 pos, int amount, CallbackInfo ci) {
+		// Clumps (Cobblemon modpack) already merges orbs, and it pays out from
+		// its own per-orb value map rather than from the value field, so XP
+		// folded into one of its orbs would be lost. With Clumps loaded vanilla's
+		// award runs untouched and Clumps does the merging.
+		if (amount <= 0 || XpOrbs.deferToClumps()) {
 			return;
 		}
 		ci.cancel();
-		XpOrbs.award(level, pos, direction, amount);
+		XpOrbs.award(level, pos, null, amount);
 	}
 }

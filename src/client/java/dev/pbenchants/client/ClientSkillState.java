@@ -16,6 +16,8 @@ public final class ClientSkillState {
 	}
 
 	public static void accept(SkillStatePayload payload) {
+		// The server decides which trees exist on it; its list wins over ours.
+		dev.pbenchants.skill.TreeSwitch.acceptFromServer(payload.disabledTrees());
 		trees = payload.trees();
 		debugMaster = payload.debugMaster();
 		if (changeListener != null) {
@@ -27,6 +29,8 @@ public final class ClientSkillState {
 	public static void clear() {
 		trees = Map.of();
 		debugMaster = false;
+		// Back to this client's own config until the next server says otherwise.
+		dev.pbenchants.skill.TreeSwitch.applyConfig();
 	}
 
 	/** Whether /mastery debug master is on — the skill screen shows free prices. */
@@ -35,6 +39,9 @@ public final class ClientSkillState {
 	}
 
 	public static boolean owns(String treeId, String nodeId) {
+		if (dev.pbenchants.skill.TreeSwitch.disabled(treeId)) {
+			return false;
+		}
 		SkillStatePayload.TreeState state = trees.get(treeId);
 		return state != null && state.purchased().contains(nodeId);
 	}

@@ -35,6 +35,9 @@ public final class PerkAccess {
 	}
 
 	public static boolean owns(Player player, SkillTree tree, String nodeId) {
+		if (dev.pbenchants.skill.TreeSwitch.disabled(tree)) {
+			return false;
+		}
 		if (player instanceof ServerPlayer serverPlayer) {
 			return SkillService.owns(serverPlayer, tree, nodeId);
 		}

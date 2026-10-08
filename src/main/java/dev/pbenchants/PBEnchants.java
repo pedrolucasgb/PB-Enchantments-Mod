@@ -79,6 +79,10 @@ public class PBEnchants implements ModInitializer {
 		// The sword tree is the first part of the mod whose balance depends on
 		// what kind of server it is running on. Two switches, read once.
 		PBEnchantsConfig.load();
+		// Which trees this server runs at all (bow/armor/sword are always off on 1.21.1).
+		dev.pbenchants.skill.TreeSwitch.applyConfig();
+		// 1.21.1 villager trades are code, not data: the librarian offers.
+		dev.pbenchants.enchant.LibrarianTrades.register();
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			PBEnchantsCommand.register(dispatcher));
