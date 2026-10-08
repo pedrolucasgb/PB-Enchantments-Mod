@@ -4,10 +4,8 @@ import dev.pbenchants.PBEnchants;
 import dev.pbenchants.client.gui.SkillTreeStyle;
 import dev.pbenchants.perk.BeaconPerks;
 import dev.pbenchants.skill.SkillNode;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -63,7 +61,11 @@ public final class BeamSenseHud {
 	}
 
 	public static void register() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.ARMOR_BAR, ID, (graphics, delta) -> draw(graphics));
+		net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, delta) -> {
+			if (!net.minecraft.client.Minecraft.getInstance().options.hideGui) {
+				draw(graphics);
+			}
+		});
 	}
 
 	public static void clear() {
@@ -71,7 +73,7 @@ public final class BeamSenseHud {
 		lastScan = 0;
 	}
 
-	private static void draw(GuiGraphicsExtractor graphics) {
+	private static void draw(GuiGraphics graphics) {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;
 		ClientLevel level = client.level;
@@ -109,7 +111,7 @@ public final class BeamSenseHud {
 		int y = MARGIN;
 		for (int i = 0; i < lines.size(); i++) {
 			int color = i == 0 && nearest != null ? SkillTreeStyle.GOLD : SkillTreeStyle.MUTED;
-			graphics.text(client.font, lines.get(i), MARGIN, y, color);
+			graphics.drawString(client.font, lines.get(i), MARGIN, y, color);
 			y += LINE_HEIGHT;
 		}
 	}

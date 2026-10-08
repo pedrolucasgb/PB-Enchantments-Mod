@@ -3,8 +3,6 @@ package dev.pbenchants.client;
 import dev.pbenchants.PBEnchants;
 import dev.pbenchants.client.gui.SkillTreeStyle;
 import dev.pbenchants.perk.BowPerks;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -33,10 +31,14 @@ public final class QuiverSenseHud {
 	}
 
 	public static void register() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.ARMOR_BAR, ID, (graphics, delta) -> draw(graphics));
+		net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, delta) -> {
+			if (!net.minecraft.client.Minecraft.getInstance().options.hideGui) {
+				draw(graphics);
+			}
+		});
 	}
 
-	private static void draw(net.minecraft.client.gui.GuiGraphicsExtractor graphics) {
+	private static void draw(net.minecraft.client.gui.GuiGraphics graphics) {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;
 		if (player == null || player.isSpectator() || !BowPerks.owns(player, BowPerks.QUIVER_SENSE)) {
@@ -55,7 +57,7 @@ public final class QuiverSenseHud {
 		// mirror of Set Sense's seat on the armour side.
 		int x = graphics.guiWidth() / 2 + 91 - client.font.width(text);
 		int y = graphics.guiHeight() - 49 - 10;
-		graphics.text(client.font, text, x, y, SkillTreeStyle.MUTED);
+		graphics.drawString(client.font, text, x, y, SkillTreeStyle.MUTED);
 	}
 
 	private static ItemStack heldRangedWeapon(LocalPlayer player) {

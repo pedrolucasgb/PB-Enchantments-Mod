@@ -2,7 +2,6 @@ package dev.pbenchants.client.mixin;
 
 import dev.pbenchants.client.ArtisanScreenHooks;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.input.KeyEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,8 +34,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(AbstractContainerScreen.class)
 public class ContainerScreenSearchMixin {
 	@Inject(method = "keyPressed", cancellable = true, at = @At(value = "INVOKE", ordinal = 0,
-		target = "Lnet/minecraft/client/KeyMapping;matches(Lnet/minecraft/client/input/KeyEvent;)Z"))
-	private void pbenchants$searchFieldEatsShortcuts(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+		target = "Lnet/minecraft/client/KeyMapping;matches(II)Z"))
+	private void pbenchants$searchFieldEatsShortcuts(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
 		if (ArtisanScreenHooks.searchHasFocus()) {
 			cir.setReturnValue(true);
 		}

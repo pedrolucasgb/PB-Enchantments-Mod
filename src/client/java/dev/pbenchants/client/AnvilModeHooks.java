@@ -49,8 +49,8 @@ public final class AnvilModeHooks {
 			button.setTooltip(tooltip());
 			button.visible = false;
 			toggle = button;
-			Screens.getWidgets(screen).add(button);
-			ScreenEvents.beforeExtract(screen).register((self, graphics, mouseX, mouseY, delta) ->
+			Screens.getButtons(screen).add(button);
+			ScreenEvents.beforeRender(screen).register((self, graphics, mouseX, mouseY, delta) ->
 				layout(anvil));
 			ScreenEvents.remove(screen).register(self -> {
 				toggle = null;

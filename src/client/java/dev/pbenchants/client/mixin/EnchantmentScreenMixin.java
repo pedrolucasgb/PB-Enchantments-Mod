@@ -2,7 +2,7 @@ package dev.pbenchants.client.mixin;
 
 import dev.pbenchants.client.EnchantPreviewState;
 import dev.pbenchants.enchant.EnchanterPerks;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
 import net.minecraft.network.chat.Component;
@@ -42,8 +42,8 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
 		EnchantPreviewState.clear();
 	}
 
-	@Inject(method = "extractRenderState", at = @At("TAIL"))
-	private void pbenchants$drawInsightPreview(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+	@Inject(method = "render", at = @At("TAIL"))
+	private void pbenchants$drawInsightPreview(GuiGraphics graphics, int mouseX, int mouseY,
 	                                            float delta, CallbackInfo ci) {
 		if (EnchantPreviewState.isEmpty()) {
 			return;
@@ -72,21 +72,21 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
 		int panelWidth = widest + 8;
 		int panelHeight = 14 + lineCount * 10 + 4;
 		graphics.fill(x, y, x + panelWidth, y + panelHeight, COLOR_PANEL);
-		graphics.outline(x, y, panelWidth, panelHeight, COLOR_PANEL_BORDER);
+		graphics.renderOutline(x, y, panelWidth, panelHeight, COLOR_PANEL_BORDER);
 
 		int textY = y + 4;
-		graphics.text(font, Component.translatable("screen.pbenchants.insight_title"), x + 4, textY, COLOR_GOLD);
+		graphics.drawString(font, Component.translatable("screen.pbenchants.insight_title"), x + 4, textY, COLOR_GOLD);
 		textY += 12;
 		for (int slot = 0; slot < 3; slot++) {
 			List<Component> lines = EnchantPreviewState.slot(slot);
 			if (lines.isEmpty()) {
 				continue;
 			}
-			graphics.text(font, Component.translatable("screen.pbenchants.insight_slot", slot + 1),
+			graphics.drawString(font, Component.translatable("screen.pbenchants.insight_slot", slot + 1),
 				x + 4, textY, COLOR_GOLD);
 			textY += 10;
 			for (Component line : lines) {
-				graphics.text(font, line, x + 10, textY, COLOR_TEXT);
+				graphics.drawString(font, line, x + 10, textY, COLOR_TEXT);
 				textY += 10;
 			}
 		}
@@ -96,7 +96,7 @@ public abstract class EnchantmentScreenMixin extends AbstractContainerScreen<Enc
 	 * Inner Focus visual: the screen gates the offer sprites, cost colors and
 	 * the pre-click check on the synced lapis count; owners see them enabled.
 	 */
-	@Redirect(method = {"extractBackground", "extractRenderState"}, at = @At(value = "INVOKE",
+	@Redirect(method = {"renderBg", "render"}, at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/inventory/EnchantmentMenu;getGoldCount()I"))
 	private int pbenchants$innerFocusGoldCount(EnchantmentMenu menu) {
 		if (minecraft != null && minecraft.player != null

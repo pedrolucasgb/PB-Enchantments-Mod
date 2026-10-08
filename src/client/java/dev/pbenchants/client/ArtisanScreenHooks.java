@@ -16,13 +16,12 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
@@ -96,11 +95,11 @@ public final class ArtisanScreenHooks {
 				return;
 			}
 			attach(container);
-			ScreenEvents.beforeExtract(screen).register((self, graphics, mouseX, mouseY, delta) ->
+			ScreenEvents.beforeRender(screen).register((self, graphics, mouseX, mouseY, delta) ->
 				layout(container));
-			ScreenEvents.afterForeground(screen).register(ArtisanScreenHooks::drawOverlay);
-			ScreenMouseEvents.allowMouseClick(screen).register((clicked, event) ->
-				!pinClicked(container, event) && !shulkerClicked(container, event));
+			ContainerForeground.register(screen, ArtisanScreenHooks::drawOverlay);
+			ScreenMouseEvents.allowMouseClick(screen).register((clicked, mouseX, mouseY, button) ->
+				!pinClicked(container, mouseX, mouseY, button) && !shulkerClicked(container, mouseX, mouseY, button));
 			ScreenEvents.remove(screen).register(self -> {
 				forget();
 				// Third Eye asks the world before the rank-I wipe below can
@@ -124,7 +123,7 @@ public final class ArtisanScreenHooks {
 			// The node can be lost to a /mastery reset between two screens.
 			ArtisanSearch.clear();
 		}
-		List<AbstractWidget> widgets = Screens.getWidgets(screen);
+		List<AbstractWidget> widgets = Screens.getButtons(screen);
 		boolean hasStorage = isStorageMenu(screen);
 
 		if (ArtisanSearch.available()) {
@@ -307,7 +306,7 @@ public final class ArtisanScreenHooks {
 	}
 
 	/** Artisan's Order wears the order it is set to, so one glance says which one that is. */
-	private static void drawOrderSymbol(GuiGraphicsExtractor graphics, Font font, int x, int y, int color) {
+	private static void drawOrderSymbol(GuiGraphics graphics, Font font, int x, int y, int color) {
 		switch (ClientArtisanState.sortMode()) {
 			case CATEGORY -> ArtisanIcons.byCategory(graphics, x, y, color);
 			case NAME -> ArtisanIcons.letter(graphics, font, "A", x, y, color);
@@ -320,7 +319,7 @@ public final class ArtisanScreenHooks {
 	}
 
 	private static void drawAutoBlockSymbol(
-			GuiGraphicsExtractor graphics,
+			GuiGraphics graphics,
 			Font font,
 			int x,
 			int y,
@@ -356,7 +355,7 @@ public final class ArtisanScreenHooks {
 	 * Seeker's Eye matched, and the gold frame on every locked stack — in the
 	 * bag or in the chest, since the mark travels with the item.
 	 */
-	private static void drawOverlay(Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+	private static void drawOverlay(Screen screen, GuiGraphics graphics, int mouseX, int mouseY,
 			float delta) {
 		if (!(screen instanceof AbstractContainerScreen<?> container)) {
 			return;
@@ -368,13 +367,13 @@ public final class ArtisanScreenHooks {
 		for (Slot slot : container.getMenu().slots) {
 			if (searching && ArtisanSearch.matches(slot)) {
 				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 16, top + slot.y + 16, MATCH_FILL);
-				graphics.outline(left + slot.x, top + slot.y, 16, 16, SkillTreeStyle.GOLD);
+				graphics.renderOutline(left + slot.x, top + slot.y, 16, 16, SkillTreeStyle.GOLD);
 			}
 			ItemStack stack = slot.getItem();
 			boolean locked = ItemLock.locked(stack);
 			boolean voided = ItemLock.voided(stack);
 			if (locked) {
-				graphics.outline(left + slot.x - 1, top + slot.y - 1, 18, 18, SkillTreeStyle.GOLD);
+				graphics.renderOutline(left + slot.x - 1, top + slot.y - 1, 18, 18, SkillTreeStyle.GOLD);
 				graphics.fill(left + slot.x, top + slot.y, left + slot.x + 5, top + slot.y + 5,
 					SkillTreeStyle.GOLD);
 			}
@@ -382,7 +381,7 @@ public final class ArtisanScreenHooks {
 				// The frame is the lock's when both marks are on; the corner
 				// square in the opposite corner is what says "filter".
 				if (!locked) {
-					graphics.outline(left + slot.x - 1, top + slot.y - 1, 18, 18, VOID_MARK);
+					graphics.renderOutline(left + slot.x - 1, top + slot.y - 1, 18, 18, VOID_MARK);
 				}
 				graphics.fill(left + slot.x + 11, top + slot.y + 11, left + slot.x + 16, top + slot.y + 16,
 					VOID_MARK);
@@ -401,15 +400,15 @@ public final class ArtisanScreenHooks {
 	 * may. Only the player's own slots: a stack in a chest is released by
 	 * bringing it back first.
 	 */
-	private static boolean pinClicked(AbstractContainerScreen<?> screen, MouseButtonEvent event) {
-		if (!event.hasAltDown()) {
+	private static boolean pinClicked(AbstractContainerScreen<?> screen, double mouseX, double mouseY, int button) {
+		if (!Screen.hasAltDown()) {
 			return false;
 		}
-		boolean right = event.button() == 1;
+		boolean right = button == 1;
 		if (!ClientArtisanState.owns(right ? ItemLock.VOID_NODE : ItemLock.NODE)) {
 			return false;
 		}
-		Slot slot = slotAt(screen, event.x(), event.y());
+		Slot slot = slotAt(screen, mouseX, mouseY);
 		if (slot == null || !(slot.container instanceof Inventory) || slot.getItem().isEmpty()) {
 			return false;
 		}
@@ -427,8 +426,8 @@ public final class ArtisanScreenHooks {
 	 * Only with an empty cursor: a click that is carrying something is trying
 	 * to put it down, not to look inside.
 	 */
-	private static boolean shulkerClicked(AbstractContainerScreen<?> screen, MouseButtonEvent event) {
-		if (event.button() != 1 || event.hasAltDown()) {
+	private static boolean shulkerClicked(AbstractContainerScreen<?> screen, double mouseX, double mouseY, int button) {
+		if (button != 1 || Screen.hasAltDown()) {
 			return false;
 		}
 		if (!ClientArtisanState.owns(ShulkerSight.NODE)) {
@@ -437,7 +436,7 @@ public final class ArtisanScreenHooks {
 		if (!screen.getMenu().getCarried().isEmpty()) {
 			return false;
 		}
-		Slot slot = slotAt(screen, event.x(), event.y());
+		Slot slot = slotAt(screen, mouseX, mouseY);
 		if (slot == null || !(slot.container instanceof Inventory)
 			|| !ShulkerSight.isShulkerBox(slot.getItem())) {
 			return false;

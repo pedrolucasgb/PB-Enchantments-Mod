@@ -19,13 +19,11 @@ import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
 import dev.pbenchants.skill.XpMath;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -501,40 +499,40 @@ public class SkillTreeScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		if (overPanelScrollbar(event.x(), event.y())) {
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if (overPanelScrollbar(mouseX, mouseY)) {
 			draggingPanelScrollbar = true;
-			dragPanelScrollbarTo(event.y());
+			dragPanelScrollbarTo(mouseY);
 			return true;
 		}
-		if (maxScrollX > 0 && event.y() >= scrollbarTop() - 2
-			&& event.y() <= scrollbarTop() + SCROLLBAR_HEIGHT + 2
-			&& event.x() >= MARGIN && event.x() <= treeRight) {
+		if (maxScrollX > 0 && mouseY >= scrollbarTop() - 2
+			&& mouseY <= scrollbarTop() + SCROLLBAR_HEIGHT + 2
+			&& mouseX >= MARGIN && mouseX <= treeRight) {
 			draggingScrollbar = true;
-			dragScrollbarTo(event.x());
+			dragScrollbarTo(mouseX);
 			return true;
 		}
-		return super.mouseClicked(event, doubleClick);
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 
 	@Override
-	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+	public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
 		if (draggingPanelScrollbar) {
-			dragPanelScrollbarTo(event.y());
+			dragPanelScrollbarTo(mouseY);
 			return true;
 		}
 		if (draggingScrollbar) {
-			dragScrollbarTo(event.x());
+			dragScrollbarTo(mouseX);
 			return true;
 		}
-		return super.mouseDragged(event, dragX, dragY);
+		return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
 	}
 
 	@Override
-	public boolean mouseReleased(MouseButtonEvent event) {
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		draggingScrollbar = false;
 		draggingPanelScrollbar = false;
-		return super.mouseReleased(event);
+		return super.mouseReleased(mouseX, mouseY, button);
 	}
 
 	/**
@@ -543,19 +541,19 @@ public class SkillTreeScreen extends Screen {
 	 * vanilla's inventory offers with E.
 	 */
 	@Override
-	public boolean keyPressed(KeyEvent event) {
-		if (PBEnchantsClient.OPEN_TREE_KEY.matches(event)) {
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		if (PBEnchantsClient.OPEN_TREE_KEY.matches(keyCode, scanCode)) {
 			// Tell the key handler this press has been spent, or the same press
 			// still queued on the mapping reopens the screen on this tick.
 			PBEnchantsClient.treeClosedByKey();
 			onClose();
 			return true;
 		}
-		if (minecraft != null && minecraft.options.keyInventory.matches(event)) {
+		if (minecraft != null && minecraft.options.keyInventory.matches(keyCode, scanCode)) {
 			onClose();
 			return true;
 		}
-		return super.keyPressed(event);
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 
 	/** The colour a node wears in the tree, and the reason behind it. */
@@ -976,8 +974,17 @@ public class SkillTreeScreen extends Screen {
 
 	// ---------- rendering ----------
 
+	/**
+	 * 1.21.1's {@code Screen.render} paints the blurred backdrop before the
+	 * widgets; this screen draws its own opaque backdrop first, so the vanilla
+	 * one is skipped (it would land on top of the tree canvas).
+	 */
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+	}
+
+	@Override
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		graphics.fill(0, 0, width, height, SkillTreeStyle.backdrop());
 
 		SkillTree tree = SkillTrees.byId(treeId);
@@ -991,7 +998,7 @@ public class SkillTreeScreen extends Screen {
 
 		// Widgets (tabs, buttons) draw over the frame; the details text goes on
 		// last, clipped to its panel.
-		super.extractRenderState(graphics, mouseX, mouseY, delta);
+		super.render(graphics, mouseX, mouseY, delta);
 
 		drawDetails(graphics, mouseX, mouseY);
 		drawXpBar(graphics);
@@ -1003,7 +1010,7 @@ public class SkillTreeScreen extends Screen {
 	 * details panel, framed in the verdict's colour. Drawn last so nothing
 	 * paints over it.
 	 */
-	private void drawFeedback(GuiGraphicsExtractor graphics) {
+	private void drawFeedback(GuiGraphics graphics) {
 		if (feedback == null) {
 			return;
 		}
@@ -1020,24 +1027,24 @@ public class SkillTreeScreen extends Screen {
 			feedbackOk ? SkillTreeStyle.GREEN : SkillTreeStyle.BAD);
 		int textY = y + 4;
 		for (FormattedCharSequence line : lines) {
-			graphics.text(font, line, x + 6, textY, SkillTreeStyle.TEXT);
+			graphics.drawString(font, line, x + 6, textY, SkillTreeStyle.TEXT);
 			textY += 10;
 		}
 	}
 
-	private void drawTitleBar(GuiGraphicsExtractor graphics, @Nullable SkillTree tree) {
+	private void drawTitleBar(GuiGraphics graphics, @Nullable SkillTree tree) {
 		graphics.fill(0, 0, width, TITLE_BAR, SkillTreeStyle.panelDeepFill());
 		graphics.fill(0, TITLE_BAR, width, TITLE_BAR + 1, SkillTreeStyle.BORDER);
-		graphics.text(font, title, MARGIN, 4, SkillTreeStyle.GOLD);
+		graphics.drawString(font, title, MARGIN, 4, SkillTreeStyle.GOLD);
 		if (tree != null) {
 			String name = SkillTreeStyle.trim(font, tree.displayName().getString(),
 				Math.max(40, treeRight - MARGIN - font.width(title) - 12));
-			graphics.text(font, name, treeRight - font.width(name), 4, SkillTreeStyle.MUTED);
+			graphics.drawString(font, name, treeRight - font.width(name), 4, SkillTreeStyle.MUTED);
 		}
 	}
 
 	/** The tree background: the column strips, then the prerequisite wiring. */
-	private void drawTreeCanvas(GuiGraphicsExtractor graphics, @Nullable SkillTree tree,
+	private void drawTreeCanvas(GuiGraphics graphics, @Nullable SkillTree tree,
 			@Nullable SkillStatePayload.TreeState state, int mouseX, int mouseY, float delta) {
 		if (tree == null) {
 			return;
@@ -1059,7 +1066,7 @@ public class SkillTreeScreen extends Screen {
 		}
 		drawConnectors(graphics, state);
 		for (Positioned positioned : treeWidgets) {
-			positioned.widget().extractRenderState(graphics, mouseX, mouseY, delta);
+			positioned.widget().render(graphics, mouseX, mouseY, delta);
 		}
 		graphics.disableScissor();
 	}
@@ -1070,7 +1077,7 @@ public class SkillTreeScreen extends Screen {
 	 * window. The thumb is as wide a share of the track as the viewport is of
 	 * the tree, so its size says how much you are not seeing.
 	 */
-	private void drawScrollbar(GuiGraphicsExtractor graphics) {
+	private void drawScrollbar(GuiGraphics graphics) {
 		if (maxScrollX <= 0) {
 			return;
 		}
@@ -1087,7 +1094,7 @@ public class SkillTreeScreen extends Screen {
 	 * between the columns; one in the same column — a node that needs the top
 	 * rank of its own tier — routes around the left edge instead.
 	 */
-	private void drawConnectors(GuiGraphicsExtractor graphics, @Nullable SkillStatePayload.TreeState state) {
+	private void drawConnectors(GuiGraphics graphics, @Nullable SkillStatePayload.TreeState state) {
 		for (SkillNodeWidget target : nodeWidgets.values()) {
 			String requires = target.node().requires();
 			if (requires == null) {
@@ -1120,16 +1127,16 @@ public class SkillTreeScreen extends Screen {
 		}
 	}
 
-	private void horizontal(GuiGraphicsExtractor graphics, int x1, int x2, int y, int color) {
+	private void horizontal(GuiGraphics graphics, int x1, int x2, int y, int color) {
 		graphics.fill(Math.min(x1, x2), y, Math.max(x1, x2), y + 1, color);
 	}
 
-	private void vertical(GuiGraphicsExtractor graphics, int x, int y1, int y2, int color) {
+	private void vertical(GuiGraphics graphics, int x, int y1, int y2, int color) {
 		graphics.fill(x, Math.min(y1, y2), x + 1, Math.max(y1, y2) + 1, color);
 	}
 
 	/** The player's experience, drawn the way the HUD draws it. */
-	private void drawXpBar(GuiGraphicsExtractor graphics) {
+	private void drawXpBar(GuiGraphics graphics) {
 		LocalPlayer player = minecraft == null ? null : minecraft.player;
 		if (player == null) {
 			return;
@@ -1154,15 +1161,15 @@ public class SkillTreeScreen extends Screen {
 	 * Word-wraps text to the details panel width instead of letting long lines
 	 * escape the panel. Returns the y just below the last drawn line.
 	 */
-	private int wrappedText(GuiGraphicsExtractor graphics, Component text, int x, int y, int color, int lineSpacing) {
+	private int wrappedText(GuiGraphics graphics, Component text, int x, int y, int color, int lineSpacing) {
 		for (FormattedCharSequence line : font.split(text, panelWidth - 12)) {
-			graphics.text(font, line, x, y, color);
+			graphics.drawString(font, line, x, y, color);
 			y += lineSpacing;
 		}
 		return y;
 	}
 
-	private void drawDetails(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+	private void drawDetails(GuiGraphics graphics, int mouseX, int mouseY) {
 		SkillTree tree = SkillTrees.byId(treeId);
 		SkillStatePayload.TreeState state = ClientSkillState.tree(treeId);
 		int x = panelX + 6;
@@ -1183,7 +1190,7 @@ public class SkillTreeScreen extends Screen {
 		graphics.enableScissor(panelX + 1, TITLE_BAR + 4, panelX + panelWidth - 1, panelViewBottom());
 		int bottom = y;
 		if (tree == null || state == null) {
-			graphics.text(font, Component.translatable("screen.pbenchants.syncing"), x, y, SkillTreeStyle.MUTED);
+			graphics.drawString(font, Component.translatable("screen.pbenchants.syncing"), x, y, SkillTreeStyle.MUTED);
 			bottom = y + 10;
 		} else if (pending != Pending.NONE) {
 			drawConfirmation(graphics, tree, x, panelViewTop());
@@ -1220,7 +1227,7 @@ public class SkillTreeScreen extends Screen {
 	}
 
 	/** Same bargain as the tree's bar: the thumb's share of the track is the viewport's share of the text. */
-	private void drawPanelScrollbar(GuiGraphicsExtractor graphics) {
+	private void drawPanelScrollbar(GuiGraphics graphics) {
 		if (panelMaxScroll() <= 0) {
 			return;
 		}
@@ -1252,12 +1259,12 @@ public class SkillTreeScreen extends Screen {
 		panelScrollY = Math.clamp((int) Math.round(offset * panelMaxScroll() / travel), 0, panelMaxScroll());
 	}
 
-	private int drawNode(GuiGraphicsExtractor graphics, SkillNode node, SkillStatePayload.TreeState state, int x, int y) {
+	private int drawNode(GuiGraphics graphics, SkillNode node, SkillStatePayload.TreeState state, int x, int y) {
 		int wrap = panelWidth - 12;
-		graphics.item(node.iconStack(), x, y);
+		graphics.renderItem(node.iconStack(), x, y);
 		int afterTitle = y;
 		for (FormattedCharSequence line : font.split(node.displayName(), wrap - 20)) {
-			graphics.text(font, line, x + 20, afterTitle + 4, SkillTreeStyle.TEXT);
+			graphics.drawString(font, line, x + 20, afterTitle + 4, SkillTreeStyle.TEXT);
 			afterTitle += 10;
 		}
 		y = Math.max(afterTitle, y + 18) + 2;
@@ -1341,7 +1348,7 @@ public class SkillTreeScreen extends Screen {
 	}
 
 	/** The materials an owned node was bought with — a plain list, nothing left to gather. */
-	private int drawPaidMaterials(GuiGraphicsExtractor graphics, SkillNode node, int x, int y) {
+	private int drawPaidMaterials(GuiGraphics graphics, SkillNode node, int x, int y) {
 		for (MaterialCost material : node.materials()) {
 			y = wrappedText(graphics, Component.literal("• ").append(material.label()),
 				x, y, SkillTreeStyle.DIM, 11);
@@ -1350,7 +1357,7 @@ public class SkillTreeScreen extends Screen {
 	}
 
 	/** The have/need checklist for a node's unlock materials. */
-	private int drawMaterials(GuiGraphicsExtractor graphics, SkillNode node, int x, int y) {
+	private int drawMaterials(GuiGraphics graphics, SkillNode node, int x, int y) {
 		LocalPlayer player = minecraft == null ? null : minecraft.player;
 		for (MaterialCost material : node.materials()) {
 			int held = player == null ? 0 : material.held(player);
@@ -1363,7 +1370,7 @@ public class SkillTreeScreen extends Screen {
 		return y;
 	}
 
-	private int drawTier(GuiGraphicsExtractor graphics, SkillTree tree, SkillStatePayload.TreeState state,
+	private int drawTier(GuiGraphics graphics, SkillTree tree, SkillStatePayload.TreeState state,
 			int x, int y, int mouseX, int mouseY) {
 		SkillTier tier = tree.tiers().get(selectedTier);
 		boolean open = selectedTier < state.unlockedTiers();
@@ -1388,7 +1395,7 @@ public class SkillTreeScreen extends Screen {
 			y += 3;
 		}
 
-		graphics.text(font, Component.translatable("screen.pbenchants.gate"), x, y, SkillTreeStyle.GOLD);
+		graphics.drawString(font, Component.translatable("screen.pbenchants.gate"), x, y, SkillTreeStyle.GOLD);
 		y += 10;
 		y = wrappedText(graphics, Component.translatable("screen.pbenchants.gate_hint"), x, y,
 			SkillTreeStyle.DIM, 11);
@@ -1404,7 +1411,7 @@ public class SkillTreeScreen extends Screen {
 			// indented under the checkbox so the list still reads as a list.
 			boolean first = true;
 			for (FormattedCharSequence part : font.split(line, panelWidth - 12 - GATE_INDENT)) {
-				graphics.text(font, part, first ? x : x + GATE_INDENT, y, color);
+				graphics.drawString(font, part, first ? x : x + GATE_INDENT, y, color);
 				y += 10;
 				first = false;
 			}
@@ -1418,7 +1425,7 @@ public class SkillTreeScreen extends Screen {
 			// not answer a mouse hovering over whatever is drawn there instead.
 			if (mouseX >= panelX && mouseX < panelX + panelWidth && mouseY >= lineTop && mouseY < y
 				&& graphics.containsPointInScissor(mouseX, mouseY)) {
-				graphics.setTooltipForNextFrame(font, gateTooltip(gate, state), mouseX, mouseY);
+				graphics.renderTooltip(font, gateTooltip(gate, state), mouseX, mouseY);
 			}
 		}
 		return y;
@@ -1502,7 +1509,7 @@ public class SkillTreeScreen extends Screen {
 	 * The card behind Unlock/Enchant: what this click costs, what it changes,
 	 * and — for an enchant — which item is about to receive it.
 	 */
-	private void drawConfirmation(GuiGraphicsExtractor graphics, SkillTree tree, int x, int y) {
+	private void drawConfirmation(GuiGraphics graphics, SkillTree tree, int x, int y) {
 		int wrap = panelWidth - 12;
 		SkillNode node = selectedNode == null ? null : tree.node(selectedNode);
 
@@ -1512,7 +1519,7 @@ public class SkillTreeScreen extends Screen {
 			y = wrappedText(graphics, Component.translatable("screen.pbenchants.confirm.tier_title",
 				tree.tierName(tierIndex)), x, y, SkillTreeStyle.GOLD, 11);
 			y += 2;
-			graphics.textWithWordWrap(font,
+			graphics.drawWordWrap(font,
 				Component.translatable("screen.pbenchants.confirm.tier_body",
 					XpMath.pointsForLevel(tier.accessCost())),
 				x, y, wrap, SkillTreeStyle.MUTED);
@@ -1528,7 +1535,7 @@ public class SkillTreeScreen extends Screen {
 			y = wrappedText(graphics, Component.translatable("screen.pbenchants.confirm.buy_title",
 				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
 			y += 2;
-			graphics.textWithWordWrap(font,
+			graphics.drawWordWrap(font,
 				Component.translatable("screen.pbenchants.confirm.buy_body", cost),
 				x, y, wrap, SkillTreeStyle.MUTED);
 			return;
@@ -1538,7 +1545,7 @@ public class SkillTreeScreen extends Screen {
 			y = wrappedText(graphics, Component.translatable("screen.pbenchants.confirm.sell_title",
 				node.displayName()), x, y, SkillTreeStyle.GOLD, 11);
 			y += 2;
-			graphics.textWithWordWrap(font,
+			graphics.drawWordWrap(font,
 				Component.translatable("screen.pbenchants.confirm.sell_body",
 					XpMath.pointsForLevel(node.unlockCost()) / 5),
 				x, y, wrap, SkillTreeStyle.MUTED);
@@ -1563,7 +1570,7 @@ public class SkillTreeScreen extends Screen {
 				y = wrappedText(graphics, Component.translatable("screen.pbenchants.confirm.choice_title",
 					node.displayName()), x, y, SkillTreeStyle.CHOICE, 11);
 				y += 2;
-				graphics.textWithWordWrap(font,
+				graphics.drawWordWrap(font,
 					Component.translatable("screen.pbenchants.confirm.choice_body",
 						node.displayName(), names(others)), x, y, wrap, SkillTreeStyle.TEXT);
 				return;
@@ -1590,7 +1597,7 @@ public class SkillTreeScreen extends Screen {
 			} else {
 				bodyKey = "screen.pbenchants.confirm.unlock_body_capstone";
 			}
-			graphics.textWithWordWrap(font,
+			graphics.drawWordWrap(font,
 				Component.translatable(bodyKey, node.displayName(),
 					XpMath.pointsForLevel(node.enchantCost())), x, y, wrap,
 				SkillTreeStyle.MUTED);
@@ -1612,7 +1619,7 @@ public class SkillTreeScreen extends Screen {
 			y = wrappedText(graphics, problem, x, y, SkillTreeStyle.BAD, 11);
 		}
 		y += 2;
-		graphics.textWithWordWrap(font, Component.translatable("screen.pbenchants.confirm.enchant_body"),
+		graphics.drawWordWrap(font, Component.translatable("screen.pbenchants.confirm.enchant_body"),
 			x, y, wrap, SkillTreeStyle.MUTED);
 	}
 

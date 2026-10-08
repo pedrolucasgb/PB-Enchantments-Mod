@@ -1,26 +1,18 @@
 package dev.pbenchants.client;
 
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
-import dev.pbenchants.PBEnchants;
-import dev.pbenchants.client.mixin.RenderPipelinesAccessor;
-import net.minecraft.client.renderer.rendertype.LayeringTransform;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+
+import java.util.OptionalDouble;
 
 /**
- * The one render type the Third Eye needs: vanilla's lines, with the depth
- * test set to always pass — an outline that reads through the wall between
- * you and the chest.
- *
- * <p>Built from vanilla's own {@code LINES_SNIPPET} (reached by accessor —
- * shaders, vertex format and blend all stay exactly vanilla's) with only the
- * {@link DepthStencilState} swapped: {@code ALWAYS_PASS}, no depth write, so
- * the glow neither hides behind terrain nor carves holes into it. Lazy,
- * because a render pipeline may only be built once the GPU device exists.
+ * Third Eye's see-through outline: vanilla's {@code lines} render type with the
+ * depth test switched off, so a matched block glows through whatever is in
+ * front of it. 1.21.1 build — composed from render-state shards (26.x builds
+ * it from a render pipeline instead). Created lazily, on the first frame that
+ * needs it, never at class init.
  */
 public final class ThirdEyeRenderTypes {
 	private static RenderType throughWallLines;
@@ -31,15 +23,22 @@ public final class ThirdEyeRenderTypes {
 	public static RenderType throughWallLines() {
 		RenderType type = throughWallLines;
 		if (type == null) {
-			RenderPipeline pipeline = RenderPipeline.builder(RenderPipelinesAccessor.pbenchants$linesSnippet())
-				.withLocation(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "pipeline/third_eye_lines"))
-				.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
-				.build();
 			type = RenderType.create("pbenchants:third_eye_lines",
-				RenderSetup.builder(pipeline)
-					.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
-					.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-					.createRenderSetup());
+				DefaultVertexFormat.POSITION_COLOR_NORMAL,
+				VertexFormat.Mode.LINES,
+				1536,
+				false,
+				false,
+				RenderType.CompositeState.builder()
+					.setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER)
+					.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(2.0)))
+					.setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
+					.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+					.setOutputState(RenderStateShard.ITEM_ENTITY_TARGET)
+					.setWriteMaskState(RenderStateShard.COLOR_WRITE)
+					.setCullState(RenderStateShard.NO_CULL)
+					.setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+					.createCompositeState(false));
 			throughWallLines = type;
 		}
 		return type;

@@ -10,11 +10,9 @@ import dev.pbenchants.skill.SkillTier;
 import dev.pbenchants.skill.SkillTree;
 import dev.pbenchants.skill.SkillTrees;
 import dev.pbenchants.skill.XpMath;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -51,10 +49,14 @@ public final class GoalTrackerHud {
 	}
 
 	public static void register() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.ARMOR_BAR, ID, (graphics, delta) -> draw(graphics));
+		net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, delta) -> {
+			if (!net.minecraft.client.Minecraft.getInstance().options.hideGui) {
+				draw(graphics);
+			}
+		});
 	}
 
-	private static void draw(GuiGraphicsExtractor graphics) {
+	private static void draw(GuiGraphics graphics) {
 		GoalTracker.Pin pin = GoalTracker.pinned();
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;

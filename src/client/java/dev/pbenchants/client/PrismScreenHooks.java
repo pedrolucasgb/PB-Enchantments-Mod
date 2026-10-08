@@ -10,16 +10,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.Hud;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.BeaconScreen;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
@@ -68,7 +65,7 @@ public final class PrismScreenHooks {
 			}
 			rememberBeacon();
 			attach(beacon);
-			ScreenEvents.afterForeground(screen).register(PrismScreenHooks::drawLabel);
+			ContainerForeground.register(screen, PrismScreenHooks::drawLabel);
 			ScreenEvents.remove(screen).register(self -> attached = false);
 		});
 	}
@@ -80,7 +77,7 @@ public final class PrismScreenHooks {
 		int y = above >= MARGIN
 			? above
 			: geometry.pbenchants$topPos() + geometry.pbenchants$imageHeight() + MARGIN;
-		List<AbstractWidget> widgets = Screens.getWidgets(screen);
+		List<AbstractWidget> widgets = Screens.getButtons(screen);
 		int count = BeaconPerks.ATTUNEMENTS.size();
 		int x = right - count * SIZE - (count - 1) * GAP;
 		int rank = BeaconPerks.prismRank(Minecraft.getInstance().player);
@@ -95,13 +92,13 @@ public final class PrismScreenHooks {
 	}
 
 	/** "Prism" to the left of the row, so the row is not five unexplained icons. */
-	private static void drawLabel(Screen screen, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	private static void drawLabel(Screen screen, GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		if (!attached) {
 			return;
 		}
 		var font = Minecraft.getInstance().font;
 		Component label = Component.translatable("screen.pbenchants.prism.label");
-		graphics.text(font, label, labelX - font.width(label), labelY, SkillTreeStyle.GOLD);
+		graphics.drawString(font, label, labelX - font.width(label), labelY, SkillTreeStyle.GOLD);
 	}
 
 	/**
@@ -152,34 +149,34 @@ public final class PrismScreenHooks {
 		}
 
 		@Override
-		public void onClick(MouseButtonEvent event, boolean doubled) {
+		public void onClick(double mouseX, double mouseY) {
 			if (unlocked) {
 				ClientPlayNetworking.send(new AttunePayload(index));
 			}
 		}
 
 		@Override
-		protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+		protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 			boolean chosen = current() == index;
 			boolean lit = isHoveredOrFocused() && unlocked;
 			graphics.fill(getX(), getY(), getX() + width, getY() + height,
 				chosen || lit ? SkillTreeStyle.COLUMN_OPEN : SkillTreeStyle.PANEL_DEEP);
-			graphics.outline(getX(), getY(), width, height,
+			graphics.renderOutline(getX(), getY(), width, height,
 				chosen ? SkillTreeStyle.GOLD : lit ? SkillTreeStyle.TEXT : SkillTreeStyle.BORDER_LIT);
 			if (effect == null) {
 				var font = Minecraft.getInstance().font;
-				graphics.text(font, "✕", getX() + (width - font.width("✕")) / 2, getY() + (height - 8) / 2,
+				graphics.drawString(font, "✕", getX() + (width - font.width("✕")) / 2, getY() + (height - 8) / 2,
 					chosen ? SkillTreeStyle.GOLD : unlocked ? SkillTreeStyle.TEXT : SkillTreeStyle.DIM);
 				return;
 			}
 			int x = getX() + (width - ICON) / 2;
 			int y = getY() + (height - ICON) / 2;
+			var sprite = Minecraft.getInstance().getMobEffectTextures().get(effect);
 			if (unlocked) {
-				graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Hud.getMobEffectSprite(effect), x, y, ICON, ICON);
+				graphics.blit(x, y, 0, ICON, ICON, sprite);
 			} else {
 				// A choice the next rank opens: there, but faded.
-				graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Hud.getMobEffectSprite(effect), x, y, ICON, ICON,
-					0x60FFFFFF);
+				graphics.blit(x, y, 0, ICON, ICON, sprite, 1.0F, 1.0F, 1.0F, 0x60 / 255.0F);
 			}
 		}
 

@@ -37,22 +37,6 @@ public abstract class LocalPlayerMixin {
 		}
 	}
 
-	/** Swift Draw: 40/60/80% movement while aiming, against vanilla's 20%. */
-	@Inject(method = "itemUseSpeedMultiplier", at = @At("RETURN"), cancellable = true)
-	private void pbenchants$swiftDraw(CallbackInfoReturnable<Float> cir) {
-		LocalPlayer self = (LocalPlayer) (Object) this;
-		float lifted = BowPerks.useSpeedMultiplier(self, self.getUseItem(), cir.getReturnValueF());
-		if (lifted != cir.getReturnValueF()) {
-			cir.setReturnValue(lifted);
-		}
-	}
-
-	/** Rapid Reload I: a charging crossbow neither ends nor forbids a sprint. */
-	@Inject(method = "isSlowDueToUsingItem", at = @At("RETURN"), cancellable = true)
-	private void pbenchants$rapidReloadSprint(CallbackInfoReturnable<Boolean> cir) {
-		LocalPlayer self = (LocalPlayer) (Object) this;
-		if (cir.getReturnValueZ() && BowPerks.sprintWhileUsing(self, self.getUseItem())) {
-			cir.setReturnValue(false);
-		}
-	}
+	// 1.21.1 port: Swift Draw and Rapid Reload (Bow tree) are left out — the tree
+	// is disabled on this build and itemUseSpeedMultiplier does not exist here.
 }

@@ -4,15 +4,14 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"AnvilScreenMixin",
+		"ContainerScreenForegroundMixin",
 		"ContainerScreenAccessor",
 		"ContainerScreenSearchMixin",
 		"EnchantmentScreenMixin",
 		"LightmapExtractorMixin",
 		"LocalPlayerMixin",
-		"LevelRendererMixin",
 		"MerchantOfferMixin",
-		"RecipeBookScreenSearchMixin",
-		"RenderPipelinesAccessor"
+		"RecipeBookScreenSearchMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
