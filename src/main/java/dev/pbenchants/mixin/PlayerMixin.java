@@ -175,6 +175,16 @@ public abstract class PlayerMixin {
 	// 1.21.1 port: Bulwark III (Armor tree) has no blockUsingItem/getSecondsToDisableBlocking
 	// hook on this version; Armor is disabled on this build, so it is left out.
 
+	/** Tireless, the jump half (1.21.1: the exhaustion call sits in Player.jumpFromGround). */
+	@Redirect(method = "jumpFromGround", at = @At(value = "INVOKE",
+		target = "Lnet/minecraft/world/entity/player/Player;causeFoodExhaustion(F)V"))
+	private void pbenchants$tirelessWhileJumping(Player player, float exhaustion) {
+		if (player instanceof ServerPlayer serverPlayer) {
+			exhaustion *= dev.pbenchants.perk.ExplorerPerks.exhaustionFactor(serverPlayer);
+		}
+		player.causeFoodExhaustion(exhaustion);
+	}
+
 	@ModifyVariable(method = "giveExperiencePoints", at = @At("HEAD"), argsOnly = true)
 	private int pbenchants$scholarXpBonus(int amount) {
 		if (!((Object) this instanceof ServerPlayer serverPlayer) || amount <= 0) {

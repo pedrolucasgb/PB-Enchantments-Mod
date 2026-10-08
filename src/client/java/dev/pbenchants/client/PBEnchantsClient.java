@@ -121,6 +121,13 @@ public class PBEnchantsClient implements ClientModInitializer {
 			(payload, context) -> ThirdEyeHighlights.set(payload.positions()));
 
 		ThirdEyeHighlights.registerRenderer();
+		if (Boolean.getBoolean("pbenchants.mixinAudit")) {
+			net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+				dev.pbenchants.PBEnchants.LOGGER.info("PB mixin audit (client): loading every mixin target...");
+				org.spongepowered.asm.mixin.MixinEnvironment.getCurrentEnvironment().audit();
+				dev.pbenchants.PBEnchants.LOGGER.info("PB mixin audit (client): done");
+			});
+		}
 
 		// Set Sense draws next to the armour bar it explains.
 		SetSenseHud.register();

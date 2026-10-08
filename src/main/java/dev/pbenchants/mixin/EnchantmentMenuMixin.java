@@ -168,7 +168,7 @@ public abstract class EnchantmentMenuMixin {
 	 * afterwards, so the clue enchantments, the Arcane Insight preview and the
 	 * enchantment that is finally applied all read the same number.
 	 */
-	@Redirect(method = "lambda$slotsChanged$0", at = @At(value = "INVOKE",
+	@Redirect(method = "method_17411", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getEnchantmentCost(Lnet/minecraft/util/RandomSource;IILnet/minecraft/world/item/ItemStack;)I"))
 	private int pbenchants$ancientOffer(RandomSource random, int slot, int bookshelves, ItemStack stack) {
 		this.pbenchants$bookshelves = bookshelves;
@@ -247,7 +247,7 @@ public abstract class EnchantmentMenuMixin {
 	}
 
 	/** Inner Focus: skip the lapis consumption on a successful enchant. */
-	@Redirect(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+	@Redirect(method = "method_17410", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/item/ItemStack;consume(ILnet/minecraft/world/entity/LivingEntity;)V"))
 	private void pbenchants$innerFocusKeepLapis(ItemStack lapisStack, int amount, LivingEntity entity) {
 		if (entity instanceof Player player && EnchanterPerks.owns(player, EnchanterPerks.INNER_FOCUS)) {
@@ -265,7 +265,7 @@ public abstract class EnchantmentMenuMixin {
 	 * on where the player is standing on the curve — so the wallet is read
 	 * before and after and the difference is what gets counted.
 	 */
-	@Inject(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+	@Inject(method = "method_17410", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/player/Player;onEnchantmentPerformed(Lnet/minecraft/world/item/ItemStack;I)V"))
 	private void pbenchants$readWalletBeforeEnchant(ItemStack itemStack, int id, Player player, int levels,
 	                                                 ItemStack lapisStack, Level level, BlockPos pos,
@@ -273,7 +273,7 @@ public abstract class EnchantmentMenuMixin {
 		this.pbenchants$pointsBefore = XpMath.totalPoints(player);
 	}
 
-	@Inject(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+	@Inject(method = "method_17410", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/player/Player;onEnchantmentPerformed(Lnet/minecraft/world/item/ItemStack;I)V",
 		shift = At.Shift.AFTER))
 	private void pbenchants$trackTableEnchant(ItemStack itemStack, int id, Player player, int levels,

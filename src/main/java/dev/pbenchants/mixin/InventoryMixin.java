@@ -33,11 +33,11 @@ public abstract class InventoryMixin {
 	public Player player;
 
 	@Shadow
-	public abstract ItemStack getSelectedItem();
+	public abstract ItemStack getSelected();
 
 	@Inject(method = "removeFromSelected", at = @At("HEAD"), cancellable = true)
 	private void pbenchants$keepLockedInHand(boolean wholeStack, CallbackInfoReturnable<ItemStack> cir) {
-		if (player.isCreative() || !ItemLock.locked(getSelectedItem())) {
+		if (player.isCreative() || !ItemLock.locked(getSelected())) {
 			return;
 		}
 		ItemLock.refused(player);

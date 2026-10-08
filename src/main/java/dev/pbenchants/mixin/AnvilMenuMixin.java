@@ -164,10 +164,12 @@ public class AnvilMenuMixin implements dev.pbenchants.enchant.AnvilDisenchant.Mo
 	 * guards whether an over-max enchantment survives the merge, which stays
 	 * vanilla.
 	 */
-	@Redirect(method = "createResult", at = @At(value = "INVOKE", ordinal = 1,
-		target = "Lnet/minecraft/world/entity/player/Player;hasInfiniteMaterials()Z"))
-	private boolean pbenchants$anvilMasterIgnoresTheWall(Player player) {
-		return player.hasInfiniteMaterials() || EnchanterPerks.owns(player, EnchanterPerks.ANVIL_MASTER);
+	// 1.21.1: the "Too Expensive" wall reads Abilities.instabuild (second read in createResult).
+	@Redirect(method = "createResult", at = @At(value = "FIELD", ordinal = 1,
+		target = "Lnet/minecraft/world/entity/player/Abilities;instabuild:Z"))
+	private boolean pbenchants$anvilMasterIgnoresTheWall(net.minecraft.world.entity.player.Abilities abilities) {
+		return abilities.instabuild
+			|| (pbenchants$player != null && EnchanterPerks.owns(pbenchants$player, EnchanterPerks.ANVIL_MASTER));
 	}
 
 	/**

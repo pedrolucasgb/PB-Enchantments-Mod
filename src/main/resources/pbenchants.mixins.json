@@ -27,7 +27,6 @@
 		"LivingEntityMixin",
 		"LootEnchantFilterMixin",
 		"MerchantResultSlotMixin",
-		"PiglinAiMixin",
 		"PlayerMixin",
 		"ProjectileWeaponItemInvoker",
 		"ResultSlotMixin",

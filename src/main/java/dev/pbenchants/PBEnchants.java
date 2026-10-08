@@ -83,6 +83,16 @@ public class PBEnchants implements ModInitializer {
 		dev.pbenchants.skill.TreeSwitch.applyConfig();
 		// 1.21.1 villager trades are code, not data: the librarian offers.
 		dev.pbenchants.enchant.LibrarianTrades.register();
+		// Compatibility testing: -Dpbenchants.mixinAudit=true force-loads every
+		// mixin target (ours and every other mod's) once the server is up, so an
+		// injector that cannot apply fails at boot instead of deep in play.
+		if (Boolean.getBoolean("pbenchants.mixinAudit")) {
+			net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+				LOGGER.info("PB mixin audit: loading every mixin target...");
+				org.spongepowered.asm.mixin.MixinEnvironment.getCurrentEnvironment().audit();
+				LOGGER.info("PB mixin audit: done");
+			});
+		}
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			PBEnchantsCommand.register(dispatcher));
