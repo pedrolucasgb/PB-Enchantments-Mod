@@ -37,16 +37,19 @@ jobs:
           VERSION="${TAG#pbmon-v}"
           PACK_URL=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets \
             --jq '.assets[] | select(.name | endswith(".mrpack")) | .url' | head -n1)
+          INSTALLER_URL=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets \
+            --jq '.assets[] | select(.name | endswith(".bat")) | .url' | head -n1)
           RELEASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
           SITE_URL="https://pedrolucasgb.github.io/PB-Enchantments-Mod/#pbmon"
 
           CONTENT=$(printf '%s\n' \
-            "@everyone **PBmon ${VERSION}** chegou! Cobblemon 1.8.1 + PB Enchantments (1.21.1)." \
-            "Lendários e míticos só aparecem em eventos do servidor, cada um no seu bioma, com hora shiny 2x a cada aparição." \
+            "@everyone **PBmon ${VERSION}** chegou! COBBLEVERSE sobre Cobblemon 1.8.1 + PB Enchantments (1.21.1)." \
+            "Shiny 1/4096; cada evento de lendário liga bônus shiny 2x por 20 min. Lendários e míticos só aparecem em eventos do servidor, cada um no seu bioma." \
+            "Sem radar de shiny: o CobbleRadar não entra no servidor e o Pokéfinder está desligado. Escute o brilho e olhe o minimapa!" \
             "" \
-            "Baixe o modpack: ${PACK_URL:-$RELEASE_URL}" \
-            "Como instalar: ${SITE_URL}" \
-            "Importe o .mrpack no Modrinth App ou no Prism Launcher; ele baixa todos os mods sozinho.")
+            "Windows: baixe o instalador NOVO, feche o launcher e rode: ${INSTALLER_URL:-$RELEASE_URL}" \
+            "Modpack (.mrpack para Modrinth App / Prism): ${PACK_URL:-$RELEASE_URL}" \
+            "Como instalar: ${SITE_URL}")
 
           jq -n --arg content "$CONTENT" \
             '{content: $content, allowed_mentions: {parse: ["everyone"]}}' \

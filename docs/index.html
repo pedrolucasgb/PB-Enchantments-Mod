@@ -292,6 +292,7 @@
 
   #pbmon .pbmon-intro { color: var(--muted); line-height: 1.6; margin: 0 0 18px; }
   #pbmon .dl-btn { margin-top: 4px; }
+  #pbmon .dl-btn.dl-alt { background: transparent; color: var(--accent); border: 2px solid var(--accent-dark); box-shadow: none; padding: 12px 38px; margin-left: 8px; }
   #pbmon .badges { margin-bottom: 18px; }
 
   footer {
@@ -373,10 +374,12 @@
   <div class="wrap">
     <h2 data-i18n-html="pbmonTitle"></h2>
     <p class="pbmon-intro" data-i18n-html="pbmonIntro"></p>
-    <a id="pbmon-download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases?q=pbmon" data-i18n="pbmonDownload"></a>
+    <a id="pbmon-installer" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases?q=pbmon" data-i18n="pbmonInstaller"></a>
+    <a id="pbmon-download" class="dl-btn dl-alt" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases?q=pbmon" data-i18n="pbmonDownload"></a>
     <p class="dl-meta" id="pbmon-meta"></p>
     <div class="badges">
       <span class="badge">Minecraft 1.21.1</span>
+      <span class="badge">COBBLEVERSE</span>
       <span class="badge">Cobblemon 1.8.1</span>
       <span class="badge">Fabric</span>
       <span class="badge">.mrpack</span>
@@ -446,13 +449,13 @@
       serverTitle: 'Play on the <span>official server</span>',
       serverHint: 'The official server now runs the <a href="#pbmon">PBmon</a> modpack (Minecraft 1.21.1) — install it below, then add this address under Multiplayer &rarr; Add Server. No port needed.',
       pbmonTitle: '<span>PBmon</span> — the modpack',
-      pbmonIntro: 'The official Cobblemon 1.8.1 pack plus AllTheMons, minimap shiny stars and PB Enchantments for 1.21.1 (Bow, Armor and Sword trees are off — Cobblemon is a peaceful pack). Legendaries and mythicals only appear in server events, each in its own biome.',
-      pbmonDownload: "Download PBmon (.mrpack)",
-      pbmonStep1: 'Install <a href="https://modrinth.com/app">Modrinth App</a> or <a href="https://prismlauncher.org/">Prism Launcher</a>.',
-      pbmonStep2: 'Import the downloaded <code>PBmon-&lt;version&gt;.mrpack</code> (Modrinth App: <i>+ Create instance &rarr; Import</i>; Prism: <i>Add Instance &rarr; Import</i>). It downloads every mod by itself.',
-      pbmonStep3: 'Launch it and join the server above. Skill trees open with <code>H</code>, the ender chest with <code>V</code>.',
-      pbmonHint: 'Optional: <a href="https://www.curseforge.com/minecraft/mc-mods/cobbleradar-spawn-alerts-discord">CobbleRadar</a> (waypoints for spawn alerts) cannot be bundled because of its license — drop it into the instance <code>mods</code> folder if you want it.',
-      pbmonMeta: "Released",
+      pbmonIntro: '<b>PBmon 2</b>: the <b>COBBLEVERSE</b> modpack on Cobblemon 1.8.1, plus minimap shiny stars and PB Enchantments for 1.21.1 (Bow, Armor and Sword trees are off). Shiny rate 1/4096; every legendary event starts a 2&times; shiny bonus for 20 minutes. Legendaries and mythicals only appear in server events, each in its own biome. No shiny radars: listen for the sparkle and watch the minimap.',
+      pbmonInstaller: "Windows installer (.bat)",
+      pbmonDownload: "Modpack (.mrpack)",
+      pbmonStep1: 'Windows: download the <b>installer</b>, close the Minecraft launcher and run it. It installs everything into <code>Games&#92;PBmon2</code> and creates the <b>PBmon</b> profile &mdash; run it again to update.',
+      pbmonStep2: 'Other systems: install <a href="https://modrinth.com/app">Modrinth App</a> or <a href="https://prismlauncher.org/">Prism Launcher</a> and import the <code>.mrpack</code> (Modrinth App: <i>+ Create instance &rarr; Import</i>; Prism: <i>Add Instance &rarr; Import</i>).',
+      pbmonStep3: 'Launch it and join the server above. PB Enchantments keys in this pack: <code>U</code> skill trees, <code>O</code> Night Eyes, <code>,</code> ender chest.',
+      pbmonHint: 'Coming from PBmon 1? Download the <b>new</b> installer &mdash; the old one would install over the old folder. The world is new. CobbleRadar is not allowed on the server and the Cobblenav Pok&eacute;finder is disabled.',pbmonMeta: "Released",
       copyAddr: "Copy address",
       copied: "Copied!",
       versionsTitle: 'All <span>versions</span>',
@@ -497,13 +500,13 @@
       serverTitle: 'Jogue no <span>servidor oficial</span>',
       serverHint: 'O servidor oficial agora roda o modpack <a href="#pbmon">PBmon</a> (Minecraft 1.21.1) — instale-o abaixo e adicione este endereço em Multijogador &rarr; Adicionar servidor. Não precisa de porta.',
       pbmonTitle: '<span>PBmon</span> — o modpack',
-      pbmonIntro: 'O pack oficial do Cobblemon 1.8.1 com AllTheMons, estrelas de shiny no minimapa e o PB Enchantments para 1.21.1 (árvores de Arco, Armadura e Espada desligadas — Cobblemon é um pack pacífico). Lendários e míticos só aparecem em eventos do servidor, cada um no seu bioma.',
-      pbmonDownload: "Baixar PBmon (.mrpack)",
-      pbmonStep1: 'Instale o <a href="https://modrinth.com/app">Modrinth App</a> ou o <a href="https://prismlauncher.org/">Prism Launcher</a>.',
-      pbmonStep2: 'Importe o <code>PBmon-&lt;versao&gt;.mrpack</code> baixado (Modrinth App: <i>+ Criar instância &rarr; Importar</i>; Prism: <i>Adicionar instância &rarr; Importar</i>). Ele baixa todos os mods sozinho.',
-      pbmonStep3: 'Inicie e entre no servidor acima. As árvores de habilidade abrem com <code>H</code> e o baú do End com <code>V</code>.',
-      pbmonHint: 'Opcional: o <a href="https://www.curseforge.com/minecraft/mc-mods/cobbleradar-spawn-alerts-discord">CobbleRadar</a> (waypoints dos alertas de spawn) não pode ir dentro do pack por causa da licença — coloque-o na pasta <code>mods</code> da instância se quiser.',
-      pbmonMeta: "Lançado em",
+      pbmonIntro: '<b>PBmon 2</b>: o modpack <b>COBBLEVERSE</b> sobre o Cobblemon 1.8.1, com estrelas de shiny no minimapa e o PB Enchantments para 1.21.1 (árvores de Arco, Armadura e Espada desligadas). Taxa de shiny 1/4096; cada evento de lendário liga um bônus shiny 2&times; por 20 minutos. Lendários e míticos só aparecem em eventos do servidor, cada um no seu bioma. Sem radar de shiny: escute o brilho e olhe o minimapa.',
+      pbmonInstaller: "Instalador Windows (.bat)",
+      pbmonDownload: "Modpack (.mrpack)",
+      pbmonStep1: 'Windows: baixe o <b>instalador</b>, feche o launcher do Minecraft e rode. Ele instala tudo em <code>Games&#92;PBmon2</code> e cria o perfil <b>PBmon</b> &mdash; rode de novo para atualizar.',
+      pbmonStep2: 'Outros sistemas: instale o <a href="https://modrinth.com/app">Modrinth App</a> ou o <a href="https://prismlauncher.org/">Prism Launcher</a> e importe o <code>.mrpack</code> (Modrinth App: <i>+ Criar instância &rarr; Importar</i>; Prism: <i>Adicionar instância &rarr; Importar</i>).',
+      pbmonStep3: 'Inicie e entre no servidor acima. Teclas do PB Enchantments neste pack: <code>U</code> árvores, <code>O</code> Night Eyes, <code>,</code> baú do End.',
+      pbmonHint: 'Vindo do PBmon 1? Baixe o instalador <b>novo</b> &mdash; o antigo instalaria por cima da pasta velha. O mundo é novo. O CobbleRadar não é permitido no servidor e o Pokéfinder do Cobblenav está desligado.',pbmonMeta: "Lançado em",
       copyAddr: "Copiar endereço",
       copied: "Copiado!",
       versionsTitle: 'Todas as <span>versões</span>',
@@ -548,13 +551,13 @@
       serverTitle: 'Juega en el <span>servidor oficial</span>',
       serverHint: 'El servidor oficial ahora usa el modpack <a href="#pbmon">PBmon</a> (Minecraft 1.21.1) — instálalo abajo y añade esta dirección en Multijugador &rarr; Añadir servidor. No hace falta puerto.',
       pbmonTitle: '<span>PBmon</span> — el modpack',
-      pbmonIntro: 'El pack oficial de Cobblemon 1.8.1 con AllTheMons, estrellas de shiny en el minimapa y PB Enchantments para 1.21.1 (árboles de Arco, Armadura y Espada desactivados — Cobblemon es un pack pacífico). Los legendarios y singulares solo aparecen en eventos del servidor, cada uno en su bioma.',
-      pbmonDownload: "Descargar PBmon (.mrpack)",
-      pbmonStep1: 'Instala <a href="https://modrinth.com/app">Modrinth App</a> o <a href="https://prismlauncher.org/">Prism Launcher</a>.',
-      pbmonStep2: 'Importa el <code>PBmon-&lt;version&gt;.mrpack</code> descargado (Modrinth App: <i>+ Crear instancia &rarr; Importar</i>; Prism: <i>Añadir instancia &rarr; Importar</i>). Descarga todos los mods por sí solo.',
-      pbmonStep3: 'Ábrelo y entra al servidor de arriba. Los árboles de habilidad se abren con <code>H</code> y el cofre del End con <code>V</code>.',
-      pbmonHint: 'Opcional: <a href="https://www.curseforge.com/minecraft/mc-mods/cobbleradar-spawn-alerts-discord">CobbleRadar</a> (waypoints de las alertas de aparición) no puede ir dentro del pack por su licencia — ponlo en la carpeta <code>mods</code> de la instancia si lo quieres.',
-      pbmonMeta: "Publicado el",
+      pbmonIntro: '<b>PBmon 2</b>: el modpack <b>COBBLEVERSE</b> sobre Cobblemon 1.8.1, con estrellas de shiny en el minimapa y PB Enchantments para 1.21.1 (árboles de Arco, Armadura y Espada desactivados). Tasa shiny 1/4096; cada evento legendario activa un bono shiny 2&times; durante 20 minutos. Legendarios y singulares solo aparecen en eventos del servidor, cada uno en su bioma. Sin radares de shiny: escucha el destello y mira el minimapa.',
+      pbmonInstaller: "Instalador Windows (.bat)",
+      pbmonDownload: "Modpack (.mrpack)",
+      pbmonStep1: 'Windows: descarga el <b>instalador</b>, cierra el launcher de Minecraft y ejecútalo. Instala todo en <code>Games&#92;PBmon2</code> y crea el perfil <b>PBmon</b> &mdash; ejecútalo de nuevo para actualizar.',
+      pbmonStep2: 'Otros sistemas: instala <a href="https://modrinth.com/app">Modrinth App</a> o <a href="https://prismlauncher.org/">Prism Launcher</a> e importa el <code>.mrpack</code> (Modrinth App: <i>+ Crear instancia &rarr; Importar</i>; Prism: <i>Añadir instancia &rarr; Importar</i>).',
+      pbmonStep3: 'Ábrelo y entra al servidor de arriba. Teclas de PB Enchantments en este pack: <code>U</code> árboles, <code>O</code> Night Eyes, <code>,</code> cofre del End.',
+      pbmonHint: '¿Vienes de PBmon 1? Descarga el instalador <b>nuevo</b> &mdash; el antiguo instalaría sobre la carpeta vieja. El mundo es nuevo. CobbleRadar no está permitido en el servidor y el Pokéfinder de Cobblenav está desactivado.',pbmonMeta: "Publicado el",
       copyAddr: "Copiar dirección",
       copied: "¡Copiado!",
       versionsTitle: 'Todas las <span>versiones</span>',
@@ -897,6 +900,10 @@
     const pack = (latest.assets || []).find(a => /\.mrpack$/i.test(a.name));
     if (pack) {
       document.getElementById("pbmon-download").href = pack.browser_download_url;
+    }
+    const installer = (latest.assets || []).find(a => /\.bat$/i.test(a.name));
+    if (installer) {
+      document.getElementById("pbmon-installer").href = installer.browser_download_url;
     }
     const when = new Date(latest.published_at)
       .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "short", day: "numeric" });
