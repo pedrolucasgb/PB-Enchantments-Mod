@@ -121,11 +121,13 @@ public class PBEnchantsClient implements ClientModInitializer {
 			(payload, context) -> ThirdEyeHighlights.set(payload.positions()));
 
 		ThirdEyeHighlights.registerRenderer();
+		SmokeTest.register();
 		if (Boolean.getBoolean("pbenchants.mixinAudit")) {
 			// Audited at the first title screen, when every mod has finished starting.
 			boolean[] audited = {false};
 			net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
-				if (audited[0] || !(screen instanceof net.minecraft.client.gui.screens.TitleScreen)) {
+				if (audited[0] || !(screen instanceof net.minecraft.client.gui.screens.TitleScreen
+					|| screen.getClass().getName().toLowerCase(java.util.Locale.ROOT).contains("title"))) {
 					return;
 				}
 				audited[0] = true;

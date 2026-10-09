@@ -81,7 +81,13 @@ tasks.register("prodClient", net.fabricmc.loom.task.prod.ClientProductionRunTask
 	if (project.hasProperty("compatClientDir")) {
 		mods.from(fileTree(dir: project.property("compatClientDir"), include: "*.jar"))
 	}
-	jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.autoStop=true")
+	if (project.hasProperty("clientWorld")) {
+		// Smoke test: join this save, screenshot the skill screen and the inventory, quit.
+		jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.smokeTest=true")
+		programArgs.addAll("--quickPlaySingleplayer", project.property("clientWorld").toString())
+	} else {
+		jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.autoStop=true")
+	}
 	runDir = file("run-prod-client")
 }
 
