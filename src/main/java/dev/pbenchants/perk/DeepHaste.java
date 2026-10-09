@@ -31,7 +31,7 @@ public final class DeepHaste {
 		if (!SkillService.owns(player, SkillTrees.PICKAXE, "deep_haste")) {
 			return;
 		}
-		MobEffectInstance current = player.getEffect(MobEffects.HASTE);
+		MobEffectInstance current = player.getEffect(MobEffects.DIG_SPEED);
 		if (current != null
 			&& (current.getAmplifier() > 0
 			|| current.isInfiniteDuration()
@@ -39,6 +39,6 @@ public final class DeepHaste {
 			return;
 		}
 		// ambient + no particles: it is a permanent state, not a buff you just drank.
-		player.addEffect(new MobEffectInstance(MobEffects.HASTE, DURATION_TICKS, 0, true, false, true));
+		player.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, DURATION_TICKS, 0, true, false, true));
 	}
 }

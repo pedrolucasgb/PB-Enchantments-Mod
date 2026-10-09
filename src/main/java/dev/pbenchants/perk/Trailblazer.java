@@ -1,7 +1,7 @@
 package dev.pbenchants.perk;
 
 import dev.pbenchants.PBEnchants;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -25,8 +25,8 @@ import java.util.UUID;
  * it for the same slot.
  */
 public final class Trailblazer {
-	private static final Identifier MODIFIER_ID =
-		Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "trailblazer");
+	private static final ResourceLocation MODIFIER_ID =
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "trailblazer");
 
 	/** Ticks of unbroken sprinting before the bonus is at full strength. */
 	private static final int RAMP_TICKS = 160;

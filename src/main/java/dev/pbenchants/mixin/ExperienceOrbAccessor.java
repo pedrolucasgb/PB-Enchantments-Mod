@@ -14,6 +14,7 @@ public interface ExperienceOrbAccessor {
 	@Accessor("age")
 	void pbenchants$setAge(int age);
 
-	@Invoker("setValue")
+	// 1.21.1 has no setValue(): write the field directly.
+	@Accessor("value")
 	void pbenchants$setValue(int value);
 }

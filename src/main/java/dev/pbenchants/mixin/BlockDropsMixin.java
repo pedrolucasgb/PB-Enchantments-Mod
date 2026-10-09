@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -38,9 +37,9 @@ public class BlockDropsMixin {
 		+ "Lnet/minecraft/core/BlockPos;"
 		+ "Lnet/minecraft/world/level/block/entity/BlockEntity;"
 		+ "Lnet/minecraft/world/entity/Entity;"
-		+ "Lnet/minecraft/world/item/ItemInstance;)Ljava/util/List;",
+		+ "Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;",
 		at = @At("HEAD"), argsOnly = true)
-	private static ItemInstance pbenchants$fortuneIsForHoes(ItemInstance tool, BlockState state,
+	private static ItemStack pbenchants$fortuneIsForHoes(ItemStack tool, BlockState state,
 			ServerLevel level, BlockPos pos, BlockEntity blockEntity, Entity breaker) {
 		return PlantBlocks.stripNonHoeFortune(state, tool);
 	}

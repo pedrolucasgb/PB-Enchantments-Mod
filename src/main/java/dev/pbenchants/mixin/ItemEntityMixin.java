@@ -62,8 +62,8 @@ public class ItemEntityMixin {
 		dev.pbenchants.track.BeaconTracker.onPickup(serverPlayer, pbenchants$preTouchItem, taken);
 	}
 
-	@Inject(method = "hurtServer", at = @At("HEAD"), cancellable = true)
-	private void pbenchants$indestructibleFloorLife(ServerLevel level, DamageSource source, float amount,
+	@Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
+	private void pbenchants$indestructibleFloorLife(DamageSource source, float amount,
 			CallbackInfoReturnable<Boolean> cir) {
 		ItemEntity self = (ItemEntity) (Object) this;
 		if (Indestructible.has(self.getItem()) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {

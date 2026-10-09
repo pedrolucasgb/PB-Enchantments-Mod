@@ -59,7 +59,6 @@ public final class AxeHarvest {
 		Map.entry(Blocks.DARK_OAK_LEAVES, Blocks.DARK_OAK_SAPLING),
 		Map.entry(Blocks.MANGROVE_LEAVES, Blocks.MANGROVE_PROPAGULE),
 		Map.entry(Blocks.CHERRY_LEAVES, Blocks.CHERRY_SAPLING),
-		Map.entry(Blocks.PALE_OAK_LEAVES, Blocks.PALE_OAK_SAPLING),
 		Map.entry(Blocks.AZALEA_LEAVES, Blocks.AZALEA),
 		Map.entry(Blocks.FLOWERING_AZALEA_LEAVES, Blocks.FLOWERING_AZALEA)
 	);

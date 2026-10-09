@@ -49,8 +49,9 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,25 @@ public class PBEnchants implements ModInitializer {
 		// The sword tree is the first part of the mod whose balance depends on
 		// what kind of server it is running on. Two switches, read once.
 		PBEnchantsConfig.load();
+		// Which trees this server runs at all (bow/armor/sword are always off on 1.21.1).
+		dev.pbenchants.skill.TreeSwitch.applyConfig();
+		// 1.21.1 villager trades are code, not data: the librarian offers.
+		dev.pbenchants.enchant.LibrarianTrades.register();
+		// Compatibility testing: -Dpbenchants.mixinAudit=true force-loads every
+		// mixin target (ours and every other mod's) once the server is up, so an
+		// injector that cannot apply fails at boot instead of deep in play.
+		if (Boolean.getBoolean("pbenchants.mixinAudit")) {
+			net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+				LOGGER.info("PB mixin audit: loading every mixin target...");
+				MixinProbe.probe(MixinProbe.commonTargets(), "server");
+				MixinProbe.auditEverything("server");
+				LOGGER.info("PB mixin audit: done");
+				if (Boolean.getBoolean("pbenchants.autoStop")) {
+					LOGGER.info("PB mixin audit: stopping the server (pbenchants.autoStop)");
+					server.halt(false);
+				}
+			});
+		}
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			PBEnchantsCommand.register(dispatcher));
@@ -143,15 +163,17 @@ public class PBEnchants implements ModInitializer {
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
 			DiggyDiggyHole.onUseBlock(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
 		UseItemCallback.EVENT.register((player, level, hand) ->
-			DiggyDiggyHole.onUseItem(player, hand) ? InteractionResult.SUCCESS : InteractionResult.PASS);
+			DiggyDiggyHole.onUseItem(player, hand)
+				? InteractionResultHolder.success(player.getItemInHand(hand))
+				: InteractionResultHolder.pass(player.getItemInHand(hand)));
 		// Artisan: a shulker box right-clicked at nothing, or sneak-clicked
 		// at anything, opens in the hand. Same shape as the shovel above —
 		// the client passes, the server opens; SUCCESS on the block callback
 		// is what stops the box from being placed.
 		UseItemCallback.EVENT.register((player, level, hand) ->
 			dev.pbenchants.perk.ShulkerSight.onUseItem(player, hand)
-				? InteractionResult.SUCCESS
-				: InteractionResult.PASS);
+				? InteractionResultHolder.success(player.getItemInHand(hand))
+				: InteractionResultHolder.pass(player.getItemInHand(hand)));
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
 			dev.pbenchants.perk.ShulkerSight.onUseBlock(player, hand)
 				? InteractionResult.SUCCESS
@@ -180,8 +202,8 @@ public class PBEnchants implements ModInitializer {
 		// its damage path is judged by the attack hooks like any weapon.
 		UseItemCallback.EVENT.register((player, level, hand) ->
 			dev.pbenchants.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
-				? InteractionResult.FAIL
-				: InteractionResult.PASS);
+				? InteractionResultHolder.fail(player.getItemInHand(hand))
+				: InteractionResultHolder.pass(player.getItemInHand(hand)));
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) ->
 			dev.pbenchants.perk.Indestructible.vetoUse(player, player.getItemInHand(hand))
 				? InteractionResult.FAIL

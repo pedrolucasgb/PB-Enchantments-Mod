@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +17,8 @@ import java.util.Set;
  * S2C: full snapshot of the player's skill progress, sent when the client
  * requests it and after every successful action.
  */
-public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> trees) implements CustomPacketPayload {
+public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> trees, Set<String> disabledTrees)
+		implements CustomPacketPayload {
 	/**
 	 * @param seen the name-based checklist entries the client can draw a roster
 	 *             for — only those kinds cross the wire (see
@@ -30,7 +31,7 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 	}
 
 	public static final Type<SkillStatePayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "skill_state"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "skill_state"));
 
 	public static final StreamCodec<FriendlyByteBuf, SkillStatePayload> CODEC =
 		CustomPacketPayload.codec(SkillStatePayload::write, SkillStatePayload::read);
@@ -59,7 +60,13 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 			}
 			trees.put(treeId, new TreeState(unlocked, purchased, counters, seen));
 		}
-		return new SkillStatePayload(debugMaster, trees);
+		// The server's switched-off trees: the client hides them whatever its own config says.
+		int disabledCount = buf.readVarInt();
+		Set<String> disabledTrees = new HashSet<>();
+		for (int i = 0; i < disabledCount; i++) {
+			disabledTrees.add(buf.readUtf());
+		}
+		return new SkillStatePayload(debugMaster, trees, disabledTrees);
 	}
 
 	private void write(FriendlyByteBuf buf) {
@@ -83,6 +90,10 @@ public record SkillStatePayload(boolean debugMaster, Map<String, TreeState> tree
 			for (String seenEntry : state.seen()) {
 				buf.writeUtf(seenEntry);
 			}
+		}
+		buf.writeVarInt(disabledTrees.size());
+		for (String treeId : disabledTrees) {
+			buf.writeUtf(treeId);
 		}
 	}
 

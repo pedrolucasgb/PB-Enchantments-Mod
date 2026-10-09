@@ -143,20 +143,20 @@ public abstract class EnchantmentMenuMixin {
 		//    still go through ItemAuthority's inert-item rule.)
 		List<EnchantmentInstance> result = new ArrayList<>(rolled.size());
 		for (EnchantmentInstance instance : rolled) {
-			int allowed = instance.enchantment().value().getMaxLevel();
-			ItemAuthority.Ceiling raised = ItemAuthority.ceiling(instance.enchantment());
+			int allowed = instance.enchantment.value().getMaxLevel();
+			ItemAuthority.Ceiling raised = ItemAuthority.ceiling(instance.enchantment);
 			if (raised != null) {
 				allowed = Math.min(allowed, raised.ceilingFor(serverPlayer, allowed));
 			}
-			ResourceKey<Enchantment> ours = pbenchants$matchOurs(instance.enchantment());
+			ResourceKey<Enchantment> ours = pbenchants$matchOurs(instance.enchantment);
 			if (ours != null) {
 				int owned = SkillService.maxEnchantLevelOwned(serverPlayer, ours);
 				if (owned > 0) {
 					allowed = Math.min(allowed, owned);
 				}
 			}
-			result.add(instance.level() > allowed
-				? new EnchantmentInstance(instance.enchantment(), allowed)
+			result.add(instance.level > allowed
+				? new EnchantmentInstance(instance.enchantment, allowed)
 				: instance);
 		}
 		return result;
@@ -168,7 +168,7 @@ public abstract class EnchantmentMenuMixin {
 	 * afterwards, so the clue enchantments, the Arcane Insight preview and the
 	 * enchantment that is finally applied all read the same number.
 	 */
-	@Redirect(method = "lambda$slotsChanged$0", at = @At(value = "INVOKE",
+	@Redirect(method = "method_17411", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/item/enchantment/EnchantmentHelper;getEnchantmentCost(Lnet/minecraft/util/RandomSource;IILnet/minecraft/world/item/ItemStack;)I"))
 	private int pbenchants$ancientOffer(RandomSource random, int slot, int bookshelves, ItemStack stack) {
 		this.pbenchants$bookshelves = bookshelves;
@@ -225,7 +225,7 @@ public abstract class EnchantmentMenuMixin {
 			if (!stack.isEmpty() && slot < insight && costs[slot] > 0) {
 				for (EnchantmentInstance instance : getEnchantmentList(
 						serverPlayer.level().registryAccess(), stack, slot, costs[slot])) {
-					lines.add(Enchantment.getFullname(instance.enchantment(), instance.level()));
+					lines.add(Enchantment.getFullname(instance.enchantment, instance.level));
 				}
 			}
 			slots.add(lines);
@@ -247,7 +247,7 @@ public abstract class EnchantmentMenuMixin {
 	}
 
 	/** Inner Focus: skip the lapis consumption on a successful enchant. */
-	@Redirect(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+	@Redirect(method = "method_17410", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/item/ItemStack;consume(ILnet/minecraft/world/entity/LivingEntity;)V"))
 	private void pbenchants$innerFocusKeepLapis(ItemStack lapisStack, int amount, LivingEntity entity) {
 		if (entity instanceof Player player && EnchanterPerks.owns(player, EnchanterPerks.INNER_FOCUS)) {
@@ -265,7 +265,7 @@ public abstract class EnchantmentMenuMixin {
 	 * on where the player is standing on the curve — so the wallet is read
 	 * before and after and the difference is what gets counted.
 	 */
-	@Inject(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+	@Inject(method = "method_17410", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/player/Player;onEnchantmentPerformed(Lnet/minecraft/world/item/ItemStack;I)V"))
 	private void pbenchants$readWalletBeforeEnchant(ItemStack itemStack, int id, Player player, int levels,
 	                                                 ItemStack lapisStack, Level level, BlockPos pos,
@@ -273,7 +273,7 @@ public abstract class EnchantmentMenuMixin {
 		this.pbenchants$pointsBefore = XpMath.totalPoints(player);
 	}
 
-	@Inject(method = "lambda$clickMenuButton$0", at = @At(value = "INVOKE",
+	@Inject(method = "method_17410", at = @At(value = "INVOKE",
 		target = "Lnet/minecraft/world/entity/player/Player;onEnchantmentPerformed(Lnet/minecraft/world/item/ItemStack;I)V",
 		shift = At.Shift.AFTER))
 	private void pbenchants$trackTableEnchant(ItemStack itemStack, int id, Player player, int levels,

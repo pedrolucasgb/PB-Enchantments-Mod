@@ -1,13 +1,11 @@
 package dev.pbenchants.client.mixin;
 
 import dev.pbenchants.client.ArtisanScreenHooks;
-import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
-import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.KeyEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Seeker's Eye: the recipe book must not hear the keyboard while the magnifier
@@ -26,23 +24,23 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * key did nothing. The event then falls through to the container screen, whose
  * focused-widget pass delivers it to the magnifier's field — and only there.
  */
-@Mixin(AbstractRecipeBookScreen.class)
+@Mixin(RecipeBookComponent.class)
 public class RecipeBookScreenSearchMixin {
-	@Redirect(method = "keyPressed", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;keyPressed(Lnet/minecraft/client/input/KeyEvent;)Z"))
-	private boolean pbenchants$seekersEyeOwnsKeys(RecipeBookComponent<?> component, KeyEvent event) {
+	// 1.21.1: InventoryScreen, CraftingScreen and AbstractFurnaceScreen each
+	// feed the recipe book first in their own keyPressed/charTyped, so the
+	// guard sits on the recipe book itself instead of on three call sites.
+	@Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+	private void pbenchants$seekersEyeOwnsKeys(int keyCode, int scanCode, int modifiers,
+			CallbackInfoReturnable<Boolean> cir) {
 		if (ArtisanScreenHooks.searchHasFocus()) {
-			return false;
+			cir.setReturnValue(false);
 		}
-		return component.keyPressed(event);
 	}
 
-	@Redirect(method = "charTyped", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;charTyped(Lnet/minecraft/client/input/CharacterEvent;)Z"))
-	private boolean pbenchants$seekersEyeOwnsChars(RecipeBookComponent<?> component, CharacterEvent event) {
+	@Inject(method = "charTyped", at = @At("HEAD"), cancellable = true)
+	private void pbenchants$seekersEyeOwnsChars(char character, int modifiers, CallbackInfoReturnable<Boolean> cir) {
 		if (ArtisanScreenHooks.searchHasFocus()) {
-			return false;
+			cir.setReturnValue(false);
 		}
-		return component.charTyped(event);
 	}
 }

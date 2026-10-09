@@ -8,7 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -36,16 +36,16 @@ public final class BiomeTracker {
 
 	/** Called once a second per online player. */
 	public static void tick(ServerPlayer player) {
-		ServerLevel level = player.level();
+		ServerLevel level = player.serverLevel();
 		BlockPos pos = player.blockPosition();
 		TreeProgress progress = SkillService.progress(player, SkillTrees.EXPLORER);
 
-		progress.see("dim", level.dimension().identifier().toString(), "dimension_checklist");
+		progress.see("dim", level.dimension().location().toString(), "dimension_checklist");
 
 		level.getBiome(pos).unwrapKey().ifPresent(key -> {
-			if (progress.see("biome", key.identifier().toString(), "biome_checklist")
+			if (progress.see("biome", key.location().toString(), "biome_checklist")
 				&& ExplorerPerks.owns(player, ExplorerPerks.CARTOGRAPHER)) {
-				announce(player, prettyName(key.identifier()), pos);
+				announce(player, prettyName(key.location()), pos);
 			}
 		});
 
@@ -53,9 +53,9 @@ public final class BiomeTracker {
 		if (structures.isEmpty()) {
 			return;
 		}
-		var registry = level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+		var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
 		for (Structure structure : structures.keySet()) {
-			Identifier id = registry.getKey(structure);
+			ResourceLocation id = registry.getKey(structure);
 			if (id != null) {
 				progress.see("struct", id.toString(), "structure_checklist");
 				// Beacon: the fortress is where the skulls are.
@@ -73,7 +73,7 @@ public final class BiomeTracker {
 	}
 
 	/** "minecraft:old_growth_birch_forest" → "Old Growth Birch Forest". */
-	private static String prettyName(Identifier id) {
+	private static String prettyName(ResourceLocation id) {
 		StringBuilder name = new StringBuilder(id.getPath().length());
 		for (String word : id.getPath().split("_")) {
 			if (word.isEmpty()) {

@@ -2,12 +2,11 @@ package dev.pbenchants.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.time.Duration;
@@ -32,7 +31,7 @@ public class ArtisanIconButton extends AbstractWidget {
 	/** Draws the symbol. Given the inner corner and the colour to use. */
 	@FunctionalInterface
 	public interface Symbol {
-		void draw(GuiGraphicsExtractor graphics, Font font, int x, int y, int color);
+		void draw(GuiGraphics graphics, Font font, int x, int y, int color);
 	}
 
 	private final Symbol symbol;
@@ -54,16 +53,16 @@ public class ArtisanIconButton extends AbstractWidget {
 	}
 
 	@Override
-	public void onClick(MouseButtonEvent event, boolean doubled) {
+	public void onClick(double mouseX, double mouseY) {
 		onPress.run();
 	}
 
 	@Override
-	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		boolean lit = isHoveredOrFocused();
 		graphics.fill(getX(), getY(), getX() + width, getY() + height,
 			lit ? SkillTreeStyle.COLUMN_OPEN : SkillTreeStyle.PANEL_DEEP);
-		graphics.outline(getX(), getY(), width, height,
+		graphics.renderOutline(getX(), getY(), width, height,
 			lit ? SkillTreeStyle.GOLD : SkillTreeStyle.BORDER_LIT);
 		symbol.draw(graphics, font,
 			getX() + (width - ArtisanIcons.SIZE) / 2,

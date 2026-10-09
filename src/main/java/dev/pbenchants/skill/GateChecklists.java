@@ -4,7 +4,6 @@ import dev.pbenchants.progress.TreeProgress;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -108,8 +107,7 @@ public final class GateChecklists {
 			block(4, Blocks.ACACIA_LOG),
 			block(5, Blocks.DARK_OAK_LOG),
 			block(6, Blocks.MANGROVE_LOG),
-			block(7, Blocks.CHERRY_LOG),
-			block(8, Blocks.PALE_OAK_LOG));
+			block(7, Blocks.CHERRY_LOG));
 		put("nether_wood_checklist",
 			block(0, Blocks.CRIMSON_STEM),
 			block(1, Blocks.WARPED_STEM));
@@ -122,7 +120,6 @@ public final class GateChecklists {
 			block(5, Blocks.DARK_OAK_SAPLING),
 			block(6, Blocks.MANGROVE_PROPAGULE),
 			block(7, Blocks.CHERRY_SAPLING),
-			block(8, Blocks.PALE_OAK_SAPLING),
 			block(9, Blocks.AZALEA),
 			block(10, Blocks.FLOWERING_AZALEA),
 			block(11, Blocks.CRIMSON_FUNGUS),
@@ -162,19 +159,19 @@ public final class GateChecklists {
 		// order. Regeneration is a clock of its own (minutes_regenerating),
 		// not a line here.
 		put("beacon_effect_checklist",
-			effect(0, net.minecraft.world.effect.MobEffects.SPEED),
-			effect(1, net.minecraft.world.effect.MobEffects.HASTE),
-			effect(2, net.minecraft.world.effect.MobEffects.RESISTANCE),
-			effect(3, net.minecraft.world.effect.MobEffects.JUMP_BOOST),
-			effect(4, net.minecraft.world.effect.MobEffects.STRENGTH));
+			effect(0, net.minecraft.world.effect.MobEffects.MOVEMENT_SPEED),
+			effect(1, net.minecraft.world.effect.MobEffects.DIG_SPEED),
+			effect(2, net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE),
+			effect(3, net.minecraft.world.effect.MobEffects.JUMP),
+			effect(4, net.minecraft.world.effect.MobEffects.DAMAGE_BOOST));
 
 		// Sword — the four the game calls bosses. The dragon has a gate of its
 		// own at tier 5; this is the collection.
 		put("boss_checklist",
-			mob(0, EntityTypes.ELDER_GUARDIAN),
-			mob(1, EntityTypes.WITHER),
-			mob(2, EntityTypes.WARDEN),
-			mob(3, EntityTypes.ENDER_DRAGON));
+			mob(0, EntityType.ELDER_GUARDIAN),
+			mob(1, EntityType.WITHER),
+			mob(2, EntityType.WARDEN),
+			mob(3, EntityType.ENDER_DRAGON));
 
 		// Armor — the four pieces of the first set, and every material a full
 		// set can be made of.

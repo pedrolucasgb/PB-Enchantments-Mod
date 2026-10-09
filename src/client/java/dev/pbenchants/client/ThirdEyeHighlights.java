@@ -6,8 +6,6 @@ import dev.pbenchants.network.ThirdEyeQueryPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -122,8 +120,13 @@ public final class ThirdEyeHighlights {
 		ClientPlayNetworking.send(new ThirdEyeQueryPayload(query));
 	}
 
-	/** Rides the same submit pass as vanilla's own block outline — see LevelRendererMixin. */
-	public static void submit(PoseStack poseStack, SubmitNodeCollector collector, LevelRenderState renderState) {
+	/** Registered once from the client initialiser (1.21.1: Fabric's world-render event). */
+	public static void registerRenderer() {
+		net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents.LAST.register(context ->
+			render(context.camera().getPosition()));
+	}
+
+	private static void render(Vec3 camera) {
 		if (MARKS.isEmpty()) {
 			return;
 		}
@@ -134,7 +137,11 @@ public final class ThirdEyeHighlights {
 		}
 		long now = level.getGameTime();
 		MARKS.removeIf(mark -> now > mark.expiry());
-		Vec3 camera = renderState.cameraRenderState.pos;
+		PoseStack poseStack = new PoseStack();
+		net.minecraft.client.renderer.MultiBufferSource.BufferSource buffers =
+			Minecraft.getInstance().renderBuffers().bufferSource();
+		net.minecraft.client.renderer.RenderType type = ThirdEyeRenderTypes.throughWallLines();
+		VertexConsumer consumer = buffers.getBuffer(type);
 		for (Mark mark : MARKS) {
 			BlockState state = level.getBlockState(mark.pos());
 			if (state.isAir()) {
@@ -155,11 +162,12 @@ public final class ThirdEyeHighlights {
 				mark.pos().getX() - camera.x,
 				mark.pos().getY() - camera.y,
 				mark.pos().getZ() - camera.z);
-			collector.submitCustomGeometry(poseStack, ThirdEyeRenderTypes.throughWallLines(),
-				(pose, consumer) -> finalShape.forAllBoxes((x1, y1, z1, x2, y2, z2) ->
-					silhouette(pose, consumer, camX, camY, camZ, x1, y1, z1, x2, y2, z2)));
+			PoseStack.Pose pose = poseStack.last();
+			finalShape.forAllBoxes((x1, y1, z1, x2, y2, z2) ->
+				silhouette(pose, consumer, camX, camY, camZ, x1, y1, z1, x2, y2, z2));
 			poseStack.popPose();
 		}
+		buffers.endBatch(type);
 	}
 
 	/**
@@ -220,8 +228,7 @@ public final class ThirdEyeHighlights {
 		}
 	}
 
-	/** Line width in the 26.2 format is a per-VERTEX element — skip it and the buffer builder refuses the next vertex. */
-	private static final float LINE_WIDTH = 2.0F;
+	// 1.21.1: line width lives on the render type (LineStateShard), not on the vertex.
 
 	private static void line(PoseStack.Pose pose, VertexConsumer consumer,
 			double x1, double y1, double z1, double x2, double y2, double z2) {
@@ -236,8 +243,8 @@ public final class ThirdEyeHighlights {
 		float ny = dy / length;
 		float nz = dz / length;
 		consumer.addVertex(pose, (float) x1, (float) y1, (float) z1)
-			.setColor(COLOR).setNormal(pose, nx, ny, nz).setLineWidth(LINE_WIDTH);
+			.setColor(COLOR).setNormal(pose, nx, ny, nz);
 		consumer.addVertex(pose, (float) x2, (float) y2, (float) z2)
-			.setColor(COLOR).setNormal(pose, nx, ny, nz).setLineWidth(LINE_WIDTH);
+			.setColor(COLOR).setNormal(pose, nx, ny, nz);
 	}
 }

@@ -82,7 +82,7 @@ public final class ArmorAuthority {
 	 */
 	public static float damageProtection(ServerLevel level, Player player, DamageSource source) {
 		MutableFloat total = new MutableFloat(0.0F);
-		for (EquipmentSlot slot : EquipmentSlot.VALUES) {
+		for (EquipmentSlot slot : EquipmentSlot.values()) {
 			ItemStack stack = player.getItemBySlot(slot);
 			if (stack.isEmpty() || ItemAuthority.locked(player, stack)) {
 				continue;

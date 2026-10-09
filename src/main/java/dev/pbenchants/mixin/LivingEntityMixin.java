@@ -16,7 +16,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -75,86 +74,10 @@ public class LivingEntityMixin {
 	@Unique
 	private static final int pbenchants$SOFT_LANDING_FREE_BLOCKS = 3;
 
-	/**
-	 * Bulwark III, the defender's half: a shield that carries it is never
-	 * disabled outright. Asked here rather than at the call site because
-	 * {@code getSecondsToDisableBlocking} is a property of the <em>attacker</em>
-	 * — see {@code PlayerMixin} for the half that knows who is blocking.
-	 */
-	@Inject(method = "getSecondsToDisableBlocking", at = @At("RETURN"), cancellable = true)
-	private void pbenchants$shieldBreakerDuration(CallbackInfoReturnable<Float> cir) {
-		float seconds = cir.getReturnValue();
-		// Only lengthen a disable the axe would already cause (vanilla axes: 5s).
-		if (seconds > 0.0F && (Object) this instanceof ServerPlayer attacker
-			&& pbenchants$hasShieldBreaker(attacker)) {
-			cir.setReturnValue(seconds + pbenchants$EXTRA_DISABLE_SECONDS);
-		}
-	}
-
-	/**
-	 * Everything a blocked hit owes, in one injector because two of them at
-	 * RETURN do not both run: the first to call setReturnValue returns there and
-	 * then, and the one behind it is dead code. Three features share this hit —
-	 * one from each of three trees, which is exactly why they have to be fused
-	 * rather than stacked.
-	 *
-	 * <p>Order matters. Shield Breaker shaves the attacker's share off first;
-	 * what is left is what the shield <em>really</em> stopped, and that is the
-	 * number both the Armor tree's gates and Riposte's payout are scored on. A
-	 * Riposte that paid out on the pre-Breaker figure would quietly undo the
-	 * node it is supposed to be the counter to.
-	 */
-	@Inject(method = "applyItemBlocking", at = @At("RETURN"), cancellable = true)
-	private void pbenchants$blockedHit(ServerLevel level, DamageSource source, float amount,
-	                                     CallbackInfoReturnable<Float> cir) {
-		float blocked = cir.getReturnValue();
-		if (blocked <= 0.0F) {
-			return;
-		}
-		if (source.getDirectEntity() instanceof ServerPlayer attacker
-			&& pbenchants$hasShieldBreaker(attacker)) {
-			blocked = Math.max(0.0F, blocked - pbenchants$EXTRA_DAMAGE);
-			cir.setReturnValue(blocked);
-		}
-		if (!((Object) this instanceof ServerPlayer defender)) {
-			return;
-		}
-		ArmorTracker.onShieldBlock(defender, blocked);
-		pbenchants$riposte(level, source, defender, blocked);
-	}
-
-	/**
-	 * Riposte (Sword tree) — a shield raised just before the hit throws a
-	 * quarter of it back.
-	 *
-	 * <p>The window is the point. A shield held up all fight is vanilla
-	 * blocking; a shield raised into the swing is a parry, so the node only pays
-	 * out while the block is younger than {@link #pbenchants$RIPOSTE_WINDOW}
-	 * ticks. {@code getTicksUsingItem} is how long the shield has been up, which
-	 * is exactly the age being asked about.
-	 *
-	 * <p>This is the deliberate counter to Shield Breaker two tiers below it:
-	 * the axe that punches through a shield and the shield that punishes the
-	 * axe are the same class buying into both sides of one fight.
-	 */
-	@Unique
-	private void pbenchants$riposte(ServerLevel level, DamageSource source, ServerPlayer defender,
-	                                 float blocked) {
-		if (blocked <= 0.0F || !CombatPerks.owns(defender, CombatPerks.RIPOSTE)
-			|| defender.getTicksUsingItem() > pbenchants$RIPOSTE_WINDOW) {
-			return;
-		}
-		if (source.getEntity() instanceof LivingEntity attacker && attacker != defender) {
-			attacker.hurtServer(level, defender.damageSources().thorns(defender),
-				blocked * pbenchants$RIPOSTE_SHARE);
-		}
-	}
-
-	@Unique
-	private static boolean pbenchants$hasShieldBreaker(ServerPlayer attacker) {
-		return attacker.getMainHandItem().is(ItemTags.AXES)
-			&& SkillService.owns(attacker, SkillTrees.SWORD, CombatPerks.SHIELD_BREAKER);
-	}
+	// 1.21.1 port: Shield Breaker, Riposte and the Armor tree's shield-block
+	// tracking hung off 26.x's BlocksAttacks component and applyItemBlocking,
+	// neither of which exists here. Sword and Armor are disabled on the 1.21.1
+	// build, so those hooks are left out rather than rebuilt.
 
 	// ---------- Explorer: Soft Landing and Clear Sight ----------
 
@@ -164,25 +87,22 @@ public class LivingEntityMixin {
 	 * Falling moves — so wingsuit insurance composes with the boots instead of
 	 * fighting them for the same slot.
 	 */
-	@Inject(method = "getComfortableFallDistance", at = @At("RETURN"), cancellable = true)
-	private void pbenchants$fallGrace(float base, CallbackInfoReturnable<Integer> cir) {
+	@ModifyVariable(method = "calculateFallDamage", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+	private float pbenchants$fallGrace(float distance) {
 		if (!((Object) this instanceof Player player)) {
-			return;
+			return distance;
 		}
 		int free = 0;
 		if (ExplorerPerks.owns(player, ExplorerPerks.SOFT_LANDING)) {
 			free += pbenchants$SOFT_LANDING_FREE_BLOCKS;
 		}
 		// Overlapping with Soft Landing on purpose, and additively rather than
-		// as a max: issue #28 asked for the two to stack to something sane, and
-		// nine free blocks for a player who bought both classes is exactly that
-		// — generous, still short of the fall that actually kills you.
+		// as a max (issue #28). On 1.21.1 the grace is taken off the fall
+		// distance itself, since getComfortableFallDistance is not the hook here.
 		if (ArmorPerks.hasKineticPlating(player)) {
 			free += ArmorPerks.KINETIC_FREE_BLOCKS;
 		}
-		if (free > 0) {
-			cir.setReturnValue(cir.getReturnValue() + free);
-		}
+		return free > 0 ? distance - free : distance;
 	}
 
 	/**
@@ -190,9 +110,12 @@ public class LivingEntityMixin {
 	 * Only the kinetic damage type is touched — this is insurance against a
 	 * misjudged canopy, not against arrows.
 	 */
-	@ModifyVariable(method = "hurtServer", at = @At("HEAD"), argsOnly = true)
-	private float pbenchants$scaleIncomingDamage(float amount, ServerLevel level, DamageSource source) {
+	@ModifyVariable(method = "hurt", at = @At("HEAD"), argsOnly = true)
+	private float pbenchants$scaleIncomingDamage(float amount, DamageSource source) {
 		LivingEntity self = (LivingEntity) (Object) this;
+		if (!(self.level() instanceof ServerLevel level)) {
+			return amount;
+		}
 		if (self instanceof Player player) {
 			if (source.is(DamageTypes.FLY_INTO_WALL)
 				&& ExplorerPerks.owns(player, ExplorerPerks.SOFT_LANDING)) {
@@ -239,44 +162,15 @@ public class LivingEntityMixin {
 	 * knockback. A mob's shove is quartered; blocking with Warden's Weight
 	 * cancels it outright.
 	 */
-	@ModifyVariable(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V",
-		at = @At("HEAD"), argsOnly = true)
-	private float pbenchants$resistKnockback(float strength, double x, double y, double z, DamageSource source) {
-		if (strength <= 0.0F || !((Object) this instanceof Player player)) {
+	@ModifyVariable(method = "knockback(DDD)V", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+	private double pbenchants$resistKnockback(double strength) {
+		if (strength <= 0.0 || !((Object) this instanceof Player player)) {
 			return strength;
 		}
-		Entity attacker = source.getEntity();
+		DamageSource source = player.getLastDamageSource();
+		Entity attacker = source == null ? null : source.getEntity();
 		boolean fromMob = attacker instanceof LivingEntity && !(attacker instanceof Player);
 		return strength * ArmorPerks.knockbackFactor(player, fromMob);
-	}
-
-	/**
-	 * Shield Wall I: the shield is up the moment you raise it. Vanilla makes
-	 * you hold it for five ticks first, and those five ticks are the whole
-	 * reason blocking feels late.
-	 */
-	@Redirect(method = "getItemBlockingWith", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/world/item/component/BlocksAttacks;blockDelayTicks()I"))
-	private int pbenchants$shieldWallDelay(BlocksAttacks component) {
-		if ((Object) this instanceof Player player && ArmorPerks.rank(player, ArmorPerks.SHIELD_WALL) >= 1) {
-			return 0;
-		}
-		return component.blockDelayTicks();
-	}
-
-	/**
-	 * Shield Wall II: a wider arc. The angle handed to the component is how far
-	 * off-centre the hit came from, and reporting a smaller one is what makes
-	 * the cone wider — the component's own thresholds stay untouched, so a
-	 * shield with unusual data still behaves like itself.
-	 */
-	@ModifyArg(method = "applyItemBlocking", index = 2, at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/world/item/component/BlocksAttacks;resolveBlockedDamage(Lnet/minecraft/world/damagesource/DamageSource;FD)F"))
-	private double pbenchants$shieldWallArc(double angle) {
-		if ((Object) this instanceof Player player && ArmorPerks.rank(player, ArmorPerks.SHIELD_WALL) >= 2) {
-			return angle * ArmorPerks.SHIELD_WALL_ARC;
-		}
-		return angle;
 	}
 
 	// ---------- Enchanter: Reaper's Wisdom ----------

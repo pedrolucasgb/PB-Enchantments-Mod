@@ -3,12 +3,10 @@ package dev.pbenchants.client.gui;
 import dev.pbenchants.skill.SkillNode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -63,13 +61,13 @@ public class SkillNodeWidget extends AbstractWidget {
 	}
 
 	@Override
-	public void onClick(MouseButtonEvent event, boolean doubleClick) {
+	public void onClick(double mouseX, double mouseY) {
 		onPress.accept(node);
 	}
 
 	@Override
-	public boolean keyPressed(KeyEvent event) {
-		if (!active || !visible || !event.isSelection()) {
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		if (!active || !visible || !net.minecraft.client.gui.navigation.CommonInputs.selected(keyCode)) {
 			return false;
 		}
 		playDownSound(Minecraft.getInstance().getSoundManager());
@@ -78,7 +76,7 @@ public class SkillNodeWidget extends AbstractWidget {
 	}
 
 	@Override
-	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		int x = getX();
 		int y = getY();
 		boolean highlight = isHovered() || isFocused() || selected;
@@ -92,14 +90,14 @@ public class SkillNodeWidget extends AbstractWidget {
 		// The frame reads the state; a selected node gets a second ring so it
 		// stays obvious which one the details panel is talking about.
 		int frame = state.frame();
-		graphics.outline(x, y, width, height, frame);
+		graphics.renderOutline(x, y, width, height, frame);
 		if (selected) {
-			graphics.outline(x - 1, y - 1, width + 2, height + 2, SkillTreeStyle.TEXT);
+			graphics.renderOutline(x - 1, y - 1, width + 2, height + 2, SkillTreeStyle.TEXT);
 		}
 
 		int iconX = x + 3;
 		int iconY = y + (height - ICON) / 2;
-		graphics.item(icon, iconX, iconY);
+		graphics.renderItem(icon, iconX, iconY);
 		if (state.dimmed()) {
 			graphics.fill(iconX, iconY, iconX + ICON, iconY + ICON, 0x99101318);
 		}
@@ -118,15 +116,15 @@ public class SkillNodeWidget extends AbstractWidget {
 		int room = x + width - 3 - labelX - (corner ? 9 : 0);
 		if (room >= 20) {
 			String label = SkillTreeStyle.trim(font, getMessage().getString(), room);
-			graphics.text(font, label, labelX, y + (height - 8) / 2, state.labelColor());
+			graphics.drawString(font, label, labelX, y + (height - 8) / 2, state.labelColor());
 		}
 
 		if (state == NodeState.OWNED) {
-			graphics.text(font, CHECK, x + width - 8, y + 2, SkillTreeStyle.GREEN);
+			graphics.drawString(font, CHECK, x + width - 8, y + 2, SkillTreeStyle.GREEN);
 		} else if (state == NodeState.FUTURE) {
-			graphics.text(font, STAR, x + width - 8, y + 2, SkillTreeStyle.SOON);
+			graphics.drawString(font, STAR, x + width - 8, y + 2, SkillTreeStyle.SOON);
 		} else if (choice) {
-			graphics.text(font, SCALES, x + width - 8, y + 2, SkillTreeStyle.CHOICE);
+			graphics.drawString(font, SCALES, x + width - 8, y + 2, SkillTreeStyle.CHOICE);
 		}
 	}
 

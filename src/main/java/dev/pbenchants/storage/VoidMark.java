@@ -41,7 +41,7 @@ public final class VoidMark {
 			return false;
 		}
 		Inventory inventory = player.getInventory();
-		for (ItemStack stack : inventory.getNonEquipmentItems()) {
+		for (ItemStack stack : inventory.items) {
 			// The lock mixin already makes the marks invisible to this comparison.
 			if (ItemLock.voided(stack) && ItemStack.isSameItemSameComponents(stack, incoming)) {
 				return true;

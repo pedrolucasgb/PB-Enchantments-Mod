@@ -1,5 +1,5 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -9,6 +9,15 @@ repositories {
 
 loom {
 	splitEnvironmentSourceSets()
+
+	// Compatibility runs: -PmixinAudit makes the game force-load every mixin target at boot.
+	runs {
+		configureEach {
+			if (project.hasProperty("mixinAudit")) {
+				vmArg "-Dpbenchants.mixinAudit=true"
+			}
+		}
+	}
 
 	mods {
 		"pbenchants" {
@@ -20,9 +29,16 @@ loom {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	// Compatibility runs only: -PcompatDir=<folder of mod jars> puts a modpack's
+	// mods next to PB in runServer/runClient. Never part of the built jar.
+	if (project.hasProperty("compatDir")) {
+		modLocalRuntime fileTree(dir: project.property("compatDir"), include: "*.jar")
+	}
 }
 
 processResources {
@@ -35,14 +51,44 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+	it.options.release = 21
+	it.options.compilerArgs += ['-Xmaxerrs', '5000']
 }
 
 java {
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+// Production compatibility runs (real loader, intermediary names, nested jars):
+//   gradlew prodServer -PcompatServerDir=<mod jars>   /   gradlew prodClient -PcompatClientDir=<mod jars>
+// Both force-load every mixin target once up and then stop themselves.
+tasks.register("prodServer", net.fabricmc.loom.task.prod.ServerProductionRunTask) {
+	installerVersion = "1.1.2"
+	mods.from(remapJar)
+	if (project.hasProperty("compatServerDir")) {
+		mods.from(fileTree(dir: project.property("compatServerDir"), include: "*.jar"))
+	}
+	jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.autoStop=true")
+	programArgs.add("nogui")
+	runDir = file("run-prod-server")
+}
+
+tasks.register("prodClient", net.fabricmc.loom.task.prod.ClientProductionRunTask) {
+	mods.from(remapJar)
+	if (project.hasProperty("compatClientDir")) {
+		mods.from(fileTree(dir: project.property("compatClientDir"), include: "*.jar"))
+	}
+	if (project.hasProperty("clientWorld")) {
+		// Smoke test: join this save, screenshot the skill screen and the inventory, quit.
+		jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.smokeTest=true")
+		programArgs.addAll("--quickPlaySingleplayer", project.property("clientWorld").toString())
+	} else {
+		jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.autoStop=true")
+	}
+	runDir = file("run-prod-client")
 }
 
 jar {

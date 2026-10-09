@@ -26,21 +26,21 @@ public final class ModNetworking {
 	public static void init() {
 		// Configuration phase: the version handshake runs before the player
 		// exists, so a mismatched client never reaches the play payloads below.
-		PayloadTypeRegistry.clientboundConfiguration().register(VersionCheckPayload.TYPE, VersionCheckPayload.CODEC);
-		PayloadTypeRegistry.serverboundConfiguration().register(VersionReplyPayload.TYPE, VersionReplyPayload.CODEC);
+		PayloadTypeRegistry.configurationS2C().register(VersionCheckPayload.TYPE, VersionCheckPayload.CODEC);
+		PayloadTypeRegistry.configurationC2S().register(VersionReplyPayload.TYPE, VersionReplyPayload.CODEC);
 		VersionGate.init();
 
-		PayloadTypeRegistry.serverboundPlay().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(SkillFeedbackPayload.TYPE, SkillFeedbackPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(AbilityStatePayload.TYPE, AbilityStatePayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(ScreenStatePayload.TYPE, ScreenStatePayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(AttunePayload.TYPE, AttunePayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(AnvilModePayload.TYPE, AnvilModePayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(ThirdEyeQueryPayload.TYPE, ThirdEyeQueryPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(ThirdEyeResultPayload.TYPE, ThirdEyeResultPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(SkillActionPayload.TYPE, SkillActionPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(SkillStatePayload.TYPE, SkillStatePayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(SkillFeedbackPayload.TYPE, SkillFeedbackPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(EnchantPreviewPayload.TYPE, EnchantPreviewPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(AbilityStatePayload.TYPE, AbilityStatePayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(ArtisanActionPayload.TYPE, ArtisanActionPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(ScreenStatePayload.TYPE, ScreenStatePayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(AttunePayload.TYPE, AttunePayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(AnvilModePayload.TYPE, AnvilModePayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(ThirdEyeQueryPayload.TYPE, ThirdEyeQueryPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(ThirdEyeResultPayload.TYPE, ThirdEyeResultPayload.CODEC);
 
 		// Beacon: Prism's choice, pressed on the beacon screen. The server
 		// judges the rank, stores the index in the tree's counters and pushes
@@ -202,7 +202,11 @@ public final class ModNetworking {
 	private static int fingerprint(ServerPlayer player) {
 		PlayerProgress progress = ModAttachments.of(player);
 		int hash = Boolean.hashCode(progress.debugMaster);
+		hash = 31 * hash + dev.pbenchants.skill.TreeSwitch.disabledIds().hashCode();
 		for (SkillTree tree : SkillTrees.ALL.values()) {
+			if (dev.pbenchants.skill.TreeSwitch.disabled(tree)) {
+				continue;
+			}
 			TreeProgress treeProgress = progress.tree(tree.id());
 			hash = 31 * hash + treeProgress.unlockedTiers;
 			hash = 31 * hash + treeProgress.purchased.hashCode();
@@ -216,6 +220,9 @@ public final class ModNetworking {
 		PlayerProgress progress = ModAttachments.of(player);
 		Map<String, SkillStatePayload.TreeState> trees = new HashMap<>();
 		for (SkillTree tree : SkillTrees.ALL.values()) {
+			if (dev.pbenchants.skill.TreeSwitch.disabled(tree)) {
+				continue; // the client is told the tree is off, never what is in it
+			}
 			TreeProgress treeProgress = progress.tree(tree.id());
 			trees.put(tree.id(), new SkillStatePayload.TreeState(
 				treeProgress.unlockedTiers,
@@ -225,6 +232,7 @@ public final class ModNetworking {
 			));
 		}
 		LAST_SYNC.put(player.getUUID(), fingerprint(player));
-		ServerPlayNetworking.send(player, new SkillStatePayload(progress.debugMaster, trees));
+		ServerPlayNetworking.send(player, new SkillStatePayload(progress.debugMaster, trees,
+			new HashSet<>(dev.pbenchants.skill.TreeSwitch.disabledIds())));
 	}
 }

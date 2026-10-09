@@ -69,7 +69,7 @@ public final class ShulkerEnchantKeeper {
 			for (ItemEntity drop : pending.level().getEntitiesOfClass(
 				ItemEntity.class, new AABB(pending.pos()).inflate(1.0), entity -> entity.tickCount <= 1)) {
 				ItemStack stack = drop.getItem();
-				if (stack.is(ItemTags.SHULKER_BOXES)
+				if (ShulkerSight.isShulkerBoxItem(stack)
 					&& stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty()) {
 					stack.set(DataComponents.ENCHANTMENTS, pending.enchantments());
 					drop.setItem(stack);

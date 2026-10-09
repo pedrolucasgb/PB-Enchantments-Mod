@@ -57,12 +57,12 @@ public final class ItemLock {
 
 	public static final DataComponentType<Unit> LOCKED = DataComponentType.<Unit>builder()
 		.persistent(Unit.CODEC)
-		.networkSynchronized(Unit.STREAM_CODEC)
+		.networkSynchronized(net.minecraft.network.codec.StreamCodec.unit(Unit.INSTANCE))
 		.build();
 
 	public static final DataComponentType<Unit> VOIDED = DataComponentType.<Unit>builder()
 		.persistent(Unit.CODEC)
-		.networkSynchronized(Unit.STREAM_CODEC)
+		.networkSynchronized(net.minecraft.network.codec.StreamCodec.unit(Unit.INSTANCE))
 		.build();
 
 	private ItemLock() {

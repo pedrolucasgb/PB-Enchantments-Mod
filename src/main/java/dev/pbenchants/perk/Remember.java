@@ -45,12 +45,12 @@ public final class Remember {
 		progress.counters.put(DEATH_X, player.blockPosition().getX());
 		progress.counters.put(DEATH_Y, player.blockPosition().getY());
 		progress.counters.put(DEATH_Z, player.blockPosition().getZ());
-		progress.counters.put(DEATH_DAY, (int) (player.level().getOverworldClockTime() / 24000L));
+		progress.counters.put(DEATH_DAY, (int) (player.level().getDayTime() / 24000L));
 		progress.counters.put(DEATH_PENDING, 1);
 		// The dimension is a name, not a number, so it goes in the name-based
 		// ledger; the "deathdim/" prefix is never counted by a gate.
 		progress.seen.removeIf(entry -> entry.startsWith(DEATH_DIMENSION + "/"));
-		progress.seen.add(DEATH_DIMENSION + "/" + player.level().dimension().identifier().toString());
+		progress.seen.add(DEATH_DIMENSION + "/" + player.level().dimension().location().toString());
 	}
 
 	/** Hands over the note. Called after the player is back in the world. */

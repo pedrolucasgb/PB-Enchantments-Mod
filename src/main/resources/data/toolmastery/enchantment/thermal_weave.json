@@ -11,7 +11,7 @@
           "base": -0.2,
           "per_level_above_first": -0.2
         },
-        "attribute": "minecraft:burning_time",
+        "attribute": "minecraft:generic.burning_time",
         "id": "toolmastery:enchantment.thermal_weave",
         "operation": "add_multiplied_base"
       }

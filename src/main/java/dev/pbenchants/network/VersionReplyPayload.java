@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * C2S, configuration phase: the client's answer to {@link VersionCheckPayload}.
@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier;
  */
 public record VersionReplyPayload(String version) implements CustomPacketPayload {
 	public static final Type<VersionReplyPayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "version_reply"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "version_reply"));
 
 	public static final StreamCodec<FriendlyByteBuf, VersionReplyPayload> CODEC =
 		CustomPacketPayload.codec((payload, buf) -> buf.writeUtf(payload.version()),

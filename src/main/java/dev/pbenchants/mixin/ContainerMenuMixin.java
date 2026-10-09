@@ -5,7 +5,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -46,7 +46,7 @@ public abstract class ContainerMenuMixin {
 	public abstract ItemStack getCarried();
 
 	@Inject(method = "doClick", at = @At("HEAD"), cancellable = true)
-	private void pbenchants$keepLockedItems(int slotId, int button, ContainerInput input, Player player,
+	private void pbenchants$keepLockedItems(int slotId, int button, ClickType input, Player player,
 			CallbackInfo ci) {
 		if (slotId < 0 || slotId >= slots.size() || player.isCreative()) {
 			return;
@@ -55,7 +55,7 @@ public abstract class ContainerMenuMixin {
 		// A locked stack on the cursor set down on a plain stack of the same
 		// item: vanilla grows the one in the slot, so the mark would stay on
 		// the cursor and vanish with it. Mark the slot first and it survives.
-		if (input == ContainerInput.PICKUP) {
+		if (input == ClickType.PICKUP) {
 			ItemStack carried = getCarried();
 			ItemStack inSlot = slot.getItem();
 			if (ItemLock.locked(carried) && !inSlot.isEmpty() && !ItemLock.locked(inSlot)
@@ -64,13 +64,13 @@ public abstract class ContainerMenuMixin {
 			}
 			return;
 		}
-		if (input != ContainerInput.QUICK_MOVE && input != ContainerInput.THROW) {
+		if (input != ClickType.QUICK_MOVE && input != ClickType.THROW) {
 			return;
 		}
 		if (!(slot.container instanceof Inventory) || !ItemLock.locked(slot.getItem())) {
 			return;
 		}
-		if (input == ContainerInput.QUICK_MOVE && (Object) this == player.inventoryMenu) {
+		if (input == ClickType.QUICK_MOVE && (Object) this == player.inventoryMenu) {
 			return;
 		}
 		ItemLock.refused(player);

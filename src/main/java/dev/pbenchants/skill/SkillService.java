@@ -47,6 +47,12 @@ public final class SkillService {
 	}
 
 	public static TreeProgress progress(ServerPlayer player, SkillTree tree) {
+		// A switched-off tree reads and writes a throwaway copy: nothing in it
+		// is owned, and every gate counter a tracker bumps is simply dropped.
+		// The saved progress (if any) is left untouched underneath.
+		if (TreeSwitch.disabled(tree)) {
+			return new TreeProgress();
+		}
 		return ModAttachments.of(player).tree(tree.id());
 	}
 
@@ -87,6 +93,9 @@ public final class SkillService {
 
 	/** Attempts to unlock the next tier of a tree. */
 	public static Result unlockNextTier(ServerPlayer player, SkillTree tree) {
+		if (TreeSwitch.disabled(tree)) {
+			return fail("msg.pbenchants.tree.disabled", tree.displayName());
+		}
 		TreeProgress progress = progress(player, tree);
 		int next = progress.unlockedTiers;
 		if (next >= tree.tiers().size()) {
@@ -112,6 +121,9 @@ public final class SkillService {
 
 	/** Attempts to unlock a node: XP points plus the node's materials. */
 	public static Result unlockNode(ServerPlayer player, SkillTree tree, SkillNode node) {
+		if (TreeSwitch.disabled(tree)) {
+			return fail("msg.pbenchants.tree.disabled", tree.displayName());
+		}
 		TreeProgress progress = progress(player, tree);
 		boolean master = master(player);
 		if (!node.implemented()) {
@@ -160,6 +172,9 @@ public final class SkillService {
 	 * so the tree never holds a node whose prerequisite was refunded away.
 	 */
 	public static Result sellNode(ServerPlayer player, SkillTree tree, SkillNode node) {
+		if (TreeSwitch.disabled(tree)) {
+			return fail("msg.pbenchants.tree.disabled", tree.displayName());
+		}
 		TreeProgress progress = progress(player, tree);
 		if (!progress.owns(node.id())) {
 			return fail("msg.pbenchants.sell.fail.not_owned", node.displayName());
@@ -205,6 +220,9 @@ public final class SkillService {
 	 * changes, only the item.
 	 */
 	public static Result enchantHeld(ServerPlayer player, SkillTree tree, SkillNode node) {
+		if (TreeSwitch.disabled(tree)) {
+			return fail("msg.pbenchants.tree.disabled", tree.displayName());
+		}
 		if (!node.enchantable()) {
 			return fail("msg.pbenchants.enchant.fail.not_enchantable", node.displayName());
 		}
@@ -310,6 +328,9 @@ public final class SkillService {
 	 * skipped and counted.
 	 */
 	public static Result unlockTierNodes(ServerPlayer player, SkillTree tree, int tierNumber) {
+		if (TreeSwitch.disabled(tree)) {
+			return fail("msg.pbenchants.tree.disabled", tree.displayName());
+		}
 		if (tierNumber < 1 || tierNumber > tree.tiers().size()) {
 			return fail("msg.pbenchants.tier.fail.range_1", tree.tiers().size());
 		}
@@ -362,6 +383,9 @@ public final class SkillService {
 	 * testing a single unlock over and over without redoing the whole tree.
 	 */
 	public static Result lockNode(ServerPlayer player, SkillTree tree, SkillNode node) {
+		if (TreeSwitch.disabled(tree)) {
+			return fail("msg.pbenchants.tree.disabled", tree.displayName());
+		}
 		if (!progress(player, tree).purchased.remove(node.id())) {
 			return fail("msg.pbenchants.lock.fail.not_owned", node.displayName());
 		}
@@ -374,6 +398,9 @@ public final class SkillService {
 	 * than a half-state where a locked tier still has bought nodes.
 	 */
 	public static Result setTier(ServerPlayer player, SkillTree tree, int tiers) {
+		if (TreeSwitch.disabled(tree)) {
+			return fail("msg.pbenchants.tree.disabled", tree.displayName());
+		}
 		if (tiers < 0 || tiers > tree.tiers().size()) {
 			return fail("msg.pbenchants.tier.fail.range", tree.tiers().size());
 		}

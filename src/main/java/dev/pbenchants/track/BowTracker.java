@@ -7,10 +7,10 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -65,7 +65,7 @@ public final class BowTracker {
 			}
 			String id = contents.potion()
 				.flatMap(Holder::unwrapKey)
-				.map(key -> key.identifier().toString())
+				.map(key -> key.location().toString())
 				.orElse(contents.customEffects().isEmpty() ? null : "custom");
 			if (id != null) {
 				progress.see("tipped", id, "tipped_checklist");
@@ -113,7 +113,7 @@ public final class BowTracker {
 		if (distance >= VERY_LONG_KILL) {
 			progress.addCount("kills_60", 1);
 		}
-		if (victim.getType() == EntityTypes.PHANTOM && !victim.onGround()) {
+		if (victim.getType() == EntityType.PHANTOM && !victim.onGround()) {
 			progress.addCount("phantom_air_kills", 1);
 		}
 	}

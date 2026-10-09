@@ -1,18 +1,17 @@
 {
 	"required": true,
 	"package": "dev.pbenchants.client.mixin",
-	"compatibilityLevel": "JAVA_25",
+	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"AnvilScreenMixin",
+		"ContainerScreenForegroundMixin",
 		"ContainerScreenAccessor",
 		"ContainerScreenSearchMixin",
 		"EnchantmentScreenMixin",
 		"LightmapExtractorMixin",
 		"LocalPlayerMixin",
-		"LevelRendererMixin",
 		"MerchantOfferMixin",
-		"RecipeBookScreenSearchMixin",
-		"RenderPipelinesAccessor"
+		"RecipeBookScreenSearchMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

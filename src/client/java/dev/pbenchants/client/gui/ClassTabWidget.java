@@ -2,12 +2,10 @@ package dev.pbenchants.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -41,13 +39,13 @@ public class ClassTabWidget extends AbstractWidget {
 	}
 
 	@Override
-	public void onClick(MouseButtonEvent event, boolean doubleClick) {
+	public void onClick(double mouseX, double mouseY) {
 		onPress.run();
 	}
 
 	@Override
-	public boolean keyPressed(KeyEvent event) {
-		if (!active || !visible || !event.isSelection()) {
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		if (!active || !visible || !net.minecraft.client.gui.navigation.CommonInputs.selected(keyCode)) {
 			return false;
 		}
 		playDownSound(Minecraft.getInstance().getSoundManager());
@@ -56,7 +54,7 @@ public class ClassTabWidget extends AbstractWidget {
 	}
 
 	@Override
-	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		int x = getX();
 		int y = getY();
 		int background = current ? 0xFF262D38 : 0xFF171A20;
@@ -64,13 +62,13 @@ public class ClassTabWidget extends AbstractWidget {
 			background = SkillTreeStyle.blend(background, 0xFF3A4250, 0.5f);
 		}
 		graphics.fill(x, y, x + width, y + HEIGHT, background);
-		graphics.outline(x, y, width, HEIGHT, current ? SkillTreeStyle.GOLD : SkillTreeStyle.BORDER);
+		graphics.renderOutline(x, y, width, HEIGHT, current ? SkillTreeStyle.GOLD : SkillTreeStyle.BORDER);
 		if (current) {
 			// The current tab bleeds into the tree below it.
 			graphics.fill(x + 1, y + HEIGHT - 2, x + width - 1, y + HEIGHT, 0xFF262D38);
 		}
 
-		graphics.item(icon, x + 3, y + 2);
+		graphics.renderItem(icon, x + 3, y + 2);
 		if (!active) {
 			graphics.fill(x + 3, y + 2, x + 19, y + 18, 0xAA101318);
 		}
@@ -79,7 +77,7 @@ public class ClassTabWidget extends AbstractWidget {
 		int room = x + width - 3 - labelX;
 		if (room >= 12) {
 			String label = SkillTreeStyle.trim(font, getMessage().getString(), room);
-			graphics.text(font, label, labelX, y + 6,
+			graphics.drawString(font, label, labelX, y + 6,
 				!active ? SkillTreeStyle.DIM : current ? SkillTreeStyle.GOLD : SkillTreeStyle.TEXT);
 		}
 	}

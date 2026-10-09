@@ -37,17 +37,17 @@ public final class PBEnchantsCommand {
 	private static final String ALL_TREES = "all";
 
 	private static final SuggestionProvider<CommandSourceStack> TREE_IDS =
-		(context, builder) -> SharedSuggestionProvider.suggest(SkillTrees.ALL.keySet(), builder);
+		(context, builder) -> SharedSuggestionProvider.suggest(enabledIds(), builder);
 
 	/** Tree ids plus the "all" sentinel, for the debug commands that accept both. */
 	private static final SuggestionProvider<CommandSourceStack> TREE_IDS_OR_ALL = (context, builder) -> {
-		java.util.List<String> options = new java.util.ArrayList<>(SkillTrees.ALL.keySet());
+		java.util.List<String> options = new java.util.ArrayList<>(enabledIds());
 		options.add(ALL_TREES);
 		return SharedSuggestionProvider.suggest(options, builder);
 	};
 
 	private static final SuggestionProvider<CommandSourceStack> NODE_IDS = (context, builder) -> {
-		SkillTree tree = SkillTrees.byId(StringArgumentType.getString(context, "tree"));
+		SkillTree tree = enabledTree(StringArgumentType.getString(context, "tree"));
 		return tree == null
 			? builder.buildFuture()
 			: SharedSuggestionProvider.suggest(tree.nodes().keySet(), builder);
@@ -55,7 +55,7 @@ public final class PBEnchantsCommand {
 
 	/** Only the nodes that actually have an enchant action. */
 	private static final SuggestionProvider<CommandSourceStack> ENCHANT_NODE_IDS = (context, builder) -> {
-		SkillTree tree = SkillTrees.byId(StringArgumentType.getString(context, "tree"));
+		SkillTree tree = enabledTree(StringArgumentType.getString(context, "tree"));
 		return tree == null
 			? builder.buildFuture()
 			: SharedSuggestionProvider.suggest(
@@ -99,7 +99,7 @@ public final class PBEnchantsCommand {
 						SharedSuggestionProvider.suggest(dev.pbenchants.perk.BeaconPerks.ATTUNEMENT_NAMES, builder))
 					.executes(context -> attune(context.getSource(), StringArgumentType.getString(context, "power")))))
 			.then(Commands.literal("debug")
-				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+				.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(Commands.literal("master")
 					.then(Commands.argument("enabled", com.mojang.brigadier.arguments.BoolArgumentType.bool())
 						.executes(context -> master(
@@ -123,7 +123,7 @@ public final class PBEnchantsCommand {
 						.executes(context -> kit(context.getSource(), StringArgumentType.getString(context, "tree"), null))
 						.then(Commands.argument("enchant", StringArgumentType.word())
 							.suggests((context, builder) -> {
-								SkillTree tree = SkillTrees.byId(StringArgumentType.getString(context, "tree"));
+								SkillTree tree = enabledTree(StringArgumentType.getString(context, "tree"));
 								return tree == null
 									? builder.buildFuture()
 									: SharedSuggestionProvider.suggest(enchantsOf(tree).keySet(), builder);
@@ -217,11 +217,29 @@ public final class PBEnchantsCommand {
 		return 1;
 	}
 
-	private static SkillTree treeOrFail(CommandSourceStack source, String treeId) {
+	/**
+	 * The command-side lookup: a tree switched off on this server is answered
+	 * exactly like an unknown one — it is not there to inspect, grant or reset.
+	 */
+	@Nullable
+	private static SkillTree enabledTree(String treeId) {
 		SkillTree tree = SkillTrees.byId(treeId);
+		return tree == null || dev.pbenchants.skill.TreeSwitch.disabled(tree) ? null : tree;
+	}
+
+	private static java.util.List<String> enabledIds() {
+		return dev.pbenchants.skill.TreeSwitch.enabledTrees().stream().map(SkillTree::id).toList();
+	}
+
+	private static SkillTree treeOrFail(CommandSourceStack source, String treeId) {
+		SkillTree tree = enabledTree(treeId);
+		if (tree == null && dev.pbenchants.skill.TreeSwitch.disabled(treeId)) {
+			source.sendFailure(Component.translatable("msg.pbenchants.tree.disabled_id", treeId));
+			return null;
+		}
 		if (tree == null) {
 			source.sendFailure(Component.literal("Unknown tree '" + treeId + "'. Available: "
-				+ String.join(", ", SkillTrees.ALL.keySet())));
+				+ String.join(", ", enabledIds())));
 		}
 		return tree;
 	}
@@ -278,7 +296,7 @@ public final class PBEnchantsCommand {
 		if (node == null || player == null) {
 			return 0;
 		}
-		return report(source, SkillService.unlockNode(player, SkillTrees.byId(treeId), node));
+		return report(source, SkillService.unlockNode(player, enabledTree(treeId), node));
 	}
 
 	private static int enchant(CommandSourceStack source, String treeId, String nodeId) {
@@ -287,7 +305,7 @@ public final class PBEnchantsCommand {
 		if (node == null || player == null) {
 			return 0;
 		}
-		return report(source, SkillService.enchantHeld(player, SkillTrees.byId(treeId), node));
+		return report(source, SkillService.enchantHeld(player, enabledTree(treeId), node));
 	}
 
 	@Nullable
@@ -310,7 +328,7 @@ public final class PBEnchantsCommand {
 			return 0;
 		}
 		if (ALL_TREES.equals(treeId)) {
-			for (SkillTree tree : SkillTrees.ALL.values()) {
+			for (SkillTree tree : dev.pbenchants.skill.TreeSwitch.enabledTrees()) {
 				report(source, SkillService.unlockTierNodes(player, tree, tier));
 			}
 			dev.pbenchants.network.ModNetworking.sendState(player);
@@ -374,7 +392,7 @@ public final class PBEnchantsCommand {
 		if (node == null || player == null) {
 			return 0;
 		}
-		int result = report(source, SkillService.lockNode(player, SkillTrees.byId(treeId), node));
+		int result = report(source, SkillService.lockNode(player, enabledTree(treeId), node));
 		dev.pbenchants.network.ModNetworking.sendState(player);
 		return result;
 	}
@@ -480,7 +498,7 @@ public final class PBEnchantsCommand {
 
 	/** The Haste the player carries this instant, as the speed report needs it: "-", "II", "III". */
 	private static String hasteNow(ServerPlayer player) {
-		var haste = player.getEffect(net.minecraft.world.effect.MobEffects.HASTE);
+		var haste = player.getEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED);
 		return haste == null ? "-" : roman(haste.getAmplifier() + 1);
 	}
 
@@ -547,7 +565,7 @@ public final class PBEnchantsCommand {
 		for (int level = 1; level <= maxLevel; level++) {
 			net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
 			for (dev.pbenchants.enchant.ModEnchantments.Grant grant : dev.pbenchants.enchant.ModEnchantments.NODE_GRANTS.values()) {
-				if (grant.enchantment().identifier().getPath().equals(enchantName) && grant.level() == level) {
+				if (grant.enchantment().location().getPath().equals(enchantName) && grant.level() == level) {
 					reference = grant;
 				}
 			}
@@ -578,7 +596,7 @@ public final class PBEnchantsCommand {
 				case "gravity_well":
 					return net.minecraft.world.item.Items.MACE;
 				case "phalanx":
-					return net.minecraft.world.item.Items.DIAMOND_SPEAR;
+					return net.minecraft.world.item.Items.DIAMOND_SWORD; // no spears on 1.21.1
 				case "pinning_shot":
 					return net.minecraft.world.item.Items.CROSSBOW;
 				case "harvest_swing":
@@ -604,7 +622,7 @@ public final class PBEnchantsCommand {
 		for (SkillNode node : tree.nodes().values()) {
 			dev.pbenchants.enchant.ModEnchantments.Grant grant = dev.pbenchants.enchant.ModEnchantments.NODE_GRANTS.get(node.id());
 			if (grant != null) {
-				result.merge(grant.enchantment().identifier().getPath(), grant.level(), Math::max);
+				result.merge(grant.enchantment().location().getPath(), grant.level(), Math::max);
 			}
 		}
 		return result;

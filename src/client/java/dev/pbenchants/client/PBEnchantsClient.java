@@ -12,7 +12,7 @@ import dev.pbenchants.perk.ExplorerPerks;
 import dev.pbenchants.perk.PerkAccess;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.ChatFormatting;
@@ -23,11 +23,11 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 public class PBEnchantsClient implements ClientModInitializer {
-	public static final KeyMapping OPEN_TREE_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+	public static final KeyMapping OPEN_TREE_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 		"key.pbenchants.open_tree",
 		InputConstants.Type.KEYSYM,
-		GLFW.GLFW_KEY_K,
-		KeyMapping.Category.MISC
+		GLFW.GLFW_KEY_H, // 26.x: K. Cobblemon pack: K is Crafting Tweaks compress (shares the key map)
+		"key.categories.misc"
 	));
 
 	/**
@@ -36,11 +36,11 @@ public class PBEnchantsClient implements ClientModInitializer {
 	 * free in vanilla and sits next to the movement keys, where a "see in the
 	 * dark" switch is reached for without looking.
 	 */
-	public static final KeyMapping TOGGLE_NIGHT_EYES_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+	public static final KeyMapping TOGGLE_NIGHT_EYES_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 		"key.pbenchants.toggle_night_eyes",
 		InputConstants.Type.KEYSYM,
 		GLFW.GLFW_KEY_G,
-		KeyMapping.Category.MISC
+		"key.categories.misc"
 	));
 
 	/**
@@ -48,11 +48,11 @@ public class PBEnchantsClient implements ClientModInitializer {
 	 * in vanilla and sits under the same hand as the inventory key; the node is
 	 * "your ender chest from anywhere", and anywhere includes mid-walk.
 	 */
-	public static final KeyMapping OPEN_ENDER_CHEST_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+	public static final KeyMapping OPEN_ENDER_CHEST_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 		"key.pbenchants.open_ender_chest",
 		InputConstants.Type.KEYSYM,
-		GLFW.GLFW_KEY_B,
-		KeyMapping.Category.MISC
+		GLFW.GLFW_KEY_V, // 26.x: B. Cobblemon pack: B is Xaero Minimap new waypoint
+		"key.categories.misc"
 	));
 
 	/**
@@ -100,7 +100,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 		// screen. Chat only catches a reply that outlived the screen.
 		ClientPlayNetworking.registerGlobalReceiver(dev.pbenchants.network.SkillFeedbackPayload.TYPE,
 			(payload, context) -> {
-				if (context.client().gui.screen() instanceof SkillTreeScreen screen) {
+				if (context.client().screen instanceof SkillTreeScreen screen) {
 					screen.showFeedback(payload.ok(), payload.message());
 				} else if (context.player() != null) {
 					context.player().sendSystemMessage(payload.message().copy()
@@ -119,6 +119,36 @@ public class PBEnchantsClient implements ClientModInitializer {
 		// to set aglow for a few seconds.
 		ClientPlayNetworking.registerGlobalReceiver(dev.pbenchants.network.ThirdEyeResultPayload.TYPE,
 			(payload, context) -> ThirdEyeHighlights.set(payload.positions()));
+
+		ThirdEyeHighlights.registerRenderer();
+		SmokeTest.register();
+		if (Boolean.getBoolean("pbenchants.mixinAudit")) {
+			// Audited at the first title screen, when every mod has finished starting.
+			boolean[] audited = {false};
+			net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
+				if (audited[0] || !(screen instanceof net.minecraft.client.gui.screens.TitleScreen
+					|| screen.getClass().getName().toLowerCase(java.util.Locale.ROOT).contains("title"))) {
+					return;
+				}
+				audited[0] = true;
+				dev.pbenchants.PBEnchants.LOGGER.info("PB mixin audit (client): title screen reached; loading every mixin target...");
+				java.util.List<Class<?>> targets = new java.util.ArrayList<>(dev.pbenchants.MixinProbe.commonTargets());
+				targets.addAll(java.util.List.of(
+					net.minecraft.client.gui.screens.inventory.AbstractContainerScreen.class,
+					net.minecraft.client.gui.screens.inventory.AnvilScreen.class,
+					net.minecraft.client.gui.screens.inventory.EnchantmentScreen.class,
+					net.minecraft.client.renderer.LightTexture.class,
+					net.minecraft.client.player.LocalPlayer.class,
+					net.minecraft.world.item.trading.MerchantOffer.class,
+					net.minecraft.client.gui.screens.recipebook.RecipeBookComponent.class));
+				dev.pbenchants.MixinProbe.probe(targets, "client");
+				dev.pbenchants.MixinProbe.auditEverything("client");
+				dev.pbenchants.PBEnchants.LOGGER.info("PB mixin audit (client): done");
+				if (Boolean.getBoolean("pbenchants.autoStop")) {
+					client.execute(client::stop);
+				}
+			});
+		}
 
 		// Set Sense draws next to the armour bar it explains.
 		SetSenseHud.register();
@@ -192,14 +222,14 @@ public class PBEnchantsClient implements ClientModInitializer {
 					continue;
 				}
 				handled = true;
-				if (client.gui.screen() instanceof SkillTreeScreen) {
+				if (client.screen instanceof SkillTreeScreen) {
 					// Belt and braces: the screen normally closes itself on this
 					// key, but if anything ever swallows the press before it
 					// gets there, the mapping still toggles the screen.
-					client.gui.setScreen(null);
-				} else if (client.gui.screen() == null) {
+					client.setScreen(null);
+				} else if (client.screen == null) {
 					ClientPlayNetworking.send(SkillActionPayload.requestState());
-					client.setScreenAndShow(new SkillTreeScreen());
+					client.setScreen(new SkillTreeScreen());
 				}
 			}
 			closedByKey = false;
@@ -221,11 +251,11 @@ public class PBEnchantsClient implements ClientModInitializer {
 	 * Ignored while a screen is up: the container screen has its own button.
 	 */
 	private static void openEnderChest(Minecraft client) {
-		if (client.player == null || client.gui.screen() != null) {
+		if (client.player == null || client.screen != null) {
 			return;
 		}
 		if (!ClientSkillState.owns("explorer", EnderChestAccess.PORTABLE_NODE)) {
-			client.gui.hud.setOverlayMessage(
+			client.gui.setOverlayMessage(
 				Component.translatable("msg.pbenchants.ender_chest.locked").withStyle(ChatFormatting.RED), false);
 			return;
 		}
@@ -252,7 +282,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 		} else {
 			line = Component.translatable("msg.pbenchants.night_eyes.off").withStyle(ChatFormatting.GRAY);
 		}
-		client.gui.hud.setOverlayMessage(line, false);
+		client.gui.setOverlayMessage(line, false);
 	}
 
 	/**
@@ -269,7 +299,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 	 * world starts by saying so again.
 	 */
 	private static void tickScreenState(Minecraft client) {
-		boolean open = client.gui.screen() instanceof AbstractContainerScreen<?>;
+		boolean open = client.screen instanceof AbstractContainerScreen<?>;
 		if (open == screenOpen) {
 			return;
 		}
@@ -301,7 +331,7 @@ public class PBEnchantsClient implements ClientModInitializer {
 		// Through the chat listener rather than the player: on this side
 		// Player.sendSystemMessage is an empty method, and the line would go
 		// nowhere at all.
-		client.gui.chatListener().handleSystemMessage(
+		client.getChatListener().handleSystemMessage(
 			Component.translatable("msg.pbenchants.welcome",
 					OPEN_TREE_KEY.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.GOLD))
 				.withStyle(ChatFormatting.YELLOW),

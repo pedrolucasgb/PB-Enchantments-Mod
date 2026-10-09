@@ -16,7 +16,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -142,7 +141,22 @@ public final class GroundDrops {
 
 	private static Map<Block, Item> buildPowderMap() {
 		Map<Block, Item> map = new HashMap<>();
-		ColorCollection.zipApply(Blocks.CONCRETE_POWDER, Items.CONCRETE, map::put);
+		map.put(Blocks.WHITE_CONCRETE_POWDER, Items.WHITE_CONCRETE);
+		map.put(Blocks.ORANGE_CONCRETE_POWDER, Items.ORANGE_CONCRETE);
+		map.put(Blocks.MAGENTA_CONCRETE_POWDER, Items.MAGENTA_CONCRETE);
+		map.put(Blocks.LIGHT_BLUE_CONCRETE_POWDER, Items.LIGHT_BLUE_CONCRETE);
+		map.put(Blocks.YELLOW_CONCRETE_POWDER, Items.YELLOW_CONCRETE);
+		map.put(Blocks.LIME_CONCRETE_POWDER, Items.LIME_CONCRETE);
+		map.put(Blocks.PINK_CONCRETE_POWDER, Items.PINK_CONCRETE);
+		map.put(Blocks.GRAY_CONCRETE_POWDER, Items.GRAY_CONCRETE);
+		map.put(Blocks.LIGHT_GRAY_CONCRETE_POWDER, Items.LIGHT_GRAY_CONCRETE);
+		map.put(Blocks.CYAN_CONCRETE_POWDER, Items.CYAN_CONCRETE);
+		map.put(Blocks.PURPLE_CONCRETE_POWDER, Items.PURPLE_CONCRETE);
+		map.put(Blocks.BLUE_CONCRETE_POWDER, Items.BLUE_CONCRETE);
+		map.put(Blocks.BROWN_CONCRETE_POWDER, Items.BROWN_CONCRETE);
+		map.put(Blocks.GREEN_CONCRETE_POWDER, Items.GREEN_CONCRETE);
+		map.put(Blocks.RED_CONCRETE_POWDER, Items.RED_CONCRETE);
+		map.put(Blocks.BLACK_CONCRETE_POWDER, Items.BLACK_CONCRETE);
 		return Map.copyOf(map);
 	}
 

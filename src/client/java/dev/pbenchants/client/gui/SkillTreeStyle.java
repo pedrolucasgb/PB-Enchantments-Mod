@@ -2,7 +2,7 @@ package dev.pbenchants.client.gui;
 
 import dev.pbenchants.skill.SkillType;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -141,9 +141,9 @@ public final class SkillTreeStyle {
 	}
 
 	/** Filled panel with a 1px border. */
-	public static void panel(GuiGraphicsExtractor graphics, int x, int y, int width, int height, int fill, int border) {
+	public static void panel(GuiGraphics graphics, int x, int y, int width, int height, int fill, int border) {
 		graphics.fill(x, y, x + width, y + height, fill);
-		graphics.outline(x, y, width, height, border);
+		graphics.renderOutline(x, y, width, height, border);
 	}
 
 	/** Cuts a string down to {@code maxWidth} pixels, ellipsing it if it does not fit. */
@@ -159,20 +159,20 @@ public final class SkillTreeStyle {
 	}
 
 	/** The coloured pill behind a type name in the details panel. Returns its width. */
-	public static int badge(GuiGraphicsExtractor graphics, Font font, Component label, int x, int y, int color) {
+	public static int badge(GuiGraphics graphics, Font font, Component label, int x, int y, int color) {
 		int textWidth = font.width(label);
 		int width = textWidth + 8;
 		graphics.fill(x, y, x + width, y + 11, (color & 0x00FFFFFF) | 0x33000000);
-		graphics.outline(x, y, width, 11, color);
-		graphics.text(font, label, x + 4, y + 2, color);
+		graphics.renderOutline(x, y, width, 11, color);
+		graphics.drawString(font, label, x + 4, y + 2, color);
 		return width;
 	}
 
 	/** A thin have/need bar — used for gate lines and for the player's XP. */
-	public static void progressBar(GuiGraphicsExtractor graphics, int x, int y, int width, int height,
+	public static void progressBar(GuiGraphics graphics, int x, int y, int width, int height,
 			float progress, int fill) {
 		graphics.fill(x, y, x + width, y + height, 0xFF0A0C10);
-		graphics.outline(x, y, width, height, 0xFF2A303A);
+		graphics.renderOutline(x, y, width, height, 0xFF2A303A);
 		int filled = (int) ((width - 2) * Math.clamp(progress, 0f, 1f));
 		if (filled > 0) {
 			graphics.fill(x + 1, y + 1, x + 1 + filled, y + height - 1, fill);
@@ -180,11 +180,11 @@ public final class SkillTreeStyle {
 	}
 
 	/** Text with the HUD's black outline, for anything drawn over busy pixels. */
-	public static void outlinedText(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color) {
-		graphics.text(font, text, x + 1, y, 0xFF000000);
-		graphics.text(font, text, x - 1, y, 0xFF000000);
-		graphics.text(font, text, x, y + 1, 0xFF000000);
-		graphics.text(font, text, x, y - 1, 0xFF000000);
-		graphics.text(font, text, x, y, color);
+	public static void outlinedText(GuiGraphics graphics, Font font, String text, int x, int y, int color) {
+		graphics.drawString(font, text, x + 1, y, 0xFF000000);
+		graphics.drawString(font, text, x - 1, y, 0xFF000000);
+		graphics.drawString(font, text, x, y + 1, 0xFF000000);
+		graphics.drawString(font, text, x, y - 1, 0xFF000000);
+		graphics.drawString(font, text, x, y, color);
 	}
 }

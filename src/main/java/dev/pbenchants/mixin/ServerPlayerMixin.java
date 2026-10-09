@@ -37,11 +37,8 @@ public abstract class ServerPlayerMixin {
 		player.causeFoodExhaustion(exhaustion * ExplorerPerks.exhaustionFactor(player));
 	}
 
-	@Redirect(method = "jumpFromGround", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/server/level/ServerPlayer;causeFoodExhaustion(F)V"))
-	private void pbenchants$tirelessWhileJumping(ServerPlayer player, float exhaustion) {
-		player.causeFoodExhaustion(exhaustion * ExplorerPerks.exhaustionFactor(player));
-	}
+	// 1.21.1: ServerPlayer does not override jumpFromGround; the jump half of
+	// Tireless lives in PlayerMixin, on Player.jumpFromGround.
 
 	// ---------- Artisan: deposits and Tidy Storage ----------
 

@@ -112,7 +112,7 @@ public final class BeaconPerks {
 
 	/** The counter one beacon's Prism choice is kept under, on both sides. */
 	public static String attuneKey(ResourceKey<Level> dimension, BlockPos pos) {
-		return ATTUNE_COUNTER + "@" + dimension.identifier() + "/" + pos.getX() + "/" + pos.getY() + "/" + pos.getZ();
+		return ATTUNE_COUNTER + "@" + dimension.location() + "/" + pos.getX() + "/" + pos.getY() + "/" + pos.getZ();
 	}
 
 	/** What {@link #attune} has to say: whether the choice took, and the line to tell the player. */

@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
 
@@ -36,7 +36,7 @@ public final class PlacedLogs {
 		.xmap(LongOpenHashSet::new, List::copyOf);
 
 	public static final AttachmentType<LongOpenHashSet> PLACED_LOGS = AttachmentRegistry.create(
-		Identifier.fromNamespaceAndPath(PBEnchants.DATA_NS, "placed_logs"),
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.DATA_NS, "placed_logs"),
 		builder -> builder
 			.initializer(LongOpenHashSet::new)
 			.persistent(CODEC)

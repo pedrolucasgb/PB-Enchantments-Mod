@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * C2S: an Artisan action from the inventory or a container screen.
@@ -48,7 +48,7 @@ public record ArtisanActionPayload(Action action, int slot) implements CustomPac
 	}
 
 	public static final Type<ArtisanActionPayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "artisan_action"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "artisan_action"));
 
 	public static final StreamCodec<FriendlyByteBuf, ArtisanActionPayload> CODEC =
 		CustomPacketPayload.codec(ArtisanActionPayload::write, ArtisanActionPayload::read);

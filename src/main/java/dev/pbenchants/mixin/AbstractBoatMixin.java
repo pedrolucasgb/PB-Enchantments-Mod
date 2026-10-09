@@ -3,7 +3,7 @@ package dev.pbenchants.mixin;
 import dev.pbenchants.perk.ExplorerPerks;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * someone else's boat gets whatever the driver has earned, which is the same
  * rule the rest of the mod applies to borrowed gear.
  */
-@Mixin(AbstractBoat.class)
+@Mixin(Boat.class)
 public abstract class AbstractBoatMixin {
 	@Unique
 	private static final double pbenchants$SEA_LEGS_FACTOR = 1.15;
@@ -35,7 +35,7 @@ public abstract class AbstractBoatMixin {
 
 	@Inject(method = "controlBoat", at = @At("TAIL"))
 	private void pbenchants$seaLegs(CallbackInfo ci) {
-		AbstractBoat boat = (AbstractBoat) (Object) this;
+		Boat boat = (Boat) (Object) this;
 		LivingEntity pilot = boat.getControllingPassenger();
 		if (!(pilot instanceof Player player) || !ExplorerPerks.owns(player, ExplorerPerks.SEA_LEGS)) {
 			return;

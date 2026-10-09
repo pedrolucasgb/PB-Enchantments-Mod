@@ -4,7 +4,7 @@ import dev.pbenchants.PBEnchants;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * C2S: "I have an item screen open" / "I closed it".
@@ -22,7 +22,7 @@ import net.minecraft.resources.Identifier;
  */
 public record ScreenStatePayload(boolean open) implements CustomPacketPayload {
 	public static final Type<ScreenStatePayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "screen_state"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "screen_state"));
 
 	public static final StreamCodec<FriendlyByteBuf, ScreenStatePayload> CODEC =
 		CustomPacketPayload.codec((payload, buf) -> buf.writeBoolean(payload.open()),

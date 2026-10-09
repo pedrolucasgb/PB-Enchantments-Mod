@@ -21,9 +21,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  */
 @Mixin(AnvilScreen.class)
 public class AnvilScreenMixin {
-	@Redirect(method = "extractLabels", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/client/player/LocalPlayer;hasInfiniteMaterials()Z"))
-	private boolean pbenchants$anvilMasterIsNeverTooExpensive(LocalPlayer player) {
-		return player.hasInfiniteMaterials() || EnchanterPerks.owns(player, EnchanterPerks.ANVIL_MASTER);
+	// 1.21.1: the "Too Expensive!" check in renderLabels reads Abilities.instabuild.
+	@Redirect(method = "renderLabels", at = @At(value = "FIELD",
+		target = "Lnet/minecraft/world/entity/player/Abilities;instabuild:Z"))
+	private boolean pbenchants$anvilMasterIsNeverTooExpensive(net.minecraft.world.entity.player.Abilities abilities) {
+		LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+		return abilities.instabuild
+			|| (player != null && EnchanterPerks.owns(player, EnchanterPerks.ANVIL_MASTER));
 	}
 }

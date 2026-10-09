@@ -4,12 +4,10 @@ import dev.pbenchants.client.ClientSettings;
 import dev.pbenchants.perk.ExplorerPerks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LightmapRenderStateExtractor;
-import net.minecraft.client.renderer.state.LightmapRenderState;
+import net.minecraft.client.renderer.LightTexture;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 /**
  * Night Eyes — a permanent, gentler Night Vision.
@@ -36,15 +34,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * {@link ClientSettings#nightEyes()}, and a switched-off Night Eyes leaves the
  * state exactly as vanilla wrote it.
  */
-@Mixin(LightmapRenderStateExtractor.class)
+@Mixin(LightTexture.class)
 public class LightmapExtractorMixin {
-	@Inject(method = "extract", at = @At("RETURN"))
-	private void pbenchants$nightEyes(LightmapRenderState state, float partialTick, CallbackInfo ci) {
+	/**
+	 * 1.21.1 has no lightmap render state: the night-vision strength is a local
+	 * in {@code LightTexture.updateLightTexture} (slot 8 — 1 when the potion is
+	 * up, the water-vision share under a conduit, otherwise 0), read just
+	 * before the first {@code new Vector3f}. Same floor as on 26.x.
+	 */
+	@ModifyVariable(method = "updateLightTexture",
+		at = @At(value = "NEW", target = "org/joml/Vector3f", ordinal = 0), index = 8)
+	private float pbenchants$nightEyes(float nightVision) {
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null || !ClientSettings.nightEyes() || !ExplorerPerks.seesInTheDark(player)) {
-			return;
+			return nightVision;
 		}
-		state.nightVisionEffectIntensity =
-			Math.max(state.nightVisionEffectIntensity, ExplorerPerks.NIGHT_EYES_INTENSITY);
+		return Math.max(nightVision, ExplorerPerks.NIGHT_EYES_INTENSITY);
 	}
 }

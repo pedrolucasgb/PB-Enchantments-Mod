@@ -31,3 +31,5 @@ remappedSrc/
 
 # windows/msys crash dumps
 *.stackdump
+run-prod-server/
+run-prod-client/

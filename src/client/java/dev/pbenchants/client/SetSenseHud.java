@@ -3,11 +3,9 @@ package dev.pbenchants.client;
 import dev.pbenchants.PBEnchants;
 import dev.pbenchants.client.gui.SkillTreeStyle;
 import dev.pbenchants.perk.ArmorPerks;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
@@ -25,7 +23,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * harder you are hit, which is the fact the node exists to surface.
  */
 public final class SetSenseHud {
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "set_sense");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "set_sense");
 
 	/** The hit the readout is quoted against. A ten-point blow: a strong mob, not a fall. */
 	private static final float REFERENCE_HIT = 10.0F;
@@ -34,10 +32,14 @@ public final class SetSenseHud {
 	}
 
 	public static void register() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.ARMOR_BAR, ID, (graphics, delta) -> draw(graphics));
+		net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, delta) -> {
+			if (!net.minecraft.client.Minecraft.getInstance().options.hideGui) {
+				draw(graphics);
+			}
+		});
 	}
 
-	private static void draw(net.minecraft.client.gui.GuiGraphicsExtractor graphics) {
+	private static void draw(net.minecraft.client.gui.GuiGraphics graphics) {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;
 		// No hidden-GUI check: Fabric does not run HUD elements at all while the
@@ -57,7 +59,7 @@ public final class SetSenseHud {
 		// the bar itself starts — the readout sits with the thing it explains.
 		int x = graphics.guiWidth() / 2 - 91;
 		int y = armorBarY(graphics, player) - 10;
-		graphics.text(client.font, text, x, y, SkillTreeStyle.MUTED);
+		graphics.drawString(client.font, text, x, y, SkillTreeStyle.MUTED);
 	}
 
 	/**
@@ -69,7 +71,7 @@ public final class SetSenseHud {
 	 * smoothed display value, which the current health stands in for here
 	 * (off by a row only for a heartbeat after a big hit).
 	 */
-	private static int armorBarY(net.minecraft.client.gui.GuiGraphicsExtractor graphics, LocalPlayer player) {
+	private static int armorBarY(net.minecraft.client.gui.GuiGraphics graphics, LocalPlayer player) {
 		float maxHealth = Math.max((float) player.getAttributeValue(Attributes.MAX_HEALTH),
 			Mth.ceil(player.getHealth()));
 		int absorption = Mth.ceil(player.getAbsorptionAmount());

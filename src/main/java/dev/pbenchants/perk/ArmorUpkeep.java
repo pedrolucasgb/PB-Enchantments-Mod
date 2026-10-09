@@ -3,7 +3,7 @@ package dev.pbenchants.perk;
 import dev.pbenchants.PBEnchants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -48,10 +48,10 @@ public final class ArmorUpkeep {
 	/** Durability Living Armor returns per point of experience, matching Mending. */
 	private static final int LIVING_ARMOR_PER_POINT = 2;
 
-	private static final Identifier SURE_FOOTING_LAND =
-		Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "sure_footing_land");
-	private static final Identifier SURE_FOOTING_WATER =
-		Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "sure_footing_water");
+	private static final ResourceLocation SURE_FOOTING_LAND =
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "sure_footing_land");
+	private static final ResourceLocation SURE_FOOTING_WATER =
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "sure_footing_water");
 
 	/** Half of what the enchantments give, which is what the node promises. */
 	private static final double SURE_FOOTING_BONUS = 0.5;
@@ -115,7 +115,7 @@ public final class ArmorUpkeep {
 		modifier(player.getAttribute(Attributes.WATER_MOVEMENT_EFFICIENCY), SURE_FOOTING_WATER, wanted);
 	}
 
-	private static void modifier(AttributeInstance attribute, Identifier id, boolean wanted) {
+	private static void modifier(AttributeInstance attribute, ResourceLocation id, boolean wanted) {
 		if (attribute == null) {
 			return;
 		}
@@ -141,7 +141,7 @@ public final class ArmorUpkeep {
 			return;
 		}
 		state.lastStandReadyAt = player.tickCount + LAST_STAND_COOLDOWN;
-		player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, LAST_STAND_DURATION, 0, false, true, true));
+		player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, LAST_STAND_DURATION, 0, false, true, true));
 		player.sendSystemMessage(
 			Component.translatable("perk.pbenchants.last_stand.hold").withStyle(ChatFormatting.GOLD), true);
 	}
@@ -241,7 +241,7 @@ public final class ArmorUpkeep {
 		player.clearFire();
 		player.removeAllEffects();
 		player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1));
-		player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 200, 1));
+		player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
 		player.sendSystemMessage(
 			Component.translatable("perk.pbenchants.immortal_line.held").withStyle(ChatFormatting.GOLD));
 		return false;

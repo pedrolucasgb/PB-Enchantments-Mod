@@ -5,7 +5,7 @@ import dev.pbenchants.PBEnchants;
 import dev.pbenchants.enchant.ModEnchantments;
 import dev.pbenchants.skill.SkillTrees;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -114,8 +114,8 @@ public final class CombatPerks {
 	private static final double PHALANX_TOUCH_RANGE = 0.6;
 	private static final float PHALANX_TOUCH_DAMAGE = 2.0F;
 	private static final int PHALANX_INTERVAL_TICKS = 20;
-	private static final Identifier PHALANX_REACH_ID =
-		Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "phalanx_reach");
+	private static final ResourceLocation PHALANX_REACH_ID =
+		ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "phalanx_reach");
 
 	/** Per-player scratch state. Nothing here is saved. */
 	public static final class State {
@@ -406,7 +406,7 @@ public final class CombatPerks {
 		}
 		LivingEntity neighbour = nearest(level, attacker, target, CLEAVE_RADIUS);
 		if (neighbour != null) {
-			neighbour.hurtServer(level, attacker.damageSources().playerAttack(attacker), damage * CLEAVE_SHARE);
+			neighbour.hurt(attacker.damageSources().playerAttack(attacker), damage * CLEAVE_SHARE);
 		}
 	}
 
@@ -431,7 +431,7 @@ public final class CombatPerks {
 				|| !appliesTo(nearby) || attacker.isAlliedTo(nearby)) {
 				continue;
 			}
-			nearby.hurtServer(level, attacker.damageSources().playerAttack(attacker), damage);
+			nearby.hurt(attacker.damageSources().playerAttack(attacker), damage);
 		}
 	}
 
@@ -459,7 +459,7 @@ public final class CombatPerks {
 				|| player.isAlliedTo(nearby)) {
 				continue;
 			}
-			nearby.hurtServer(level, player.damageSources().playerAttack(player), damage);
+			nearby.hurt(player.damageSources().playerAttack(player), damage);
 			pricked = true;
 		}
 		if (pricked) {

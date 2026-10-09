@@ -7,7 +7,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * S2C: the verdict of one skill action — "unlocked", "not enough XP", "no
@@ -22,7 +22,7 @@ import net.minecraft.resources.Identifier;
  */
 public record SkillFeedbackPayload(boolean ok, Component message) implements CustomPacketPayload {
 	public static final Type<SkillFeedbackPayload> TYPE =
-		new Type<>(Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "skill_feedback"));
+		new Type<>(ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "skill_feedback"));
 
 	public static final StreamCodec<RegistryFriendlyByteBuf, SkillFeedbackPayload> CODEC = StreamCodec.composite(
 		ByteBufCodecs.BOOL, SkillFeedbackPayload::ok,

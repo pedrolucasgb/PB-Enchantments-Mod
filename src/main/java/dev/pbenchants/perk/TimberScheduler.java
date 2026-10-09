@@ -68,7 +68,6 @@ public final class TimberScheduler {
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.DARK_OAK_LOG, net.minecraft.world.level.block.Blocks.DARK_OAK_SAPLING),
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.MANGROVE_LOG, net.minecraft.world.level.block.Blocks.MANGROVE_PROPAGULE),
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.CHERRY_LOG, net.minecraft.world.level.block.Blocks.CHERRY_SAPLING),
-		java.util.Map.entry(net.minecraft.world.level.block.Blocks.PALE_OAK_LOG, net.minecraft.world.level.block.Blocks.PALE_OAK_SAPLING),
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.CRIMSON_STEM, net.minecraft.world.level.block.Blocks.CRIMSON_FUNGUS),
 		java.util.Map.entry(net.minecraft.world.level.block.Blocks.WARPED_STEM, net.minecraft.world.level.block.Blocks.WARPED_FUNGUS)
 	);

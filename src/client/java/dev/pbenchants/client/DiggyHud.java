@@ -2,12 +2,10 @@ package dev.pbenchants.client;
 
 import dev.pbenchants.PBEnchants;
 import dev.pbenchants.client.gui.SkillTreeStyle;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -23,7 +21,7 @@ import net.minecraft.world.item.Items;
  * turns itself off.
  */
 public final class DiggyHud {
-	private static final Identifier ID = Identifier.fromNamespaceAndPath(PBEnchants.MOD_ID, "diggy_diggy_hole");
+	private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(PBEnchants.MOD_ID, "diggy_diggy_hole");
 
 	/**
 	 * Built on demand, never in a static field: client init runs before item
@@ -38,7 +36,11 @@ public final class DiggyHud {
 	}
 
 	public static void register() {
-		HudElementRegistry.attachElementAfter(VanillaHudElements.ARMOR_BAR, ID, (graphics, delta) -> draw(graphics));
+		net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, delta) -> {
+			if (!net.minecraft.client.Minecraft.getInstance().options.hideGui) {
+				draw(graphics);
+			}
+		});
 	}
 
 	public static void setActive(boolean value) {
@@ -50,7 +52,7 @@ public final class DiggyHud {
 		active = false;
 	}
 
-	private static void draw(net.minecraft.client.gui.GuiGraphicsExtractor graphics) {
+	private static void draw(net.minecraft.client.gui.GuiGraphics graphics) {
 		Minecraft client = Minecraft.getInstance();
 		LocalPlayer player = client.player;
 		if (!active || player == null || player.isSpectator()) {
@@ -67,7 +69,7 @@ public final class DiggyHud {
 		if (icon == null) {
 			icon = new ItemStack(Items.NETHERITE_SHOVEL);
 		}
-		graphics.item(icon, x, y - 4);
-		graphics.text(client.font, label, x + 20, y, SkillTreeStyle.GOLD);
+		graphics.renderItem(icon, x, y - 4);
+		graphics.drawString(client.font, label, x + 20, y, SkillTreeStyle.GOLD);
 	}
 }

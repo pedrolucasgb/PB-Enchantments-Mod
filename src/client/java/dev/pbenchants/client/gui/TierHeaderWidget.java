@@ -2,12 +2,10 @@ package dev.pbenchants.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.util.function.IntConsumer;
@@ -50,13 +48,13 @@ public class TierHeaderWidget extends AbstractWidget {
 	}
 
 	@Override
-	public void onClick(MouseButtonEvent event, boolean doubleClick) {
+	public void onClick(double mouseX, double mouseY) {
 		onPress.accept(tierIndex);
 	}
 
 	@Override
-	public boolean keyPressed(KeyEvent event) {
-		if (!active || !visible || !event.isSelection()) {
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		if (!active || !visible || !net.minecraft.client.gui.navigation.CommonInputs.selected(keyCode)) {
 			return false;
 		}
 		playDownSound(Minecraft.getInstance().getSoundManager());
@@ -65,7 +63,7 @@ public class TierHeaderWidget extends AbstractWidget {
 	}
 
 	@Override
-	protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+	protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		int x = getX();
 		int y = getY();
 		int accent = switch (state) {
@@ -79,13 +77,13 @@ public class TierHeaderWidget extends AbstractWidget {
 			background = SkillTreeStyle.blend(background, 0xFF39414F, 0.5f);
 		}
 		graphics.fill(x, y, x + width, y + HEIGHT, background);
-		graphics.outline(x, y, width, HEIGHT, selected ? SkillTreeStyle.BORDER_LIT : SkillTreeStyle.BORDER);
+		graphics.renderOutline(x, y, width, HEIGHT, selected ? SkillTreeStyle.BORDER_LIT : SkillTreeStyle.BORDER);
 		// Accent bar on top: the column's status in one stroke.
 		graphics.fill(x, y, x + width, y + 2, accent);
 
 		String badge = "TIER " + (tierIndex + 1) + (state == State.OPEN ? " ✓" : " □");
-		graphics.text(font, SkillTreeStyle.trim(font, badge, width - 6), x + 3, y + 5, accent);
-		graphics.text(font, SkillTreeStyle.trim(font, tierName.getString(), width - 6), x + 3, y + 14,
+		graphics.drawString(font, SkillTreeStyle.trim(font, badge, width - 6), x + 3, y + 5, accent);
+		graphics.drawString(font, SkillTreeStyle.trim(font, tierName.getString(), width - 6), x + 3, y + 14,
 			state == State.LOCKED ? SkillTreeStyle.DIM : SkillTreeStyle.TEXT);
 	}
 
