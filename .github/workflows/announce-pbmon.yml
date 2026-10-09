@@ -1,0 +1,57 @@
+name: Announce PBmon
+
+# PBmon modpack releases are cut by hand (tag "pbmon-v<version>", asset
+# PBmon-<version>.mrpack) and must not run the mod's Release workflow, which
+# only listens to "v*" tags. This posts the Discord announcement for them, on
+# the same webhook the mod releases use.
+#
+# Runs by itself when a pbmon-v* release is published; for a release that
+# already exists, run it by hand with the tag name.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "PBmon release tag, e.g. pbmon-v1.0.0"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'pbmon-v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Announce on Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          case "$TAG" in
+            pbmon-v*) ;;
+            *) echo "not a PBmon tag: $TAG" >&2; exit 1 ;;
+          esac
+          VERSION="${TAG#pbmon-v}"
+          PACK_URL=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets \
+            --jq '.assets[] | select(.name | endswith(".mrpack")) | .url' | head -n1)
+          RELEASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
+          SITE_URL="https://pedrolucasgb.github.io/PB-Enchantments-Mod/#pbmon"
+
+          CONTENT=$(printf '%s\n' \
+            "@everyone **PBmon ${VERSION}** chegou! Cobblemon 1.8.1 + PB Enchantments (1.21.1)." \
+            "Lendários e míticos só aparecem em eventos do servidor, cada um no seu bioma, com hora shiny 2x a cada aparição." \
+            "" \
+            "Baixe o modpack: ${PACK_URL:-$RELEASE_URL}" \
+            "Como instalar: ${SITE_URL}" \
+            "Importe o .mrpack no Modrinth App ou no Prism Launcher; ele baixa todos os mods sozinho.")
+
+          jq -n --arg content "$CONTENT" \
+            '{content: $content, allowed_mentions: {parse: ["everyone"]}}' \
+          | curl --silent --show-error --fail-with-body \
+              --retry 3 --retry-all-errors \
+              --header 'Content-Type: application/json' \
+              --data-binary @- \
+              "$DISCORD_WEBHOOK_URL"
