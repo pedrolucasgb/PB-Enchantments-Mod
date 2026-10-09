@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -55,16 +56,17 @@ public abstract class PlayerMixin {
 	@Shadow
 	protected abstract float getEnchantedDamage(Entity target, float damage, DamageSource source);
 
-	@Inject(method = "getDestroySpeed", at = @At("RETURN"), cancellable = true)
-	private void pbenchants$applySpeedPassives(BlockState state, CallbackInfoReturnable<Float> cir) {
-		float speed = cir.getReturnValueF();
+	// 1.21.1 / Cobblemon pack: Balm also hooks RETURN of getDestroySpeed (its
+	// break-speed event). A cancellable @Inject that calls setReturnValue would
+	// return on the spot and starve whichever injector runs after it, so this
+	// is a @ModifyReturnValue, which chains with any number of others.
+	@ModifyReturnValue(method = "getDestroySpeed", at = @At("RETURN"))
+	private float pbenchants$applySpeedPassives(float speed, BlockState state) {
 		if (speed <= 0.0F) {
-			return; // unbreakable, or the wrong tool — nothing to change
+			return speed; // unbreakable, or the wrong tool — nothing to change
 		}
 		float multiplier = MiningSpeed.multiplier((Player) (Object) this, state);
-		if (multiplier != 1.0F) {
-			cir.setReturnValue(speed * multiplier);
-		}
+		return multiplier != 1.0F ? speed * multiplier : speed;
 	}
 
 	// ---------- Shared items: gear is only as strong as its holder ----------
