@@ -290,6 +290,10 @@
   }
   .server button:hover { border-color: var(--accent); color: var(--accent); }
 
+  #pbmon .pbmon-intro { color: var(--muted); line-height: 1.6; margin: 0 0 18px; }
+  #pbmon .dl-btn { margin-top: 4px; }
+  #pbmon .badges { margin-bottom: 18px; }
+
   footer {
     border-top: 1px solid var(--border);
     padding: 28px 0 40px;
@@ -364,6 +368,27 @@
     <p class="hint" data-i18n-html="serverHint"></p>
   </div>
 </section>
+
+<section id="pbmon">
+  <div class="wrap">
+    <h2 data-i18n-html="pbmonTitle"></h2>
+    <p class="pbmon-intro" data-i18n-html="pbmonIntro"></p>
+    <a id="pbmon-download" class="dl-btn" href="https://github.com/pedrolucasgb/PB-Enchantments-Mod/releases?q=pbmon" data-i18n="pbmonDownload"></a>
+    <p class="dl-meta" id="pbmon-meta"></p>
+    <div class="badges">
+      <span class="badge">Minecraft 1.21.1</span>
+      <span class="badge">Cobblemon 1.8.1</span>
+      <span class="badge">Fabric</span>
+      <span class="badge">.mrpack</span>
+    </div>
+    <ol class="steps">
+      <li data-i18n-html="pbmonStep1"></li>
+      <li data-i18n-html="pbmonStep2"></li>
+      <li data-i18n-html="pbmonStep3"></li>
+    </ol>
+    <p class="hint" data-i18n-html="pbmonHint"></p>
+  </div>
+</section>
 </div>
 
 <section id="versions-view" hidden>
@@ -419,7 +444,15 @@
       step2: 'Drop <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> and the downloaded <code>pbenchants-&lt;version&gt;.jar</code> into your <code>.minecraft/mods</code> folder.',
       step3: 'Launch the <code>fabric-loader-26.2</code> profile and press <code>K</code> in game.',
       serverTitle: 'Play on the <span>official server</span>',
-      serverHint: 'Add it under Multiplayer &rarr; Add Server with the mod installed — same Minecraft 26.2 Fabric setup as above. No port needed.',
+      serverHint: 'The official server now runs the <a href="#pbmon">PBmon</a> modpack (Minecraft 1.21.1) — install it below, then add this address under Multiplayer &rarr; Add Server. No port needed.',
+      pbmonTitle: '<span>PBmon</span> — the modpack',
+      pbmonIntro: 'The official Cobblemon 1.8.1 pack plus AllTheMons, minimap shiny stars and PB Enchantments for 1.21.1 (Bow, Armor and Sword trees are off — Cobblemon is a peaceful pack). Legendaries and mythicals only appear in server events, each in its own biome.',
+      pbmonDownload: "Download PBmon (.mrpack)",
+      pbmonStep1: 'Install <a href="https://modrinth.com/app">Modrinth App</a> or <a href="https://prismlauncher.org/">Prism Launcher</a>.',
+      pbmonStep2: 'Import the downloaded <code>PBmon-&lt;version&gt;.mrpack</code> (Modrinth App: <i>+ Create instance &rarr; Import</i>; Prism: <i>Add Instance &rarr; Import</i>). It downloads every mod by itself.',
+      pbmonStep3: 'Launch it and join the server above. Skill trees open with <code>H</code>, the ender chest with <code>V</code>.',
+      pbmonHint: 'Optional: <a href="https://www.curseforge.com/minecraft/mc-mods/cobbleradar-spawn-alerts-discord">CobbleRadar</a> (waypoints for spawn alerts) cannot be bundled because of its license — drop it into the instance <code>mods</code> folder if you want it.',
+      pbmonMeta: "Released",
       copyAddr: "Copy address",
       copied: "Copied!",
       versionsTitle: 'All <span>versions</span>',
@@ -462,7 +495,15 @@
       step2: 'Coloque o <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> e o <code>pbenchants-&lt;versao&gt;.jar</code> baixado na sua pasta <code>.minecraft/mods</code>.',
       step3: 'Inicie o perfil <code>fabric-loader-26.2</code> e aperte <code>K</code> no jogo.',
       serverTitle: 'Jogue no <span>servidor oficial</span>',
-      serverHint: 'Adicione em Multijogador &rarr; Adicionar servidor com o mod instalado — a mesma configuração do Minecraft 26.2 com Fabric descrita acima. Não precisa de porta.',
+      serverHint: 'O servidor oficial agora roda o modpack <a href="#pbmon">PBmon</a> (Minecraft 1.21.1) — instale-o abaixo e adicione este endereço em Multijogador &rarr; Adicionar servidor. Não precisa de porta.',
+      pbmonTitle: '<span>PBmon</span> — o modpack',
+      pbmonIntro: 'O pack oficial do Cobblemon 1.8.1 com AllTheMons, estrelas de shiny no minimapa e o PB Enchantments para 1.21.1 (árvores de Arco, Armadura e Espada desligadas — Cobblemon é um pack pacífico). Lendários e míticos só aparecem em eventos do servidor, cada um no seu bioma.',
+      pbmonDownload: "Baixar PBmon (.mrpack)",
+      pbmonStep1: 'Instale o <a href="https://modrinth.com/app">Modrinth App</a> ou o <a href="https://prismlauncher.org/">Prism Launcher</a>.',
+      pbmonStep2: 'Importe o <code>PBmon-&lt;versao&gt;.mrpack</code> baixado (Modrinth App: <i>+ Criar instância &rarr; Importar</i>; Prism: <i>Adicionar instância &rarr; Importar</i>). Ele baixa todos os mods sozinho.',
+      pbmonStep3: 'Inicie e entre no servidor acima. As árvores de habilidade abrem com <code>H</code> e o baú do End com <code>V</code>.',
+      pbmonHint: 'Opcional: o <a href="https://www.curseforge.com/minecraft/mc-mods/cobbleradar-spawn-alerts-discord">CobbleRadar</a> (waypoints dos alertas de spawn) não pode ir dentro do pack por causa da licença — coloque-o na pasta <code>mods</code> da instância se quiser.',
+      pbmonMeta: "Lançado em",
       copyAddr: "Copiar endereço",
       copied: "Copiado!",
       versionsTitle: 'Todas as <span>versões</span>',
@@ -505,7 +546,15 @@
       step2: 'Copia el <a href="https://modrinth.com/mod/fabric-api">Fabric API</a> y el <code>pbenchants-&lt;version&gt;.jar</code> descargado en tu carpeta <code>.minecraft/mods</code>.',
       step3: 'Lanza el perfil <code>fabric-loader-26.2</code> y pulsa <code>K</code> en el juego.',
       serverTitle: 'Juega en el <span>servidor oficial</span>',
-      serverHint: 'Añádelo en Multijugador &rarr; Añadir servidor con el mod instalado — la misma configuración de Minecraft 26.2 con Fabric de arriba. No hace falta puerto.',
+      serverHint: 'El servidor oficial ahora usa el modpack <a href="#pbmon">PBmon</a> (Minecraft 1.21.1) — instálalo abajo y añade esta dirección en Multijugador &rarr; Añadir servidor. No hace falta puerto.',
+      pbmonTitle: '<span>PBmon</span> — el modpack',
+      pbmonIntro: 'El pack oficial de Cobblemon 1.8.1 con AllTheMons, estrellas de shiny en el minimapa y PB Enchantments para 1.21.1 (árboles de Arco, Armadura y Espada desactivados — Cobblemon es un pack pacífico). Los legendarios y singulares solo aparecen en eventos del servidor, cada uno en su bioma.',
+      pbmonDownload: "Descargar PBmon (.mrpack)",
+      pbmonStep1: 'Instala <a href="https://modrinth.com/app">Modrinth App</a> o <a href="https://prismlauncher.org/">Prism Launcher</a>.',
+      pbmonStep2: 'Importa el <code>PBmon-&lt;version&gt;.mrpack</code> descargado (Modrinth App: <i>+ Crear instancia &rarr; Importar</i>; Prism: <i>Añadir instancia &rarr; Importar</i>). Descarga todos los mods por sí solo.',
+      pbmonStep3: 'Ábrelo y entra al servidor de arriba. Los árboles de habilidad se abren con <code>H</code> y el cofre del End con <code>V</code>.',
+      pbmonHint: 'Opcional: <a href="https://www.curseforge.com/minecraft/mc-mods/cobbleradar-spawn-alerts-discord">CobbleRadar</a> (waypoints de las alertas de aparición) no puede ir dentro del pack por su licencia — ponlo en la carpeta <code>mods</code> de la instancia si lo quieres.',
+      pbmonMeta: "Publicado el",
       copyAddr: "Copiar dirección",
       copied: "¡Copiado!",
       versionsTitle: 'Todas las <span>versiones</span>',
@@ -573,6 +622,7 @@
     renderReleases();
     updateMeta();
     renderLatestNotes();
+    updatePbmon();
   }
 
   document.querySelectorAll(".lang-picker button").forEach(btn =>
@@ -598,7 +648,16 @@
   const releasesBox = document.getElementById("releases");
   const loadMoreBtn = document.getElementById("load-more");
   let releases = [];
+  let pbmonReleases = [];
   let nextPage = 1;
+
+  function isModRelease(r) {
+    return /^v\d/.test(String(r.tag_name || ""));
+  }
+
+  function isPbmonRelease(r) {
+    return /^pbmon-v/i.test(String(r.tag_name || ""));
+  }
   let morePages = false;
   let failed = false;
 
@@ -609,7 +668,11 @@
         + "/releases?per_page=" + PAGE_SIZE + "&page=" + nextPage);
       if (!res.ok) throw new Error(res.status);
       const batch = (await res.json()).filter(r => !r.draft);
-      releases = releases.concat(batch);
+      // The repo also publishes the PBmon modpack (tags "pbmon-v*"). Only
+      // "v*" tags are mod releases; everything mod-related below (download
+      // button, notes, the version list) must never pick a modpack release.
+      releases = releases.concat(batch.filter(isModRelease));
+      pbmonReleases = pbmonReleases.concat(batch.filter(isPbmonRelease));
       morePages = batch.length === PAGE_SIZE;
       nextPage++;
       failed = false;
@@ -620,6 +683,7 @@
     renderReleases();
     updateMeta();
     renderLatestNotes();
+    updatePbmon();
   }
   loadMoreBtn.addEventListener("click", loadPage);
 
@@ -823,6 +887,22 @@
     const when = new Date(latest.published_at)
       .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "short", day: "numeric" });
     meta.innerHTML = escapeHtml(latest.tag_name) + " · " + when + " · " + link;
+  }
+
+  // The PBmon button: newest modpack release, its .mrpack asset.
+  function updatePbmon() {
+    const meta = document.getElementById("pbmon-meta");
+    if (!meta || !pbmonReleases.length) return;
+    const latest = pbmonReleases[0];
+    const pack = (latest.assets || []).find(a => /\.mrpack$/i.test(a.name));
+    if (pack) {
+      document.getElementById("pbmon-download").href = pack.browser_download_url;
+    }
+    const when = new Date(latest.published_at)
+      .toLocaleDateString(I18N[lang].locale, { year: "numeric", month: "short", day: "numeric" });
+    const size = pack ? " · " + Math.round(pack.size / 1048576) + " MB" : "";
+    meta.innerHTML = '<a href="' + escapeHtml(latest.html_url) + '">' + escapeHtml(latest.name || latest.tag_name)
+      + "</a> · " + t("pbmonMeta") + " " + when + size;
   }
 
   function escapeHtml(s) {
