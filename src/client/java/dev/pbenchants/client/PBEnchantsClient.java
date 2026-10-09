@@ -122,10 +122,29 @@ public class PBEnchantsClient implements ClientModInitializer {
 
 		ThirdEyeHighlights.registerRenderer();
 		if (Boolean.getBoolean("pbenchants.mixinAudit")) {
-			net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-				dev.pbenchants.PBEnchants.LOGGER.info("PB mixin audit (client): loading every mixin target...");
-				org.spongepowered.asm.mixin.MixinEnvironment.getCurrentEnvironment().audit();
+			// Audited at the first title screen, when every mod has finished starting.
+			boolean[] audited = {false};
+			net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
+				if (audited[0] || !(screen instanceof net.minecraft.client.gui.screens.TitleScreen)) {
+					return;
+				}
+				audited[0] = true;
+				dev.pbenchants.PBEnchants.LOGGER.info("PB mixin audit (client): title screen reached; loading every mixin target...");
+				java.util.List<Class<?>> targets = new java.util.ArrayList<>(dev.pbenchants.MixinProbe.commonTargets());
+				targets.addAll(java.util.List.of(
+					net.minecraft.client.gui.screens.inventory.AbstractContainerScreen.class,
+					net.minecraft.client.gui.screens.inventory.AnvilScreen.class,
+					net.minecraft.client.gui.screens.inventory.EnchantmentScreen.class,
+					net.minecraft.client.renderer.LightTexture.class,
+					net.minecraft.client.player.LocalPlayer.class,
+					net.minecraft.world.item.trading.MerchantOffer.class,
+					net.minecraft.client.gui.screens.recipebook.RecipeBookComponent.class));
+				dev.pbenchants.MixinProbe.probe(targets, "client");
+				dev.pbenchants.MixinProbe.auditEverything("client");
 				dev.pbenchants.PBEnchants.LOGGER.info("PB mixin audit (client): done");
+				if (Boolean.getBoolean("pbenchants.autoStop")) {
+					client.execute(client::stop);
+				}
 			});
 		}
 

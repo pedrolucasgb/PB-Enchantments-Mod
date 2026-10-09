@@ -62,6 +62,29 @@ java {
 	targetCompatibility = JavaVersion.VERSION_21
 }
 
+// Production compatibility runs (real loader, intermediary names, nested jars):
+//   gradlew prodServer -PcompatServerDir=<mod jars>   /   gradlew prodClient -PcompatClientDir=<mod jars>
+// Both force-load every mixin target once up and then stop themselves.
+tasks.register("prodServer", net.fabricmc.loom.task.prod.ServerProductionRunTask) {
+	installerVersion = "1.1.2"
+	mods.from(remapJar)
+	if (project.hasProperty("compatServerDir")) {
+		mods.from(fileTree(dir: project.property("compatServerDir"), include: "*.jar"))
+	}
+	jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.autoStop=true")
+	programArgs.add("nogui")
+	runDir = file("run-prod-server")
+}
+
+tasks.register("prodClient", net.fabricmc.loom.task.prod.ClientProductionRunTask) {
+	mods.from(remapJar)
+	if (project.hasProperty("compatClientDir")) {
+		mods.from(fileTree(dir: project.property("compatClientDir"), include: "*.jar"))
+	}
+	jvmArgs.addAll("-Dpbenchants.mixinAudit=true", "-Dpbenchants.autoStop=true")
+	runDir = file("run-prod-client")
+}
+
 jar {
 	def projectName = project.name
 	inputs.property "projectName", projectName

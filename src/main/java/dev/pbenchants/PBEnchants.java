@@ -89,8 +89,13 @@ public class PBEnchants implements ModInitializer {
 		if (Boolean.getBoolean("pbenchants.mixinAudit")) {
 			net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 				LOGGER.info("PB mixin audit: loading every mixin target...");
-				org.spongepowered.asm.mixin.MixinEnvironment.getCurrentEnvironment().audit();
+				MixinProbe.probe(MixinProbe.commonTargets(), "server");
+				MixinProbe.auditEverything("server");
 				LOGGER.info("PB mixin audit: done");
+				if (Boolean.getBoolean("pbenchants.autoStop")) {
+					LOGGER.info("PB mixin audit: stopping the server (pbenchants.autoStop)");
+					server.halt(false);
+				}
 			});
 		}
 
