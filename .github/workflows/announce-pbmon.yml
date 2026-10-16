@@ -15,6 +15,10 @@ on:
       tag:
         description: "PBmon release tag, e.g. pbmon-v1.0.0"
         required: true
+      message:
+        description: "What changed, replacing the standard text (the links are still added). \\n starts a new line."
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -29,6 +33,7 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          MESSAGE: ${{ inputs.message }}
         run: |
           case "$TAG" in
             pbmon-v*) ;;
@@ -42,6 +47,13 @@ jobs:
           RELEASE_URL="https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
           SITE_URL="https://pedrolucasgb.github.io/PB-Enchantments-Mod/#pbmon"
 
+          if [ -n "$MESSAGE" ]; then
+            # An update for players already in (e.g. a server-side change): their text, then the links.
+            CONTENT=$(printf '%b\n\n%s\n%s\n%s' "$MESSAGE" \
+              "Instalador Windows: ${INSTALLER_URL:-$RELEASE_URL}" \
+              "Modpack (.mrpack): ${PACK_URL:-$RELEASE_URL}" \
+              "Site: ${SITE_URL}")
+          else
           CONTENT=$(printf '%s\n' \
             "@everyone **PBmon ${VERSION}** chegou! COBBLEVERSE sobre Cobblemon 1.8.1 + PB Enchantments (1.21.1)." \
             "Shiny 1/4096; cada evento de lendário liga bônus shiny 2x por 20 min. Lendários e míticos só aparecem em eventos do servidor, cada um no seu bioma." \
@@ -50,6 +62,7 @@ jobs:
             "Windows: baixe o instalador NOVO, feche o launcher e rode: ${INSTALLER_URL:-$RELEASE_URL}" \
             "Modpack (.mrpack para Modrinth App / Prism): ${PACK_URL:-$RELEASE_URL}" \
             "Como instalar: ${SITE_URL}")
+          fi
 
           jq -n --arg content "$CONTENT" \
             '{content: $content, allowed_mentions: {parse: ["everyone"]}}' \
